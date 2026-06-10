@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DClinPsy Equal-Opportunities Explorer</title>
+<meta name="description" content="Interactive explorer of UK Doctorate in Clinical Psychology (DClinPsy) equal-opportunities admissions, 2015-2024: acceptance rates and disparities by applicant characteristic, computed live and verified against an offline statistical reference.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%23990F3D'/><text x='16' y='24' font-size='23' text-anchor='middle' fill='%23fff' font-family='Georgia,serif'>%CF%88</text></svg>">
+<meta property="og:title" content="DClinPsy Equal-Opportunities Explorer">
+<meta property="og:description" content="UK clinical psychology doctorate admissions, 2015-2024: acceptance rates and disparities by applicant characteristic, computed live and statistically verified.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<style>
+  /* Inter vendored locally so the site is fully self-contained (no network). */
+  @font-face { font-family:"Inter"; font-style:normal; font-weight:400;
+    font-display:swap; src:url("fonts/inter-400.woff2") format("woff2"); }
+  @font-face { font-family:"Inter"; font-style:normal; font-weight:600;
+    font-display:swap; src:url("fonts/inter-600.woff2") format("woff2"); }
+  @font-face { font-family:"Inter"; font-style:normal; font-weight:700;
+    font-display:swap; src:url("fonts/inter-700.woff2") format("woff2"); }
+  :root {
+    --page:#f1eee7; --card:#ffffff; --ink:#1c1a16; --muted:#6f6757; --faint:#a59c89;
+    --line:#e7e1d5; --line-soft:#f1ede4; --track:#efebe1;
+    --accent:#990F3D; --accent-2:#2D6CA2; --accent-soft:#f8ecf0;
+    --shadow:0 1px 2px rgba(45,35,15,.04), 0 16px 32px -18px rgba(45,35,15,.16);
+    --ftred:#990F3D; --ftblue:#2D6CA2; --bg:#ffffff; --panel:#ffffff; }
+  * { box-sizing: border-box; }
+  html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  body { font: 15px/1.55 "Inter", system-ui, -apple-system, sans-serif;
+    color: var(--ink); margin: 0; background: var(--page); }
+
+  /* App shell: brand top-left, scrollable controls rail beneath it, content right */
+  .app { display: grid; grid-template-columns: 332px 1fr; grid-template-rows: auto 1fr; height: 100vh; }
+  .brand { grid-column: 1; grid-row: 1; background: var(--card); border-right: 1px solid var(--line);
+    padding: 1.5rem 1.3rem .6rem; }
+  .rail { grid-column: 1; grid-row: 2; min-height: 0; background: var(--card);
+    border-right: 1px solid var(--line); overflow-y: auto; padding: .4rem 1.3rem 2rem; }
+  .brand .eyebrow { font-size: .68rem; font-weight: 600; letter-spacing: .13em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: .45rem; }
+  .brand h1 { font-size: 1.32rem; font-weight: 700; letter-spacing: -.02em; margin: 0; line-height: 1.18; }
+  .brand p { color: var(--muted); margin: .55rem 0 0; font-size: .84rem; line-height: 1.45; }
+
+  .main { grid-column: 2; grid-row: 1 / span 2; display: flex; flex-direction: column; min-height: 0;
+    background: var(--page);
+    background-image: radial-gradient(1100px 460px at 78% -10%, #f8f4ed 0%, var(--page) 62%); }
+  .tabs { display: flex; gap: .1rem; padding: 0 1.6rem; flex-wrap: wrap; flex: 0 0 auto;
+    border-bottom: 1px solid var(--line); background: var(--card); }
+  .tab { font: inherit; font-size: .92rem; font-weight: 500; padding: .85rem .9rem; cursor: pointer;
+    background: none; border: none; color: var(--muted); border-bottom: 2.5px solid transparent;
+    margin-bottom: -1px; transition: color .15s ease; }
+  .tab:hover { color: var(--ink); }
+  .tab.active { color: var(--ink); font-weight: 600; border-bottom-color: var(--accent); }
+
+  .content { flex: 1 1 auto; overflow-y: auto; padding: 1.6rem; }
+  .panel { background: transparent; border: none; box-shadow: none; padding: 0; }
+  .panel h2 { font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; font-weight: 600;
+    color: var(--faint); margin: 0 0 .6rem; }
+  @media (max-width: 860px) {
+    /* Stack: title, then tabs + chart, then the controls below. */
+    .app { display: flex; flex-direction: column; height: auto; }
+    .brand { order: 1; border-right: none; padding: 1.1rem 1.1rem .4rem; }
+    .brand h1 { font-size: 1.18rem; }
+    .main { order: 2; min-height: 0; }
+    .rail { order: 3; border-right: none; border-top: 1px solid var(--line); overflow: visible;
+      padding: 1rem 1.1rem 5rem; }
+    .content { overflow: visible; padding: 1.1rem; }
+    .tabs { padding: 0 1.1rem; position: sticky; top: 0; z-index: 20; }
+    .tab { font-size: .85rem; padding: .7rem .6rem; }
+  }
+  select { width: 100%; padding: .55rem .75rem; padding-right: 2rem; font: inherit; font-size: .92rem;
+    color: var(--ink); border: 1px solid var(--line); border-radius: 10px; background-color: var(--card);
+    cursor: pointer; appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237a7264' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>");
+    background-repeat: no-repeat; background-position: right .7rem center;
+    transition: border-color .15s, box-shadow .15s; }
+  select:hover { border-color: #d8d0c0; }
+  select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  input[type="checkbox"] { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
+  .group-list { max-height: 300px; overflow-y: auto; margin-top: .85rem;
+    border-top: 1px solid var(--line-soft); padding-top: .65rem; }
+  label.grp { display: flex; align-items: center; gap: .55rem; padding: .22rem .25rem;
+    font-size: .88rem; cursor: pointer; border-radius: 6px; transition: background .12s; }
+  label.grp:hover { background: var(--track); }
+  label.grp span { user-select: none; }
+  .toggles { margin-top: 1rem; border-top: 1px solid var(--line-soft); padding-top: .85rem; }
+  .toggles label { display: flex; align-items: center; gap: .55rem; font-size: .88rem; cursor: pointer; }
+  /* Toggle chips (on/off buttons) for display options */
+  .chips { display: flex; flex-wrap: nowrap; gap: .4rem; }
+  .chip { font: inherit; font-size: .78rem; font-weight: 600; padding: .42rem .7rem; border-radius: 8px;
+    border: 1px solid var(--line); background: var(--card); color: var(--muted); cursor: pointer;
+    white-space: nowrap; transition: all .15s ease; }
+  .chip:hover { color: var(--ink); border-color: #d8d0c0; background: #faf7f1; }
+  .chip.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .chip.on:hover { background: #82092f; color: #fff; }
+  /* Small (i) info marker with a tooltip */
+  .info { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px;
+    margin-left: .4rem; border-radius: 50%; border: 1px solid var(--faint); color: var(--faint);
+    font-size: 9px; font-weight: 700; font-style: italic; line-height: 1; cursor: help;
+    vertical-align: middle; text-transform: none; letter-spacing: normal; transition: all .15s ease; }
+  .info:hover, .info:focus { border-color: var(--accent); color: var(--accent); outline: none; }
+
+  .ctl { margin-top: 1.15rem; }
+  .ctl > label.cap { display: block; font-size: .7rem; text-transform: uppercase;
+    letter-spacing: .1em; font-weight: 600; color: var(--faint); margin-bottom: .45rem; }
+  .yearrange { display: flex; align-items: center; gap: .5rem; }
+  .yearrange select { flex: 1; }
+  .yearrange span { color: var(--faint); font-size: .85rem; }
+  .seg { display: flex; gap: 2px; background: var(--track); border: 1px solid var(--line);
+    border-radius: 10px; padding: 3px; }
+  .seg-btn { flex: 1; font: inherit; font-size: .8rem; font-weight: 500; padding: .42rem .3rem;
+    cursor: pointer; background: transparent; border: none; color: var(--muted); border-radius: 7px;
+    transition: all .15s ease; }
+  .seg-btn:hover { color: var(--ink); }
+  .seg-btn.active { background: var(--card); color: var(--ink); font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+  .legendkey { margin-top: 1.1rem; font-size: .8rem; color: var(--muted);
+    border-top: 1px solid var(--line-soft); padding-top: .85rem; line-height: 1.75; }
+  .swatch { display: inline-block; width: 11px; height: 11px; border-radius: 50%;
+    vertical-align: -1px; margin-right: .4rem; }
+
+  #chart { width: 100%; }
+  #chart-head { margin: .2rem 0 .7rem; padding-right: 168px; }
+  .chart-title { font-weight: 700; font-size: 1.25rem; letter-spacing: -.015em; line-height: 1.2; }
+  .chart-sub { color: var(--muted); font-size: .88rem; margin-top: .35rem; max-width: 80ch; line-height: 1.5; }
+  .note { font-size: .8rem; color: var(--muted); margin-top: .7rem; line-height: 1.5;
+    max-width: 88ch; padding-right: 1rem; }
+  .chartwrap { position: relative; background: var(--card); border: 1px solid var(--line);
+    border-radius: 16px; padding: 1.4rem 1.5rem 1rem; box-shadow: var(--shadow); }
+  .dl-btn { position: absolute; top: 1.2rem; right: 1.3rem; z-index: 3; font: inherit;
+    font-size: .8rem; font-weight: 600; color: var(--muted); background: var(--card);
+    border: 1px solid var(--line); border-radius: 9px; padding: .42rem .7rem; cursor: pointer;
+    display: inline-flex; align-items: center; gap: .4rem; transition: all .15s ease; }
+  .dl-btn:hover { color: var(--ink); border-color: #d8d0c0; background: #faf7f1; }
+  .dl-btn svg { width: 14px; height: 14px; }
+
+  /* About / methodology page */
+  #about { display: none; }
+  .about { max-width: 768px; }
+  .about h2 { font-size: 1.4rem; font-weight: 700; letter-spacing: -.02em; margin: 2.1rem 0 .5rem; }
+  .about h2:first-child { margin-top: .2rem; }
+  .about h3 { font-size: 1.02rem; font-weight: 600; margin: 1.4rem 0 .35rem; }
+  .about p, .about li { font-size: .95rem; line-height: 1.65; }
+  .about p { margin: .5rem 0; }
+  .about .lead { font-size: 1.08rem; color: var(--muted); line-height: 1.6; }
+  .about ul { margin: .4rem 0 .9rem; padding-left: 1.2rem; }
+  .about li { margin: .28rem 0; }
+  .about a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent-soft); }
+  .about a:hover { border-bottom-color: var(--accent); }
+  .about code { background: var(--track); padding: .05rem .32rem; border-radius: 4px; font-size: .85em;
+    font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; }
+  .about .gloss dt { font-weight: 600; margin-top: .75rem; }
+  .about .gloss dd { margin: .12rem 0 0; color: var(--muted); }
+  .about .src { margin-top: 2.2rem; padding-top: 1.1rem; border-top: 1px solid var(--line);
+    font-size: .88rem; color: var(--muted); }
+
+  /* Ko-fi support button (self-contained link, no external widget script) */
+  a.kofi-btn { display: inline-flex; align-items: center; gap: .5rem; background: #72a4f2;
+    color: #fff; font-weight: 600; font-size: .86rem; line-height: 1; padding: .55rem .85rem;
+    border-radius: 10px; text-decoration: none; border: none;
+    box-shadow: 0 1px 2px rgba(45,35,15,.12); transition: filter .15s, transform .05s; }
+  a.kofi-btn:hover { filter: brightness(1.05); }
+  a.kofi-btn:active { transform: translateY(1px); }
+  a.kofi-btn svg { width: 17px; height: 17px; }
+  .about a.kofi-btn { margin-top: .9rem; }
+  a.kofi-float { position: fixed; bottom: 1.15rem; right: 1.15rem; z-index: 60;
+    padding: .6rem 1rem; box-shadow: 0 4px 16px rgba(45,35,15,.26); }
+
+  /* SES pairwise matrix */
+  #matrix { display: none; padding: .4rem .25rem .4rem; }
+  .matrix-title { font-weight: 700; font-size: 1.25rem; letter-spacing: -.015em; }
+  .matrix-sub { color: var(--muted); font-size: .85rem; margin: .4rem 0 1.4rem; max-width: 66ch; line-height: 1.5; }
+  table.matrix { border-collapse: separate; border-spacing: 5px; }
+  table.matrix th { font-weight: 600; color: var(--muted); font-size: .85rem; padding: .25rem .5rem; }
+  table.matrix td { width: 66px; height: 48px; text-align: center; border-radius: 9px;
+    font-size: .9rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+  table.matrix td.up { background: var(--accent); color: #fff; }
+  table.matrix td.down { background: var(--accent-2); color: #fff; }
+  table.matrix td.ns { background: #f4f1ea; color: #948c7c; border: 1px solid var(--line); }
+  table.matrix td.diag { background: transparent; }
+  table.matrix td.nd { background: transparent; color: #c3bbac; }
+  .matrix-legend { margin-top: 1.3rem; font-size: .82rem; color: var(--muted); }
+  .matrix-legend .k { display: inline-block; width: 12px; height: 12px; border-radius: 3px;
+    vertical-align: -1px; margin: 0 .3rem 0 .9rem; }
+  .matrix-legend .k.up { background: var(--accent); } .matrix-legend .k.down { background: var(--accent-2); }
+  .matrix-legend .k.ns { background: #f4f1ea; border: 1px solid var(--line); }
+
+  /* Data table */
+  .btn { font: inherit; font-size: .86rem; font-weight: 600; padding: .6rem .8rem; background: var(--accent);
+    color: #fff; border: none; border-radius: 10px; cursor: pointer; margin-top: 1.1rem; width: 100%;
+    transition: background .15s, transform .05s; }
+  .btn:hover { background: #82092f; }
+  .btn:active { transform: translateY(1px); }
+  #table { display: none; padding: .4rem .25rem .4rem; overflow-x: auto; }
+  .table-title { font-weight: 700; font-size: 1.25rem; letter-spacing: -.015em; }
+  .table-sub { color: var(--muted); font-size: .85rem; margin: .4rem 0 1.15rem; max-width: 72ch; line-height: 1.5; }
+  table.datatable { border-collapse: collapse; font-size: .86rem; width: 100%; }
+  table.datatable th { text-align: center; color: var(--muted); font-weight: 600; font-size: .82rem;
+    border-bottom: 1.5px solid var(--line); padding: .5rem .7rem; position: sticky; top: 0;
+    background: var(--card); cursor: pointer; user-select: none; white-space: nowrap; transition: color .12s; }
+  table.datatable th:hover { color: var(--ink); }
+  table.datatable th:first-child, table.datatable td:first-child { text-align: left; }
+  table.datatable th .sarr { font-size: .8em; margin-left: .3rem; color: #c3bbac; }
+  table.datatable th:hover .sarr { color: var(--muted); }
+  table.datatable th .sarr.on { color: var(--accent); }
+  table.datatable td { padding: .45rem .7rem; border-bottom: 1px solid var(--line-soft);
+    text-align: center; font-variant-numeric: tabular-nums; }
+  table.datatable tbody tr:hover td { background: #faf7f1; }
+  table.datatable .supp { color: #aaa091; font-style: italic; }
+  table.datatable tr.allrow td { background: var(--accent-soft); font-weight: 600; color: var(--ink);
+    border-top: 1.5px solid #e6c9d4; border-bottom: 1.5px solid #e6c9d4; }
+  table.datatable tr.allrow:hover td { background: var(--accent-soft); }
+  /* Freeze the first (group) column so it stays visible when the table scrolls
+     sideways. Sticky cells need an opaque background per row state. */
+  table.datatable th { z-index: 2; }
+  table.datatable th:first-child, table.datatable td:first-child {
+    position: sticky; left: 0; background: var(--card); box-shadow: 1px 0 0 var(--line); }
+  table.datatable th:first-child { z-index: 3; }
+  table.datatable td:first-child { z-index: 1; }
+  table.datatable tbody tr:hover td:first-child { background: #faf7f1; }
+  table.datatable tr.allrow td:first-child { background: var(--accent-soft); }
+  /* Keep the data-table heading/notes put while the table scrolls sideways
+     (min() keeps the readable 72ch cap on desktop, viewport cap on mobile) */
+  .table-title, .table-sub { position: sticky; left: 0; }
+  .table-title { max-width: calc(100vw - 2.4rem); }
+  .table-sub { max-width: min(72ch, calc(100vw - 2.4rem)); }
+
+  /* Mobile component overrides (placed last so they win over the base rules) */
+  @media (max-width: 860px) {
+    .chartwrap .dl-btn { position: static; margin: 0 0 .8rem; }   /* flow above the title */
+    #chart-head { padding-right: 0; }
+    a.kofi-float { padding: .6rem; border-radius: 50%; bottom: .8rem; right: .8rem; }
+    a.kofi-float .kofi-label { display: none; }                   /* icon-only on mobile */
+    a.kofi-float svg { width: 22px; height: 22px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="brand">
+    <div class="eyebrow">Admissions equity &middot; 2015 to 2024</div>
+    <h1>DClinPsy Equal-Opportunities Explorer</h1>
+  </header>
+  <aside class="rail">
+    <div class="panel">
+    <div id="char-control">
+      <h2>Characteristic</h2>
+      <select id="char-picker"></select>
+    </div>
+
+    <!-- Trend controls -->
+    <div id="trend-controls">
+      <div class="ctl" style="margin-top:.2rem">
+        <label class="cap">Show</label>
+        <div class="seg" id="trendmode-seg">
+          <button class="seg-btn active" data-mode="rate">Rate</button>
+          <button class="seg-btn" data-mode="vsref">Vs reference</button>
+        </div>
+      </div>
+      <div class="ctl">
+        <label class="cap">Smoothing<span class="info" tabindex="0" title="Reduces the year-to-year noise that comes from small group sizes. Yearly shows the raw single-year rates. 3-yr and 5-yr pool the applicant and accepted counts over a window centred on each year (a sample-weighted average, not a mean of rates). Suppressed years are skipped, never zero-filled.">i</span></label>
+        <div class="seg" id="smooth-seg">
+          <button class="seg-btn active" data-win="1">Yearly</button>
+          <button class="seg-btn" data-win="3">3-yr</button>
+          <button class="seg-btn" data-win="5">5-yr</button>
+        </div>
+      </div>
+      <div class="ctl">
+        <label class="cap">Display</label>
+        <div class="chips">
+          <button class="chip" id="toggle-ci" type="button" title="Show 95% confidence intervals">95% CI</button>
+          <button class="chip" id="toggle-combine" type="button" title="Combine the selected groups into one, vs the reference">Combine Groups</button>
+        </div>
+      </div>
+      <div class="group-list" id="group-list"></div>
+      <p class="note">* aggregate group: broad ethnic groups and Mixed use the source's
+      official published totals; Christian is a transparent sum of its denominations.
+      † incomplete series: some years only in an excluded merged row.</p>
+    </div>
+
+    <!-- Forest controls -->
+    <div id="forest-controls" hidden>
+      <div class="ctl" id="forest-view-ctl" style="margin-top:.2rem">
+        <label class="cap">View</label>
+        <div class="seg" id="forestmode-seg">
+          <button class="seg-btn active" data-mode="chart">Chart</button>
+          <button class="seg-btn" data-mode="table">Table</button>
+        </div>
+      </div>
+      <div class="ctl">
+        <label class="cap">Years pooled</label>
+        <div class="yearrange">
+          <select id="year-from"></select><span>to</span><select id="year-to"></select>
+        </div>
+      </div>
+      <div class="ctl">
+        <label class="cap">Measure</label>
+        <div class="seg" id="measure-seg">
+          <button class="seg-btn active" data-measure="pp">Percentage points</button>
+          <button class="seg-btn" data-measure="rr">Rate ratio</button>
+        </div>
+      </div>
+      <div class="legendkey" id="legendkey"></div>
+    </div>
+
+    <!-- Era controls -->
+    <div id="era-controls" hidden>
+      <div class="ctl" style="margin-top:.2rem">
+        <label class="cap">View</label>
+        <div class="seg" id="eraview-seg">
+          <button class="seg-btn active" data-mode="chart">Chart</button>
+          <button class="seg-btn" data-mode="table">Table</button>
+        </div>
+      </div>
+      <div class="ctl">
+        <label class="cap">Show</label>
+        <div class="seg" id="eramode-seg">
+          <button class="seg-btn active" data-mode="rate">Rate</button>
+          <button class="seg-btn" data-mode="vsref">Vs reference</button>
+        </div>
+      </div>
+      <div class="legendkey" id="era-legend"></div>
+    </div>
+
+    <!-- Representativeness controls -->
+    <div id="rep-controls" hidden>
+      <div class="ctl" style="margin-top:.2rem">
+        <label class="cap">View</label>
+        <div class="seg" id="repmode-seg">
+          <button class="seg-btn active" data-mode="chart">Chart</button>
+          <button class="seg-btn" data-mode="table">Table</button>
+        </div>
+      </div>
+      <div class="ctl">
+        <label class="cap">Applicant years</label>
+        <div class="yearrange">
+          <select id="rep-year-from"></select><span>to</span><select id="rep-year-to"></select>
+        </div>
+      </div>
+      <div class="legendkey" id="rep-legend"></div>
+    </div>
+
+    <!-- Table controls -->
+    <div id="table-controls" hidden>
+      <div class="ctl" style="margin-top:.2rem">
+        <label class="cap">Show</label>
+        <div class="seg" id="tablemode-seg">
+          <button class="seg-btn active" data-mode="pooled">Pooled</button>
+          <button class="seg-btn" data-mode="year">Per year</button>
+        </div>
+      </div>
+      <div class="ctl">
+        <label class="cap">Years</label>
+        <div class="yearrange">
+          <select id="table-year-from"></select><span>to</span><select id="table-year-to"></select>
+        </div>
+      </div>
+      <div class="ctl">
+        <label class="cap">Categories</label>
+        <div class="group-list" id="table-cat-list"></div>
+      </div>
+      <button class="btn" id="table-csv">Download CSV</button>
+    </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <nav class="tabs" id="tabs">
+      <button class="tab active" data-view="trend">Over time</button>
+      <button class="tab" data-view="forest">Compare groups</button>
+      <button class="tab" data-view="era">Before vs after DEI</button>
+      <button class="tab" data-view="rep">Representation</button>
+      <button class="tab" data-view="table">Data table</button>
+      <button class="tab" data-view="about">About &amp; methods</button>
+    </nav>
+    <div class="content">
+      <div class="chartwrap" id="chartwrap">
+        <button class="dl-btn" id="dl-png" title="Download this chart as a PNG">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+            stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/>
+            <path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>Download PNG</button>
+        <div id="chart-head"></div>
+        <div id="chart"></div>
+        <div id="matrix"></div>
+        <div id="table"></div>
+        <p class="note" id="chart-note"></p>
+      </div>
+      <div id="about"><article class="about">
+        <h2>About this explorer</h2>
+        <p class="lead">An interactive, statistically honest look at who applies to, and who is
+        accepted onto, the Doctorate in Clinical Psychology (DClinPsy) in the UK, by applicant
+        characteristic, from 2015 to 2024.</p>
+        <p>The data is the Clearing House for Postgraduate Courses in Clinical Psychology
+        equal-opportunities monitoring, published each year. The "acceptance rate" is the share of
+        applicants in a group who were accepted onto a course. Every number on this site is computed
+        live in your browser from clean counts, and each computation is checked against an offline
+        reference written in R, so there is a gold-standard value behind every figure on screen.</p>
+
+        <h2>How the numbers are made</h2>
+        <p>There are two layers. Offline, R cleans and reconciles the raw published tables, builds the
+        aggregate groups (the broad ethnic groups and Mixed are taken from the source's own published
+        group totals; other aggregates are transparent sums of named sub-groups), and emits two things:
+        the clean per-group, per-year counts that the site loads, and a
+        reference results table that the browser code is unit-tested against. In the browser, the site
+        loads only those counts and computes the rates, intervals, and significance verdicts itself.
+        The browser only ever sums clean counts and skips suppressed cells. It never re-derives the
+        suppression rule, so the one sensitive judgement lives in a single vetted place.</p>
+
+        <h3>Suppressed counts are not zero</h3>
+        <p>Where an accepted count is too small to publish safely, the Clearing House withholds it. A
+        withheld value means "too small to report", not zero. These cells are dropped before any sum,
+        never interpolated and never filled with zero. In the trend charts a suppressed year breaks
+        the line rather than dropping it to the floor, and the table marks suppressed cells explicitly.</p>
+
+        <h2>Uncertainty</h2>
+        <p>Every rate is an estimate from a finite number of applicants, so it carries a confidence
+        interval.</p>
+        <ul>
+          <li><strong>Single rates</strong> use the <strong>Wilson</strong> 95% interval, which
+          behaves well for small counts and rates near 0 or 100%.</li>
+          <li><strong>Differences between two groups</strong> (a group versus its reference) use the
+          <strong>Newcombe</strong> interval, built from the two Wilson intervals.</li>
+          <li><strong>Rate ratios</strong> use the Katz log method.</li>
+          <li><strong>Change between eras</strong> is tested with a <strong>Welch t-test</strong> on
+          the per-year values, which does not assume equal variance.</li>
+        </ul>
+
+        <h2>Significance, and why it is honest</h2>
+        <p>Testing many groups at once inflates the chance of a false positive. We correct for this
+        with the <strong>Benjamini-Hochberg</strong> procedure, which controls the false discovery
+        rate, and the displayed intervals are widened to match, so a bar that excludes "no difference"
+        is exactly the one flagged as significant.</p>
+        <p>Crucially, the size of each correction family is <strong>fixed in advance</strong> by a
+        pre-specified register of families, not by how many groups you happen to have on screen. This
+        prevents significance-shopping: you cannot make a result appear or disappear by changing the
+        selection. Because the family size is pinned, a group can be significant in the pooled "All
+        groups" view but not within its own smaller family, since the correction differs. British
+        Welsh is the known borderline case.</p>
+        <p><strong>Reading the colour:</strong> red always means a statistically significant
+        difference, and grey means not significant. Direction (better or worse than the reference) is
+        shown by position, sign, or the direction of an arrow, never by colour. This keeps the
+        significant findings unambiguous at a glance.</p>
+
+        <h2>Eras: pre-DEI versus DEI</h2>
+        <p>The "Pre-DEI vs DEI" view compares the pre-DEI years (2015 to 2019) with the DEI years
+        (2021 to 2024). Each era value is the mean of that group's per-year rates or gaps, with a 95%
+        interval, and the change is tested on those per-year values. <strong>2020 is treated as the
+        changeover year and sits in neither era.</strong> In the other views 2020 is a normal,
+        fully-included year; the trend charts simply shade 2021 onward to mark the DEI era visually.</p>
+
+        <h2>Representativeness</h2>
+        <p>This view asks a different question: does the applicant and accepted pool look like the
+        population it is drawn from? Shares are compared to a population benchmark and shown as the
+        difference from it (a bar to the right is over-represented, to the left under-represented).
+        Benchmarks come from the 2021 Census (England and Wales) unless stated, and are rebased to the
+        "answered" population so they sit on the same base as the applicant data, which excludes prefer
+        not to say.</p>
+        <h3>Disability is age-adjusted</h3>
+        <p>Disability prevalence rises steeply with age, and applicants are young, so the
+        whole-population rate (about 18%) is the wrong yardstick. Instead we take the Census
+        age-specific disability rates (Equality-Act limited a lot or a little) and re-weight them by
+        the applicant, and separately the accepted, age profile. This is <strong>indirect
+        standardisation</strong>, and it gives an age-matched expected rate of about 12%. It adjusts
+        for age only, not for the definition gap (the Census measures day-to-day limitation while
+        applicants self-report condition types) or for sex.</p>
+        <h3>Socio-economic background uses POLAR</h3>
+        <p>The socio-economic measure is POLAR, which groups areas by the share of young people who
+        enter higher education, assigned from an applicant's home area. The five quintiles are equal
+        fifths of the young population by construction, so a representative pool would sit at 20% per
+        quintile, the benchmark used here. Quintile 1 is the lowest-participation, most disadvantaged
+        areas. It is an area-based proxy, not a measure of individual circumstances.</p>
+        <h3>Other caveats</h3>
+        <ul>
+          <li>For detailed ethnicity, British English, Scottish and Welsh are combined as White
+          British, which the Census does not split by nation.</li>
+          <li>Benchmarks other than disability are all-ages, so for a young graduate pool they
+          slightly understate representation.</li>
+          <li>The Census covers England and Wales, while applicants are UK-wide.</li>
+        </ul>
+
+        <h2>What this cannot tell you</h2>
+        <ul>
+          <li>The published data is one characteristic at a time. It cannot show
+          intersections (for example ethnicity within a socio-economic quintile).</li>
+          <li>Acceptance gaps are associations, not causes. They do not by themselves identify where
+          in the process a disparity arises, nor why.</li>
+          <li>Group labels and categories are the Clearing House's own, and some are self-reported.</li>
+        </ul>
+
+        <h2>Glossary</h2>
+        <dl class="gloss">
+          <dt>Acceptance rate</dt><dd>Share of applicants in a group accepted onto a course.</dd>
+          <dt>pp (percentage points)</dt><dd>The arithmetic difference between two percentages. From
+          40% to 43% is 3 pp.</dd>
+          <dt>Reference group</dt><dd>The group each other group is compared against for a
+          characteristic (for example British English for ethnicity).</dd>
+          <dt>Wilson / Newcombe interval</dt><dd>95% confidence intervals for a single rate, and for a
+          difference between two rates.</dd>
+          <dt>Benjamini-Hochberg</dt><dd>A correction that controls the false discovery rate when many
+          groups are tested together.</dd>
+          <dt>POLAR</dt><dd>Participation Of Local Areas: an area-based measure of how many young
+          people enter higher education, in five equal quintiles.</dd>
+          <dt>DEI era</dt><dd>Here, the 2021 to 2024 application cycles. 2020 is the changeover year.</dd>
+        </dl>
+
+        <h2>How this was built</h2>
+        <p>This explorer was built by a single author working with an AI coding assistant
+        (Claude). In the interest of transparency, here is what that involved.</p>
+        <h3>Done by the author</h3>
+        <ul>
+          <li>Conceiving the project, sourcing the Clearing House data and the Census benchmarks,
+          and deciding which questions to ask.</li>
+          <li>The statistical and editorial judgements: which groups to compare and against which
+          reference, the pre-specified significance families and the decision to fix their size in
+          advance, the choice of effect measures, the era definitions, the suppression handling, the
+          decision to age-adjust disability and to use the POLAR 20% baseline, and which comparisons
+          to leave out (for example marital status).</li>
+          <li>Running the R pipeline and checking its output.</li>
+          <li>Reviewing the results and the wording, and deciding what to publish.</li>
+        </ul>
+        <h3>Done with AI assistance</h3>
+        <ul>
+          <li>Writing the code: the R cleaning and statistics pipeline, the browser application, and
+          porting the statistical methods (Wilson, Newcombe, Benjamini-Hochberg, rate ratios, the
+          Welch t-test, the disability age-standardisation) into JavaScript so they run live.</li>
+          <li>Building the interface, the charts and this page, and drafting explanatory text, which
+          the author then edited.</li>
+          <li>Proposing options and trade-offs for the author to weigh and decide on.</li>
+        </ul>
+        <p>AI assistants can and do make mistakes, so none of the figures here rely on trusting the
+        generated code. Every statistic the browser computes is checked against an independent
+        reference implemented in R, matched to eight decimal places, and the full data chain is
+        verified end to end: the source tables reconcile to the clean counts the site loads, and the
+        live browser calculations reproduce the R reference exactly. The R layer is the gold standard;
+        the AI-written browser code only ever has to reproduce it, and where the two disagree the R
+        reference wins and the build does not ship.</p>
+        <p>The AI accelerated the building, not the judgement. The analytical decisions are
+        the author's, and the arithmetic is held to an offline standard rather than taken on trust.</p>
+
+        <div class="src">
+          <p>Source: Clearing House for Postgraduate Courses in Clinical Psychology,
+          equal-opportunities data 2015 to 2024. Census benchmarks: Office for National Statistics,
+          Census 2021 (England and Wales). Charts and analysis are computed live and verified against
+          an offline R reference.</p>
+          <p>Built for <a href="https://noncogito.substack.com/" target="_blank"
+          rel="noopener">noncogito.substack.com</a>. House style: significance is red, direction is
+          shown separately; "pp" for percentage points.</p>
+          <p>If this is useful, you can support the work:</p>
+          <a class="kofi-btn" href="https://ko-fi.com/Q5Q51YZ8GK" target="_blank" rel="noopener"
+            title="Support this work on Ko-fi">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 3h13a2 2 0 0 1 2 2v1h1a3 3 0 0 1 0 6h-1.2A6 6 0 0 1 13 17H8a6 6 0 0 1-6-6V5a2 2 0 0 1 2-2zm15 7a1 1 0 0 0 0-2h-1v2h1zM3 20h17a1 1 0 0 1 0 2H3a1 1 0 0 1 0-2z"/></svg>Support this project</a>
+        </div>
+      </article></div>
+    </div>
+  </main>
+</div>
+
+<a class="kofi-btn kofi-float" href="https://ko-fi.com/Q5Q51YZ8GK" target="_blank" rel="noopener"
+  title="Support this project on Ko-fi">
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 3h13a2 2 0 0 1 2 2v1h1a3 3 0 0 1 0 6h-1.2A6 6 0 0 1 13 17H8a6 6 0 0 1-6-6V5a2 2 0 0 1 2-2zm15 7a1 1 0 0 0 0-2h-1v2h1zM3 20h17a1 1 0 0 1 0 2H3a1 1 0 0 1 0-2z"/></svg><span class="kofi-label">Support this project</span></a>
+
+<script src="js/plotly.min.js" charset="utf-8"></script>
+<script src="js/stats.js"></script>
+<script src="data.js"></script>
+<script src="census.js"></script>
+<script src="js/explorer.js"></script>
+</body>
+</html>

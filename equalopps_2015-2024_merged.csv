@@ -1,0 +1,892 @@
+Year,Section,Category,applicants_n,accepted_n,note,source
+2015,AGE,20-24 years,927,114,,equalopps_workbook
+2015,AGE,25-29 years,1727,373,,equalopps_workbook
+2015,AGE,30-34 years,548,62,,equalopps_workbook
+2015,AGE,35-39 years,184,23,,equalopps_workbook
+2015,AGE,40-44 years,103,10,,equalopps_workbook
+2015,AGE,45-49 years,51,,,equalopps_workbook
+2015,AGE,50-54 years,13,0,,equalopps_workbook
+2015,AGE,55 and over,6,0,,equalopps_workbook
+2015,AGE,Prefer not to say,6,0,,equalopps_workbook
+2016,AGE,20-24 years,969,107,,equalopps_workbook
+2016,AGE,25-29 years,1692,355,Acceptance values moved here from misaligned 'Prefer not to say' row above; success rate recomputed,equalopps_workbook
+2016,AGE,30-34 years,541,96,,equalopps_workbook
+2016,AGE,35-39 years,197,15,,equalopps_workbook
+2016,AGE,40-44 years,98,6,,equalopps_workbook
+2016,AGE,45-49 years,48,6,,equalopps_workbook
+2016,AGE,"50-54 years, 55 and over",16,0,,equalopps_workbook
+2016,AGE,Prefer not to say,10,0,Acceptance values reassigned to '25-29 years' row; set to 0 here (true value suppressed in source),equalopps_workbook
+2017,AGE,20-24 years,1045,132,,equalopps_workbook
+2017,AGE,25-29 years,1806,339,Acceptance values moved here from misaligned 'Prefer not to say' row above; success rate recomputed,equalopps_workbook
+2017,AGE,30-34 years,522,73,,equalopps_workbook
+2017,AGE,35-39 years,209,24,,equalopps_workbook
+2017,AGE,40-44 years,109,7,,equalopps_workbook
+2017,AGE,45-49 years,60,6,,equalopps_workbook
+2017,AGE,"50-54 years, 55 and over",17,,,equalopps_workbook
+2017,AGE,Prefer not to say,12,0,Acceptance values reassigned to '25-29 years' row; set to 0 here (true value suppressed in source),equalopps_workbook
+2018,AGE,20-24 years,963,126,,equalopps_workbook
+2018,AGE,25-29 years,1858,343,Acceptance values moved here from misaligned 'Prefer not to say' row above; success rate recomputed,equalopps_workbook
+2018,AGE,30-34 years,556,75,,equalopps_workbook
+2018,AGE,35-39 years,209,28,,equalopps_workbook
+2018,AGE,40-44 years,78,10,,equalopps_workbook
+2018,AGE,45-49 years,67,7,,equalopps_workbook
+2018,AGE,50-54 years. 55 and over,20,,,equalopps_workbook
+2018,AGE,Prefer not to say,14,0,Acceptance values reassigned to '25-29 years' row; set to 0 here (true value suppressed in source),equalopps_workbook
+2019,AGE,20-24 years,1001,116,,equalopps_workbook
+2019,AGE,25-29 years,1985,391,Acceptance values moved here from misaligned 'Prefer not to say' row above; success rate recomputed,equalopps_workbook
+2019,AGE,30-34 years,539,77,,equalopps_workbook
+2019,AGE,35-39 years,201,12,,equalopps_workbook
+2019,AGE,40-44 years,95,11,,equalopps_workbook
+2019,AGE,45-49 years,68,,,equalopps_workbook
+2019,AGE,50-54 years,17,,,equalopps_workbook
+2019,AGE,55 and over,6,0,,equalopps_workbook
+2019,AGE,Prefer not to say,13,0,Acceptance values reassigned to '25-29 years' row; set to 0 here (true value suppressed in source),equalopps_workbook
+2020,AGE,20-24 years,996,141,,equalopps_workbook
+2020,AGE,25-29 years,2075,471,Acceptance values moved here from misaligned 'Prefer not to say' row above; success rate recomputed,equalopps_workbook
+2020,AGE,30-34 years,590,106,,equalopps_workbook
+2020,AGE,35-39 years,234,29,,equalopps_workbook
+2020,AGE,40-44 years,93,15,,equalopps_workbook
+2020,AGE,45-49 years,70,,,equalopps_workbook
+2020,AGE,50-54 years,21,,,equalopps_workbook
+2020,AGE,55 and over,9,0,,equalopps_workbook
+2020,AGE,Prefer not to say,11,0,Acceptance values reassigned to '25-29 years' row; set to 0 here (true value suppressed in source),equalopps_workbook
+2021,AGE,20-24 years,1014,178,,equalopps_workbook
+2021,AGE,25-29 years,2289,609,Acceptance values moved here from misaligned 'Prefer not to say' row above; success rate recomputed,equalopps_workbook
+2021,AGE,30-34 years,637,143,,equalopps_workbook
+2021,AGE,35-39 years,233,32,,equalopps_workbook
+2021,AGE,40-44 years,120,14,,equalopps_workbook
+2021,AGE,45-49 years,84,9,,equalopps_workbook
+2021,AGE,50-54 years,19,,,equalopps_workbook
+2021,AGE,55 and over,9,0,,equalopps_workbook
+2021,AGE,Prefer not to say,15,0,Acceptance values reassigned to '25-29 years' row; set to 0 here (true value suppressed in source),equalopps_workbook
+2022,AGE,20-24 years,1025,190,,equalopps_workbook
+2022,AGE,25-29 years,2356,709,Acceptance values moved here from misaligned 'Prefer not to say' row above; success rate recomputed,equalopps_workbook
+2022,AGE,30-34 years,631,162,,equalopps_workbook
+2022,AGE,35-39 years,272,55,,equalopps_workbook
+2022,AGE,40-44 years,137,9,,equalopps_workbook
+2022,AGE,45-49 years,67,10,,equalopps_workbook
+2022,AGE,50-54 years,21,,,equalopps_workbook
+2022,AGE,55 and over,8,,,equalopps_workbook
+2022,AGE,Prefer not to say,7,0,Acceptance values reassigned to '25-29 years' row; set to 0 here (true value suppressed in source),equalopps_workbook
+2023,AGE,20-24 years,1160,215,,equalopps_workbook
+2023,AGE,25-29 years,2553,716,,equalopps_workbook
+2023,AGE,30-34 years,687,170,,equalopps_workbook
+2023,AGE,35-39 years,275,43,,equalopps_workbook
+2023,AGE,40-44 years,165,20,,equalopps_workbook
+2023,AGE,45-49 years,80,9,,equalopps_workbook
+2023,AGE,50-54 years,25,,,equalopps_workbook
+2023,AGE,55 and over,12,,,equalopps_workbook
+2023,AGE,Prefer not to say,33,8,,equalopps_workbook
+2024,AGE,20-24 years,1244,210,,equalopps_workbook
+2024,AGE,25-29 years,2893,709,,equalopps_workbook
+2024,AGE,30-34 years,797,156,,equalopps_workbook
+2024,AGE,35-39 years,293,47,,equalopps_workbook
+2024,AGE,40-44 years,199,17,,equalopps_workbook
+2024,AGE,45-49 years,102,8,,equalopps_workbook
+2024,AGE,50-54 years,33,,,equalopps_workbook
+2024,AGE,55 and over,10,,,equalopps_workbook
+2024,AGE,Prefer not to say,32,7,,equalopps_workbook
+2015,DEPENDANTS,Has dependants,381,33,,equalopps_workbook
+2015,DEPENDANTS,No dependants,3156,544,,equalopps_workbook
+2015,DEPENDANTS,Prefer not to say,28,5,,equalopps_workbook
+2016,DEPENDANTS,Has dependants,348,42,,equalopps_workbook
+2016,DEPENDANTS,No dependants,3200,543,Acceptance values moved here from misaligned 'Prefer not to say' row above; success rate recomputed,equalopps_workbook
+2016,DEPENDANTS,Prefer not to say,23,0,Acceptance values reassigned to 'No dependants' row; set to 0 here (true value suppressed in source),equalopps_workbook
+2017,DEPENDANTS,Has dependants,362,34,,equalopps_workbook
+2017,DEPENDANTS,No dependants,3396,547,Acceptance values moved here from misaligned 'Prefer not to say' row above; success rate recomputed,equalopps_workbook
+2017,DEPENDANTS,Prefer not to say,22,0,Acceptance values reassigned to 'No dependants' row; set to 0 here (true value suppressed in source),equalopps_workbook
+2018,DEPENDANTS,Has dependants,380,47,,equalopps_workbook
+2018,DEPENDANTS,No dependants,3367,539,,equalopps_workbook
+2018,DEPENDANTS,Prefer not to say,18,3,,equalopps_workbook
+2019,DEPENDANTS,Has dependants,385,38,,equalopps_workbook
+2019,DEPENDANTS,No dependants,3510,569,Acceptance values moved here from misaligned 'Prefer not to say' row above; success rate recomputed,equalopps_workbook
+2019,DEPENDANTS,Prefer not to say,30,0,Acceptance values reassigned to 'No dependants' row; set to 0 here (true value suppressed in source),equalopps_workbook
+2020,DEPENDANTS,Has dependants,423,42,,equalopps_workbook
+2020,DEPENDANTS,No dependants,3652,713,,equalopps_workbook
+2020,DEPENDANTS,Prefer not to say,24,7,,equalopps_workbook
+2021,DEPENDANTS,Has dependants,489,61,,equalopps_workbook
+2021,DEPENDANTS,No dependants,3899,924,Acceptance values moved here from misaligned 'Prefer not to say' row above; success rate recomputed,equalopps_workbook
+2021,DEPENDANTS,Prefer not to say,32,0,Acceptance values reassigned to 'No dependants' row; set to 0 here (true value suppressed in source),equalopps_workbook
+2022,DEPENDANTS,Has dependants,493,70,,equalopps_workbook
+2022,DEPENDANTS,No dependants,3993,1052,,equalopps_workbook
+2022,DEPENDANTS,Prefer not to say,38,13,,equalopps_workbook
+2023,DEPENDANTS,Has dependants,577,68,,equalopps_workbook
+2023,DEPENDANTS,No dependants,4350,1101,,equalopps_workbook
+2023,DEPENDANTS,Prefer not to say,63,12,,equalopps_workbook
+2024,DEPENDANTS,Has dependants,636,82,,equalopps_workbook
+2024,DEPENDANTS,No dependants,4910,1064,,equalopps_workbook
+2024,DEPENDANTS,Prefer not to say,57,8,,equalopps_workbook
+2015,DISABILITY,"Blind/partially sighted, Disabled (not specified)",12,6,,equalopps_workbook
+2015,DISABILITY,Deaf/hearing impairment,12,,,equalopps_workbook
+2015,DISABILITY,Dyslexia,143,35,,equalopps_workbook
+2015,DISABILITY,Mental health difficulties,24,,,equalopps_workbook
+2015,DISABILITY,No disability,3206,513,,equalopps_workbook
+2015,DISABILITY,Other disability,33,8,,equalopps_workbook
+2015,DISABILITY,Personal care support,0,0,,equalopps_workbook
+2015,DISABILITY,Prefer not to say,42,8,,equalopps_workbook
+2015,DISABILITY,Total with a disability,317,61,,equalopps_workbook
+2015,DISABILITY,Two or more disabilities,22,,,equalopps_workbook
+2015,DISABILITY,"Unseen disability eg diabetes, epilepsy, asthma",59,12,,equalopps_workbook
+2015,DISABILITY,Wheelchair user/mobility difficulties,12,,,equalopps_workbook
+2016,DISABILITY,Blind/partially sighted,7,6,,equalopps_workbook
+2016,DISABILITY,Deaf/hearing impairment,10,,,equalopps_workbook
+2016,DISABILITY,Dyslexia,146,29,,equalopps_workbook
+2016,DISABILITY,Mental health difficulties,35,6,,equalopps_workbook
+2016,DISABILITY,No disability,3186,506,,equalopps_workbook
+2016,DISABILITY,"Other disability, Disabled (not specified)",34,8,,equalopps_workbook
+2016,DISABILITY,Personal care support,0,0,,equalopps_workbook
+2016,DISABILITY,Prefer not to say,47,12,,equalopps_workbook
+2016,DISABILITY,Total with a disability,338,67,,equalopps_workbook
+2016,DISABILITY,Two or more disabilities,27,,,equalopps_workbook
+2016,DISABILITY,"Unseen disability eg diabetes, epilepsy, asthma",72,18,,equalopps_workbook
+2016,DISABILITY,Wheelchair user/mobility difficulties,7,,,equalopps_workbook
+2017,DISABILITY,"Blind/partially sighted, Deaf/hearing impairment",14,7,,equalopps_workbook
+2017,DISABILITY,Disabled (not specified),6,,,equalopps_workbook
+2017,DISABILITY,Dyslexia,159,24,,equalopps_workbook
+2017,DISABILITY,Mental health difficulties,44,,,equalopps_workbook
+2017,DISABILITY,No disability,3365,522,Acceptance values moved here from misaligned 'Prefer not to say' row above; success rate recomputed,equalopps_workbook
+2017,DISABILITY,Other disability,31,5,,equalopps_workbook
+2017,DISABILITY,Personal care support,0,0,,equalopps_workbook
+2017,DISABILITY,Prefer not to say,52,0,Acceptance values reassigned to 'No disability' row; set to 0 here (true value suppressed in source),equalopps_workbook
+2017,DISABILITY,Total with a disability,363,59,,equalopps_workbook
+2017,DISABILITY,Two or more disabilities,34,9,,equalopps_workbook
+2017,DISABILITY,"Unseen disability eg diabetes, epilepsy, asthma",66,14,,equalopps_workbook
+2017,DISABILITY,Wheelchair user/mobility difficulties,9,,,equalopps_workbook
+2018,DISABILITY,"Blind/partially sighted, Deaf/hearing impairment",12,6,,equalopps_workbook
+2018,DISABILITY,Disabled (not specified),5,,,equalopps_workbook
+2018,DISABILITY,Dyslexia,181,19,,equalopps_workbook
+2018,DISABILITY,Mental health difficulties,34,,,equalopps_workbook
+2018,DISABILITY,No disability,3310,519,,equalopps_workbook
+2018,DISABILITY,Other disability,49,10,,equalopps_workbook
+2018,DISABILITY,Personal care support,0,0,,equalopps_workbook
+2018,DISABILITY,Prefer not to say,45,9,,equalopps_workbook
+2018,DISABILITY,Total with a disability,410,61,,equalopps_workbook
+2018,DISABILITY,Two or more disabilities,43,10,,equalopps_workbook
+2018,DISABILITY,"Unseen disability eg diabetes, epilepsy, asthma",76,16,,equalopps_workbook
+2018,DISABILITY,Wheelchair user/mobility difficulties,10,,,equalopps_workbook
+2019,DISABILITY,Deaf/hearing impairment,14,,,equalopps_workbook
+2019,DISABILITY,"Disabled (not specified), Blind/partially sighted",8,7,,equalopps_workbook
+2019,DISABILITY,Dyslexia,194,39,,equalopps_workbook
+2019,DISABILITY,Mental health difficulties,53,7,,equalopps_workbook
+2019,DISABILITY,No disability,3388,520,,equalopps_workbook
+2019,DISABILITY,Other disability,70,,,equalopps_workbook
+2019,DISABILITY,Personal care support,0,0,,equalopps_workbook
+2019,DISABILITY,Prefer not to say,51,7,,equalopps_workbook
+2019,DISABILITY,Total with a disability,486,80,,equalopps_workbook
+2019,DISABILITY,Two or more disabilities,43,15,,equalopps_workbook
+2019,DISABILITY,"Unseen disability eg diabetes, epilepsy, asthma",92,12,,equalopps_workbook
+2019,DISABILITY,Wheelchair user/mobility difficulties,12,,,equalopps_workbook
+2020,DISABILITY,Blind/partially sighted,7,0,,equalopps_workbook
+2020,DISABILITY,Deaf/hearing impairment,14,,,equalopps_workbook
+2020,DISABILITY,Disabled (not specified),10,6,,equalopps_workbook
+2020,DISABILITY,Dyslexia,181,44,,equalopps_workbook
+2020,DISABILITY,Mental health difficulties,72,11,,equalopps_workbook
+2020,DISABILITY,No disability,3512,633,,equalopps_workbook
+2020,DISABILITY,Other disability,75,20,,equalopps_workbook
+2020,DISABILITY,Personal care support,0,0,,equalopps_workbook
+2020,DISABILITY,Prefer not to say,73,21,,equalopps_workbook
+2020,DISABILITY,Total with a disability,514,108,,equalopps_workbook
+2020,DISABILITY,Two or more disabilities,51,7,,equalopps_workbook
+2020,DISABILITY,"Unseen disability eg diabetes, epilepsy, asthma",97,20,,equalopps_workbook
+2020,DISABILITY,Wheelchair user/mobility difficulties,7,,,equalopps_workbook
+2021,DISABILITY,Blind/partially sighted,11,10,,equalopps_workbook
+2021,DISABILITY,Deaf/hearing impairment,14,,,equalopps_workbook
+2021,DISABILITY,Disabled (not specified),6,0,,equalopps_workbook
+2021,DISABILITY,Dyslexia,195,43,,equalopps_workbook
+2021,DISABILITY,Mental health difficulties,87,24,,equalopps_workbook
+2021,DISABILITY,No disability,3751,832,,equalopps_workbook
+2021,DISABILITY,Other disability,75,15,,equalopps_workbook
+2021,DISABILITY,Personal care support,0,0,,equalopps_workbook
+2021,DISABILITY,Prefer not to say,77,14,,equalopps_workbook
+2021,DISABILITY,Total with a disability,592,139,,equalopps_workbook
+2021,DISABILITY,Two or more disabilities,72,17,,equalopps_workbook
+2021,DISABILITY,"Unseen disability eg diabetes, epilepsy, asthma",116,30,,equalopps_workbook
+2021,DISABILITY,Wheelchair user/mobility difficulties,16,,,equalopps_workbook
+2022,DISABILITY,Blind/partially sighted,7,,,equalopps_workbook
+2022,DISABILITY,Deaf/hearing impairment,10,5,,equalopps_workbook
+2022,DISABILITY,Disabled (not specified),10,7,,equalopps_workbook
+2022,DISABILITY,Dyslexia,210,45,,equalopps_workbook
+2022,DISABILITY,Mental health difficulties,131,37,,equalopps_workbook
+2022,DISABILITY,No disability,3725,931,,equalopps_workbook
+2022,DISABILITY,Other disability,90,22,,equalopps_workbook
+2022,DISABILITY,Personal care support,0,0,,equalopps_workbook
+2022,DISABILITY,Prefer not to say,97,24,,equalopps_workbook
+2022,DISABILITY,Total with a disability,702,180,,equalopps_workbook
+2022,DISABILITY,Two or more disabilities,111,34,,equalopps_workbook
+2022,DISABILITY,"Unseen disability eg diabetes, epilepsy, asthma",119,30,,equalopps_workbook
+2022,DISABILITY,Wheelchair user/mobility difficulties,14,,,equalopps_workbook
+2023,DISABILITY,Blind/partially sighted,9,,,equalopps_workbook
+2023,DISABILITY,Deaf/hearing impairment,19,,,equalopps_workbook
+2023,DISABILITY,Dyslexia,220,53,,equalopps_workbook
+2023,DISABILITY,Mental health difficulties,152,43,,equalopps_workbook
+2023,DISABILITY,No disability,4001,915,,equalopps_workbook
+2023,DISABILITY,Other disability,118,37,,equalopps_workbook
+2023,DISABILITY,Personal care support,0,0,,equalopps_workbook
+2023,DISABILITY,Prefer not to say,165,39,,equalopps_workbook
+2023,DISABILITY,Total with a disability,824,227,,equalopps_workbook
+2023,DISABILITY,Two or more disabilities,139,40,,equalopps_workbook
+2023,DISABILITY,"Unseen disability eg diabetes, epilepsy, asthma",149,44,,equalopps_workbook
+2023,DISABILITY,Wheelchair user/mobility difficulties,18,10,,equalopps_workbook
+2024,DISABILITY,Blind/partially sighted,11,,,equalopps_workbook
+2024,DISABILITY,Deaf/hearing impairment,31,,,equalopps_workbook
+2024,DISABILITY,Dyslexia,216,48,,equalopps_workbook
+2024,DISABILITY,Mental health difficulties,138,32,,equalopps_workbook
+2024,DISABILITY,No disability,4457,916,,equalopps_workbook
+2024,DISABILITY,Other disability,194,34,,equalopps_workbook
+2024,DISABILITY,Personal care support,0,0,,equalopps_workbook
+2024,DISABILITY,Prefer not to say,199,38,,equalopps_workbook
+2024,DISABILITY,Total with a disability,947,200,,equalopps_workbook
+2024,DISABILITY,Two or more disabilities,177,36,,equalopps_workbook
+2024,DISABILITY,"Unseen disability eg diabetes, epilepsy, asthma",161,41,,equalopps_workbook
+2024,DISABILITY,Wheelchair user/mobility difficulties,19,9,,equalopps_workbook
+2015,ETHNICITY,African,78,8,,equalopps_workbook
+2015,ETHNICITY,"Asian (not specified), Other Asian background",40,,,equalopps_workbook
+2015,ETHNICITY,Bangladeshi,17,6,,equalopps_workbook
+2015,ETHNICITY,Black (not specified),5,0,,equalopps_workbook
+2015,ETHNICITY,British English,1779,358,,equalopps_workbook
+2015,ETHNICITY,British Scottish,168,37,,equalopps_workbook
+2015,ETHNICITY,British Welsh,111,19,,equalopps_workbook
+2015,ETHNICITY,Caribbean,54,,,equalopps_workbook
+2015,ETHNICITY,Chinese,34,8,,equalopps_workbook
+2015,ETHNICITY,Indian,129,20,,equalopps_workbook
+2015,ETHNICITY,Irish,183,23,,equalopps_workbook
+2015,ETHNICITY,Middle Eastern/North African,28,5,,equalopps_workbook
+2015,ETHNICITY,"Mixed (not specified), Other Mixed background",55,6,,equalopps_workbook
+2015,ETHNICITY,Other Black background,9,,,equalopps_workbook
+2015,ETHNICITY,Other British (white),84,12,,equalopps_workbook
+2015,ETHNICITY,Other White background,403,37,,equalopps_workbook
+2015,ETHNICITY,"Other ethnicity (not specified), Other ethnic background",22,,,equalopps_workbook
+2015,ETHNICITY,Pakistani,56,7,,equalopps_workbook
+2015,ETHNICITY,Prefer not to say,45,5,,equalopps_workbook
+2015,ETHNICITY,Total in the Asian/Asian British/Asian English/Asian Scottish/Asian Welsh group,242,33,,equalopps_workbook
+2015,ETHNICITY,Total in the Black/Black British/Black English/Black Scottish/Black Welsh group,146,8,,equalopps_workbook
+2015,ETHNICITY,Total in the Mixed group,130,19,,equalopps_workbook
+2015,ETHNICITY,Total in the Other group,84,13,,equalopps_workbook
+2015,ETHNICITY,Total in the White group,2918,504,,equalopps_workbook
+2015,ETHNICITY,White & Asian,36,5,,equalopps_workbook
+2015,ETHNICITY,White & Black African,12,8,,equalopps_workbook
+2015,ETHNICITY,White & Black Caribbean,27,,,equalopps_workbook
+2015,ETHNICITY,White (not specified),190,18,,equalopps_workbook
+2016,ETHNICITY,African,88,5,,equalopps_workbook
+2016,ETHNICITY,Asian (not specified),7,,,equalopps_workbook
+2016,ETHNICITY,Bangladeshi,15,8,,equalopps_workbook
+2016,ETHNICITY,"Black (not specified), Other Black background",15,0,,equalopps_workbook
+2016,ETHNICITY,British English,1747,345,,equalopps_workbook
+2016,ETHNICITY,British Scottish,171,29,,equalopps_workbook
+2016,ETHNICITY,British Welsh,120,17,,equalopps_workbook
+2016,ETHNICITY,Caribbean,52,5,,equalopps_workbook
+2016,ETHNICITY,Chinese,31,,,equalopps_workbook
+2016,ETHNICITY,Indian,104,13,,equalopps_workbook
+2016,ETHNICITY,Irish,167,20,,equalopps_workbook
+2016,ETHNICITY,Middle Eastern/North African,31,7,,equalopps_workbook
+2016,ETHNICITY,Mixed (not specified),5,0,Acceptance values reassigned to 'Other Mixed background' row; set to 0 here (true value suppressed in source),equalopps_workbook
+2016,ETHNICITY,Other Asian background,37,,,equalopps_workbook
+2016,ETHNICITY,Other British (white),81,22,,equalopps_workbook
+2016,ETHNICITY,Other Mixed background,71,12,Acceptance values moved here from misaligned 'Mixed (not specified)' row above; success rate recomputed,equalopps_workbook
+2016,ETHNICITY,Other White background,395,47,,equalopps_workbook
+2016,ETHNICITY,"Other ethnicity (not specified), Other ethnic background",24,,,equalopps_workbook
+2016,ETHNICITY,Pakistani,63,5,,equalopps_workbook
+2016,ETHNICITY,Prefer not to say,43,11,,equalopps_workbook
+2016,ETHNICITY,Total in the Asian/Asian British/Asian English/Asian Scottish/Asian Welsh group,226,26,,equalopps_workbook
+2016,ETHNICITY,Total in the Black/Black British/Black English/Black Scottish/Black Welsh group,155,10,,equalopps_workbook
+2016,ETHNICITY,Total in the Mixed group,151,30,,equalopps_workbook
+2016,ETHNICITY,Total in the Other group,86,7,,equalopps_workbook
+2016,ETHNICITY,Total in the White group,2910,501,,equalopps_workbook
+2016,ETHNICITY,White & Asian,44,9,,equalopps_workbook
+2016,ETHNICITY,White & Black African,7,0,Acceptance values reassigned to 'White & Black Caribbean' row; set to 0 here (true value suppressed in source),equalopps_workbook
+2016,ETHNICITY,White & Black Caribbean,24,9,Acceptance values moved here from misaligned 'White & Black African' row above; success rate recomputed,equalopps_workbook
+2016,ETHNICITY,White (not specified),229,21,,equalopps_workbook
+2017,ETHNICITY,African,87,10,,equalopps_workbook
+2017,ETHNICITY,Asian (not specified),7,,,equalopps_workbook
+2017,ETHNICITY,Bangladeshi,25,8,,equalopps_workbook
+2017,ETHNICITY,"Black (not specified), Other Black background",5,0,,equalopps_workbook
+2017,ETHNICITY,British English,1874,346,,equalopps_workbook
+2017,ETHNICITY,British Scottish,191,38,,equalopps_workbook
+2017,ETHNICITY,British Welsh,130,30,,equalopps_workbook
+2017,ETHNICITY,Caribbean,60,,,equalopps_workbook
+2017,ETHNICITY,Chinese,37,,,equalopps_workbook
+2017,ETHNICITY,Indian,124,5,,equalopps_workbook
+2017,ETHNICITY,Irish,203,25,,equalopps_workbook
+2017,ETHNICITY,Middle Eastern/North African,25,7,,equalopps_workbook
+2017,ETHNICITY,Mixed (not specified),6,,,equalopps_workbook
+2017,ETHNICITY,Other Asian background,50,,,equalopps_workbook
+2017,ETHNICITY,Other British (white),78,15,,equalopps_workbook
+2017,ETHNICITY,Other Mixed background,70,15,,equalopps_workbook
+2017,ETHNICITY,Other White background,413,37,,equalopps_workbook
+2017,ETHNICITY,Other ethnic background,19,,,equalopps_workbook
+2017,ETHNICITY,Other ethnicity (not specified),7,,,equalopps_workbook
+2017,ETHNICITY,Pakistani,72,6,,equalopps_workbook
+2017,ETHNICITY,Prefer not to say,45,7,,equalopps_workbook
+2017,ETHNICITY,Total in the Asian/Asian British/Asian English/Asian Scottish/Asian Welsh group,278,19,,equalopps_workbook
+2017,ETHNICITY,Total in the Black/Black British/Black English/Black Scottish/Black Welsh group,152,10,,equalopps_workbook
+2017,ETHNICITY,Total in the Mixed group,154,26,,equalopps_workbook
+2017,ETHNICITY,Total in the Other group,88,7,,equalopps_workbook
+2017,ETHNICITY,Total in the White group,3063,512,,equalopps_workbook
+2017,ETHNICITY,White & Asian,46,5,,equalopps_workbook
+2017,ETHNICITY,White & Black African,9,6,,equalopps_workbook
+2017,ETHNICITY,White & Black Caribbean,23,,,equalopps_workbook
+2017,ETHNICITY,White (not specified),174,21,,equalopps_workbook
+2018,ETHNICITY,African,94,8,,equalopps_workbook
+2018,ETHNICITY,Asian (not specified),7,,,equalopps_workbook
+2018,ETHNICITY,Bangladeshi,29,,,equalopps_workbook
+2018,ETHNICITY,"Black (not specified), Other Black background",9,0,,equalopps_workbook
+2018,ETHNICITY,British English,1928,354,,equalopps_workbook
+2018,ETHNICITY,British Scottish,193,34,,equalopps_workbook
+2018,ETHNICITY,British Welsh,129,19,,equalopps_workbook
+2018,ETHNICITY,Caribbean,60,6,,equalopps_workbook
+2018,ETHNICITY,Chinese,34,6,,equalopps_workbook
+2018,ETHNICITY,Indian,121,16,,equalopps_workbook
+2018,ETHNICITY,Irish,194,28,,equalopps_workbook
+2018,ETHNICITY,Middle Eastern/North African,28,6,,equalopps_workbook
+2018,ETHNICITY,"Mixed (not specified), Other Mixed background",71,12,,equalopps_workbook
+2018,ETHNICITY,Other Asian background,43,,,equalopps_workbook
+2018,ETHNICITY,Other British (white),72,16,,equalopps_workbook
+2018,ETHNICITY,Other White background,394,40,,equalopps_workbook
+2018,ETHNICITY,"Other ethnicity (not specified), Other ethnic background",28,,,equalopps_workbook
+2018,ETHNICITY,Pakistani,64,8,,equalopps_workbook
+2018,ETHNICITY,Prefer not to say,52,8,,equalopps_workbook
+2018,ETHNICITY,Total in the Asian/Asian British/Asian English/Asian Scottish/Asian Welsh group,264,24,,equalopps_workbook
+2018,ETHNICITY,Total in the Black/Black British/Black English/Black Scottish/Black Welsh group,163,14,,equalopps_workbook
+2018,ETHNICITY,Total in the Mixed group,151,24,,equalopps_workbook
+2018,ETHNICITY,Total in the Other group,90,12,,equalopps_workbook
+2018,ETHNICITY,Total in the White group,3045,507,,equalopps_workbook
+2018,ETHNICITY,White & Asian,43,12,,equalopps_workbook
+2018,ETHNICITY,White & Black African,12,,,equalopps_workbook
+2018,ETHNICITY,White & Black Caribbean,25,,,equalopps_workbook
+2018,ETHNICITY,White (not specified),135,16,,equalopps_workbook
+2019,ETHNICITY,African,107,12,,equalopps_workbook
+2019,ETHNICITY,Asian (not specified),14,,,equalopps_workbook
+2019,ETHNICITY,Bangladeshi,25,7,,equalopps_workbook
+2019,ETHNICITY,Black (not specified),6,,,equalopps_workbook
+2019,ETHNICITY,British English,1985,362,,equalopps_workbook
+2019,ETHNICITY,British Scottish,186,30,,equalopps_workbook
+2019,ETHNICITY,British Welsh,119,25,,equalopps_workbook
+2019,ETHNICITY,Caribbean,63,6,,equalopps_workbook
+2019,ETHNICITY,Chinese,27,10,,equalopps_workbook
+2019,ETHNICITY,Indian,142,9,,equalopps_workbook
+2019,ETHNICITY,Irish,190,30,,equalopps_workbook
+2019,ETHNICITY,Middle Eastern/North African,26,6,,equalopps_workbook
+2019,ETHNICITY,"Mixed (not specified), Other Mixed background",69,13,,equalopps_workbook
+2019,ETHNICITY,Other Asian background,38,,,equalopps_workbook
+2019,ETHNICITY,Other Black background,6,,,equalopps_workbook
+2019,ETHNICITY,Other British (white),73,17,,equalopps_workbook
+2019,ETHNICITY,Other White background,430,39,,equalopps_workbook
+2019,ETHNICITY,"Other ethnicity (not specified), Other ethnic background",34,,,equalopps_workbook
+2019,ETHNICITY,Pakistani,88,5,,equalopps_workbook
+2019,ETHNICITY,Prefer not to say,58,6,,equalopps_workbook
+2019,ETHNICITY,Total in the Asian/Asian British/Asian English/Asian Scottish/Asian Welsh group,307,21,,equalopps_workbook
+2019,ETHNICITY,Total in the Black/Black British/Black English/Black Scottish/Black Welsh group,182,18,,equalopps_workbook
+2019,ETHNICITY,Total in the Mixed group,171,28,,equalopps_workbook
+2019,ETHNICITY,Total in the Other group,87,16,,equalopps_workbook
+2019,ETHNICITY,Total in the White group,3120,518,,equalopps_workbook
+2019,ETHNICITY,White & Asian,54,9,,equalopps_workbook
+2019,ETHNICITY,White & Black African,13,6,,equalopps_workbook
+2019,ETHNICITY,White & Black Caribbean,35,,,equalopps_workbook
+2019,ETHNICITY,White (not specified),137,15,,equalopps_workbook
+2020,ETHNICITY,African,137,13,,equalopps_workbook
+2020,ETHNICITY,Asian (not specified),18,,,equalopps_workbook
+2020,ETHNICITY,Bangladeshi,32,7,,equalopps_workbook
+2020,ETHNICITY,Black (not specified),6,,,equalopps_workbook
+2020,ETHNICITY,British English,2008,418,,equalopps_workbook
+2020,ETHNICITY,British Scottish,179,35,,equalopps_workbook
+2020,ETHNICITY,British Welsh,126,25,,equalopps_workbook
+2020,ETHNICITY,Caribbean,68,14,,equalopps_workbook
+2020,ETHNICITY,Chinese,39,10,,equalopps_workbook
+2020,ETHNICITY,Indian,138,27,,equalopps_workbook
+2020,ETHNICITY,Irish,172,32,,equalopps_workbook
+2020,ETHNICITY,Middle Eastern/North African,37,12,,equalopps_workbook
+2020,ETHNICITY,"Mixed (not specified), Other Mixed background",71,7,,equalopps_workbook
+2020,ETHNICITY,Other Asian background,44,,,equalopps_workbook
+2020,ETHNICITY,Other Black background,9,,,equalopps_workbook
+2020,ETHNICITY,Other British (white),72,13,,equalopps_workbook
+2020,ETHNICITY,Other White background,461,81,,equalopps_workbook
+2020,ETHNICITY,"Other ethnicity (not specified), Other ethnic background",27,,,equalopps_workbook
+2020,ETHNICITY,Pakistani,105,9,,equalopps_workbook
+2020,ETHNICITY,Prefer not to say,69,11,,equalopps_workbook
+2020,ETHNICITY,Total in the Asian/Asian British/Asian English/Asian Scottish/Asian Welsh group,337,43,,equalopps_workbook
+2020,ETHNICITY,Total in the Black/Black British/Black English/Black Scottish/Black Welsh group,220,27,,equalopps_workbook
+2020,ETHNICITY,Total in the Mixed group,177,32,,equalopps_workbook
+2020,ETHNICITY,Total in the Other group,103,22,,equalopps_workbook
+2020,ETHNICITY,Total in the White group,3193,627,,equalopps_workbook
+2020,ETHNICITY,White & Asian,48,16,,equalopps_workbook
+2020,ETHNICITY,White & Black African,17,0,,equalopps_workbook
+2020,ETHNICITY,White & Black Caribbean,41,9,,equalopps_workbook
+2020,ETHNICITY,White (not specified),175,23,,equalopps_workbook
+2021,ETHNICITY,African,157,39,,equalopps_workbook
+2021,ETHNICITY,Asian (not specified),18,16,,equalopps_workbook
+2021,ETHNICITY,Bangladeshi,35,6,,equalopps_workbook
+2021,ETHNICITY,Black (not specified),7,,,equalopps_workbook
+2021,ETHNICITY,British English,2103,512,,equalopps_workbook
+2021,ETHNICITY,British Scottish,212,39,,equalopps_workbook
+2021,ETHNICITY,British Welsh,153,29,,equalopps_workbook
+2021,ETHNICITY,Caribbean,84,17,,equalopps_workbook
+2021,ETHNICITY,Chinese,36,11,,equalopps_workbook
+2021,ETHNICITY,Indian,147,29,,equalopps_workbook
+2021,ETHNICITY,Irish,188,43,,equalopps_workbook
+2021,ETHNICITY,Middle Eastern/North African,53,5,,equalopps_workbook
+2021,ETHNICITY,"Mixed (not specified), Other Mixed background",87,19,,equalopps_workbook
+2021,ETHNICITY,Other Asian background,68,,,equalopps_workbook
+2021,ETHNICITY,Other Black background,12,,,equalopps_workbook
+2021,ETHNICITY,Other British (white),81,24,,equalopps_workbook
+2021,ETHNICITY,Other White background,471,75,,equalopps_workbook
+2021,ETHNICITY,"Other ethnicity (not specified), Other ethnic background",46,10,,equalopps_workbook
+2021,ETHNICITY,Pakistani,111,22,,equalopps_workbook
+2021,ETHNICITY,Prefer not to say,72,22,,equalopps_workbook
+2021,ETHNICITY,Total in the Asian/Asian British/Asian English/Asian Scottish/Asian Welsh group,379,73,,equalopps_workbook
+2021,ETHNICITY,Total in the Black/Black British/Black English/Black Scottish/Black Welsh group,260,56,,equalopps_workbook
+2021,ETHNICITY,Total in the Mixed group,211,56,,equalopps_workbook
+2021,ETHNICITY,Total in the Other group,135,26,,equalopps_workbook
+2021,ETHNICITY,Total in the White group,3363,752,,equalopps_workbook
+2021,ETHNICITY,White & Asian,63,20,,equalopps_workbook
+2021,ETHNICITY,White & Black African,23,6,,equalopps_workbook
+2021,ETHNICITY,White & Black Caribbean,38,11,,equalopps_workbook
+2021,ETHNICITY,White (not specified),155,30,,equalopps_workbook
+2022,ETHNICITY,African,165,27,,equalopps_workbook
+2022,ETHNICITY,Asian (not specified),10,0,Acceptance values reassigned to 'Other Asian background' row; set to 0 here (true value suppressed in source),equalopps_workbook
+2022,ETHNICITY,Bangladeshi,36,10,,equalopps_workbook
+2022,ETHNICITY,"Black (not specified), Other Black background",15,7,,equalopps_workbook
+2022,ETHNICITY,British English,2115,571,,equalopps_workbook
+2022,ETHNICITY,British Scottish,191,44,,equalopps_workbook
+2022,ETHNICITY,British Welsh,154,35,,equalopps_workbook
+2022,ETHNICITY,Caribbean,79,26,,equalopps_workbook
+2022,ETHNICITY,Chinese,34,5,,equalopps_workbook
+2022,ETHNICITY,Indian,201,48,,equalopps_workbook
+2022,ETHNICITY,Irish,180,46,,equalopps_workbook
+2022,ETHNICITY,Middle Eastern/North African,48,16,,equalopps_workbook
+2022,ETHNICITY,Mixed (not specified),5,0,Acceptance values reassigned to 'Other Mixed background' row; set to 0 here (true value suppressed in source),equalopps_workbook
+2022,ETHNICITY,Other Asian background,75,16,Acceptance values moved here from misaligned 'Asian (not specified)' row above; success rate recomputed,equalopps_workbook
+2022,ETHNICITY,Other British (white),88,22,,equalopps_workbook
+2022,ETHNICITY,Other Mixed background,84,20,Acceptance values moved here from misaligned 'Mixed (not specified)' row above; success rate recomputed,equalopps_workbook
+2022,ETHNICITY,Other White background,491,120,,equalopps_workbook
+2022,ETHNICITY,"Other ethnicity (not specified), Other ethnic background",55,13,,equalopps_workbook
+2022,ETHNICITY,Pakistani,136,28,,equalopps_workbook
+2022,ETHNICITY,Prefer not to say,80,18,,equalopps_workbook
+2022,ETHNICITY,Total in the Asian/Asian British/Asian English/Asian Scottish/Asian Welsh group,458,102,,equalopps_workbook
+2022,ETHNICITY,Total in the Black/Black British/Black English/Black Scottish/Black Welsh group,259,60,,equalopps_workbook
+2022,ETHNICITY,Total in the Mixed group,225,59,,equalopps_workbook
+2022,ETHNICITY,Total in the Other group,137,34,,equalopps_workbook
+2022,ETHNICITY,Total in the White group,3365,862,,equalopps_workbook
+2022,ETHNICITY,White & Asian,67,20,,equalopps_workbook
+2022,ETHNICITY,White & Black African,28,6,,equalopps_workbook
+2022,ETHNICITY,White & Black Caribbean,41,13,,equalopps_workbook
+2022,ETHNICITY,White (not specified),146,24,,equalopps_workbook
+2023,ETHNICITY,African,184,37,,equalopps_workbook
+2023,ETHNICITY,Bangladeshi,53,11,,equalopps_workbook
+2023,ETHNICITY,British English,2396,632,,equalopps_workbook
+2023,ETHNICITY,British Scottish,231,52,,equalopps_workbook
+2023,ETHNICITY,British Welsh,177,39,,equalopps_workbook
+2023,ETHNICITY,Caribbean,69,16,,equalopps_workbook
+2023,ETHNICITY,Chinese,49,8,,equalopps_workbook
+2023,ETHNICITY,Indian,226,51,,equalopps_workbook
+2023,ETHNICITY,Irish,180,34,,equalopps_workbook
+2023,ETHNICITY,Middle Eastern/North African,56,11,,equalopps_workbook
+2023,ETHNICITY,Other Asian background,83,18,,equalopps_workbook
+2023,ETHNICITY,Other Black background,15,,,equalopps_workbook
+2023,ETHNICITY,Other British (white),113,30,,equalopps_workbook
+2023,ETHNICITY,Other Mixed background,118,33,,equalopps_workbook
+2023,ETHNICITY,Other White background,528,105,,equalopps_workbook
+2023,ETHNICITY,Other ethnic background,57,5,,equalopps_workbook
+2023,ETHNICITY,Pakistani,178,25,,equalopps_workbook
+2023,ETHNICITY,Prefer not to say,110,20,,equalopps_workbook
+2023,ETHNICITY,Total in the Asian/Asian British/Asian English/Asian Scottish/Asian Welsh group,540,105,,equalopps_workbook
+2023,ETHNICITY,Total in the Black/Black British/Black English/Black Scottish/Black Welsh group,268,53,,equalopps_workbook
+2023,ETHNICITY,Total in the Mixed group,285,87,,equalopps_workbook
+2023,ETHNICITY,Total in the Other group,162,24,,equalopps_workbook
+2023,ETHNICITY,Total in the White group,3625,892,,equalopps_workbook
+2023,ETHNICITY,White & Asian,97,30,,equalopps_workbook
+2023,ETHNICITY,White & Black African,20,8,,equalopps_workbook
+2023,ETHNICITY,White & Black Caribbean,50,16,,equalopps_workbook
+2024,ETHNICITY,African,212,41,,equalopps_workbook
+2024,ETHNICITY,Bangladeshi,59,13,,equalopps_workbook
+2024,ETHNICITY,British English,2636,604,,equalopps_workbook
+2024,ETHNICITY,British Scottish,284,56,,equalopps_workbook
+2024,ETHNICITY,British Welsh,212,45,,equalopps_workbook
+2024,ETHNICITY,Caribbean,81,15,,equalopps_workbook
+2024,ETHNICITY,Chinese,63,15,,equalopps_workbook
+2024,ETHNICITY,Indian,228,49,,equalopps_workbook
+2024,ETHNICITY,Irish,169,30,,equalopps_workbook
+2024,ETHNICITY,Middle Eastern/North African,87,16,,equalopps_workbook
+2024,ETHNICITY,Other Asian background,115,21,,equalopps_workbook
+2024,ETHNICITY,Other Black background,17,,,equalopps_workbook
+2024,ETHNICITY,Other British (white),116,21,,equalopps_workbook
+2024,ETHNICITY,Other Mixed background,144,30,,equalopps_workbook
+2024,ETHNICITY,Other White background,577,90,,equalopps_workbook
+2024,ETHNICITY,Other ethnic background,79,19,,equalopps_workbook
+2024,ETHNICITY,Pakistani,201,33,,equalopps_workbook
+2024,ETHNICITY,Prefer not to say,125,19,,equalopps_workbook
+2024,ETHNICITY,Total in the Asian/Asian British/Asian English/Asian Scottish/Asian Welsh group,603,116,,equalopps_workbook
+2024,ETHNICITY,Total in the Black/Black British/Black English/Black Scottish/Black Welsh group,310,56,,equalopps_workbook
+2024,ETHNICITY,Total in the Mixed group,342,67,,equalopps_workbook
+2024,ETHNICITY,Total in the Other group,229,50,,equalopps_workbook
+2024,ETHNICITY,Total in the White group,3994,846,,equalopps_workbook
+2024,ETHNICITY,White & Asian,105,22,,equalopps_workbook
+2024,ETHNICITY,White & Black African,30,15,,equalopps_workbook
+2024,ETHNICITY,White & Black Caribbean,63,,,equalopps_workbook
+2015,GENDER,Female,2922,498,Acceptance values moved here from misaligned 'Prefer not to say' row above; success rate recomputed,equalopps_workbook
+2015,GENDER,Male,633,84,,equalopps_workbook
+2015,GENDER,Prefer not to say,10,0,Acceptance values reassigned to 'Female' row; set to 0 here (true value suppressed in source),equalopps_workbook
+2016,GENDER,Female,2934,492,Acceptance values moved here from misaligned 'Prefer not to say' row above; success rate recomputed,equalopps_workbook
+2016,GENDER,Male,625,93,,equalopps_workbook
+2016,GENDER,Prefer not to say,12,0,Acceptance values reassigned to 'Female' row; set to 0 here (true value suppressed in source),equalopps_workbook
+2017,GENDER,Female,3088,498,Acceptance values moved here from misaligned 'Prefer not to say' row above; success rate recomputed,equalopps_workbook
+2017,GENDER,Male,678,83,,equalopps_workbook
+2017,GENDER,Prefer not to say,14,0,Acceptance values reassigned to 'Female' row; set to 0 here (true value suppressed in source),equalopps_workbook
+2018,GENDER,Female,3103,484,Acceptance values moved here from misaligned 'Prefer not to say' row above; success rate recomputed,equalopps_workbook
+2018,GENDER,Male,644,105,,equalopps_workbook
+2018,GENDER,Prefer not to say,18,0,Acceptance values reassigned to 'Female' row; set to 0 here (true value suppressed in source),equalopps_workbook
+2019,GENDER,Female,3233,504,Acceptance values moved here from misaligned 'Prefer not to say' row above; success rate recomputed,equalopps_workbook
+2019,GENDER,Male,677,103,,equalopps_workbook
+2019,GENDER,Prefer not to say,15,0,Acceptance values reassigned to 'Female' row; set to 0 here (true value suppressed in source),equalopps_workbook
+2020,GENDER,Female,3393,636,,equalopps_workbook
+2020,GENDER,Male,679,120,,equalopps_workbook
+2020,GENDER,Prefer not to say,27,6,,equalopps_workbook
+2021,GENDER,Female,3677,845,,equalopps_workbook
+2021,GENDER,Male,715,132,,equalopps_workbook
+2021,GENDER,Prefer not to say,28,8,,equalopps_workbook
+2022,GENDER,Female,3743,973,,equalopps_workbook
+2022,GENDER,Male,735,150,,equalopps_workbook
+2022,GENDER,Prefer not to say,46,12,,equalopps_workbook
+2023,GENDER,Female,4083,989,,equalopps_workbook
+2023,GENDER,Male,839,173,,equalopps_workbook
+2023,GENDER,Prefer not to say,68,19,,equalopps_workbook
+2024,GENDER,Female,4619,965,,equalopps_workbook
+2024,GENDER,Male,915,179,,equalopps_workbook
+2024,GENDER,Prefer not to say,69,10,,equalopps_workbook
+2015,MARITAL STATUS,"Divorced/Separated, Widowed",59,8,,equalopps_workbook
+2015,MARITAL STATUS,Married/civil partnership/co-habiting,1186,226,,equalopps_workbook
+2015,MARITAL STATUS,Prefer not to say,40,6,,equalopps_workbook
+2015,MARITAL STATUS,Single,2280,342,,equalopps_workbook
+2016,MARITAL STATUS,"Divorced/Separated, Widowed",49,5,,equalopps_workbook
+2016,MARITAL STATUS,Married/civil partnership/co-habiting,1160,214,,equalopps_workbook
+2016,MARITAL STATUS,Prefer not to say,40,9,,equalopps_workbook
+2016,MARITAL STATUS,Single,2322,357,,equalopps_workbook
+2017,MARITAL STATUS,"Divorced/Separated, Widowed",52,,,equalopps_workbook
+2017,MARITAL STATUS,Married/civil partnership/co-habiting,1202,208,,equalopps_workbook
+2017,MARITAL STATUS,Prefer not to say,59,9,,equalopps_workbook
+2017,MARITAL STATUS,Single,2467,364,,equalopps_workbook
+2018,MARITAL STATUS,"Divorced/Separated, Widowed",55,,,equalopps_workbook
+2018,MARITAL STATUS,Married/civil partnership/co-habiting,1239,214,,equalopps_workbook
+2018,MARITAL STATUS,Prefer not to say,58,12,,equalopps_workbook
+2018,MARITAL STATUS,Single,2413,363,,equalopps_workbook
+2019,MARITAL STATUS,"Divorced/Separated, Widowed",56,,,equalopps_workbook
+2019,MARITAL STATUS,Married/civil partnership/co-habiting,1269,226,,equalopps_workbook
+2019,MARITAL STATUS,Prefer not to say,53,12,,equalopps_workbook
+2019,MARITAL STATUS,Single,2547,369,,equalopps_workbook
+2020,MARITAL STATUS,"Divorced/Separated, Widowed",64,,,equalopps_workbook
+2020,MARITAL STATUS,Married/civil partnership/co-habiting,1303,278,,equalopps_workbook
+2020,MARITAL STATUS,Prefer not to say,58,14,,equalopps_workbook
+2020,MARITAL STATUS,Single,2674,470,,equalopps_workbook
+2021,MARITAL STATUS,"Divorced/Separated, Widowed",72,8,,equalopps_workbook
+2021,MARITAL STATUS,Married/civil partnership/co-habiting,1417,341,,equalopps_workbook
+2021,MARITAL STATUS,Prefer not to say,72,14,,equalopps_workbook
+2021,MARITAL STATUS,Single,2859,622,,equalopps_workbook
+2022,MARITAL STATUS,"Divorced/Separated, Widowed",73,8,,equalopps_workbook
+2022,MARITAL STATUS,Married/civil partnership/co-habiting,1424,361,,equalopps_workbook
+2022,MARITAL STATUS,Prefer not to say,82,15,,equalopps_workbook
+2022,MARITAL STATUS,Single,2945,751,,equalopps_workbook
+2023,MARITAL STATUS,"Divorced/Separated, Widowed",91,13,,equalopps_workbook
+2023,MARITAL STATUS,Married/civil partnership/co-habiting,1563,384,,equalopps_workbook
+2023,MARITAL STATUS,Prefer not to say,105,25,,equalopps_workbook
+2023,MARITAL STATUS,Single,3231,759,,equalopps_workbook
+2024,MARITAL STATUS,"Divorced/Separated, Widowed",91,6,,equalopps_workbook
+2024,MARITAL STATUS,Married/civil partnership/co-habiting,1726,350,,equalopps_workbook
+2024,MARITAL STATUS,Prefer not to say,101,17,,equalopps_workbook
+2024,MARITAL STATUS,Single,3685,781,,equalopps_workbook
+2015,RELIGION,"Baha'i, Religion (not specified)",18,0,,equalopps_workbook
+2015,RELIGION,Buddhist,39,6,,equalopps_workbook
+2015,RELIGION,Christian - Other,233,17,,equalopps_workbook
+2015,RELIGION,Christian - Protestant,279,49,,equalopps_workbook
+2015,RELIGION,Christian - Roman Catholic,332,37,,equalopps_workbook
+2015,RELIGION,Hindu,55,7,,equalopps_workbook
+2015,RELIGION,"Jewish, Jain",24,8,,equalopps_workbook
+2015,RELIGION,Muslim,121,11,,equalopps_workbook
+2015,RELIGION,No religion,2152,398,,equalopps_workbook
+2015,RELIGION,Other religion,54,9,,equalopps_workbook
+2015,RELIGION,Prefer not to say,225,40,,equalopps_workbook
+2015,RELIGION,Sikh,33,,,equalopps_workbook
+2015,RELIGION,Total with a religion,1188,144,,equalopps_workbook
+2016,RELIGION,"Baha'i, Jain, Religion (not specified)",28,6,,equalopps_workbook
+2016,RELIGION,Buddhist,34,11,,equalopps_workbook
+2016,RELIGION,Christian - Other,229,22,,equalopps_workbook
+2016,RELIGION,Christian - Protestant,263,44,,equalopps_workbook
+2016,RELIGION,Christian - Roman Catholic,308,38,,equalopps_workbook
+2016,RELIGION,Hindu,45,5,,equalopps_workbook
+2016,RELIGION,Jewish,23,,,equalopps_workbook
+2016,RELIGION,Muslim,134,9,,equalopps_workbook
+2016,RELIGION,No religion,2241,414,,equalopps_workbook
+2016,RELIGION,Other religion,36,,,equalopps_workbook
+2016,RELIGION,Prefer not to say,198,36,,equalopps_workbook
+2016,RELIGION,Sikh,32,,,equalopps_workbook
+2016,RELIGION,Total with a religion,1132,135,,equalopps_workbook
+2017,RELIGION,"Baha'i, Jain, Religion (not specified)",38,8,,equalopps_workbook
+2017,RELIGION,Buddhist,47,7,,equalopps_workbook
+2017,RELIGION,Christian - Other,220,13,,equalopps_workbook
+2017,RELIGION,Christian - Protestant,263,41,,equalopps_workbook
+2017,RELIGION,Christian - Roman Catholic,326,40,,equalopps_workbook
+2017,RELIGION,Hindu,53,6,,equalopps_workbook
+2017,RELIGION,Jewish,24,,,equalopps_workbook
+2017,RELIGION,Muslim,151,10,,equalopps_workbook
+2017,RELIGION,No religion,2341,421,,equalopps_workbook
+2017,RELIGION,Other religion,42,,,equalopps_workbook
+2017,RELIGION,Prefer not to say,238,35,,equalopps_workbook
+2017,RELIGION,Sikh,37,,,equalopps_workbook
+2017,RELIGION,Total with a religion,1201,125,,equalopps_workbook
+2018,RELIGION,"Baha'i, Jain, Religion (not specified)",26,8,,equalopps_workbook
+2018,RELIGION,Buddhist,30,8,,equalopps_workbook
+2018,RELIGION,Christian - Other,199,35,,equalopps_workbook
+2018,RELIGION,Christian - Protestant,265,43,,equalopps_workbook
+2018,RELIGION,Christian - Roman Catholic,311,38,,equalopps_workbook
+2018,RELIGION,Hindu,52,,,equalopps_workbook
+2018,RELIGION,Jewish,26,6,,equalopps_workbook
+2018,RELIGION,Muslim,150,10,,equalopps_workbook
+2018,RELIGION,No religion,2400,404,,equalopps_workbook
+2018,RELIGION,Other religion,42,,,equalopps_workbook
+2018,RELIGION,Prefer not to say,223,32,,equalopps_workbook
+2018,RELIGION,Sikh,41,5,,equalopps_workbook
+2018,RELIGION,Total with a religion,1142,153,,equalopps_workbook
+2019,RELIGION,"Baha'i, Jain, Religion (not specified)",42,,,equalopps_workbook
+2019,RELIGION,Buddhist,29,8,,equalopps_workbook
+2019,RELIGION,Christian - Other,219,22,,equalopps_workbook
+2019,RELIGION,Christian - Protestant,250,45,,equalopps_workbook
+2019,RELIGION,Christian - Roman Catholic,294,32,,equalopps_workbook
+2019,RELIGION,Hindu,53,,,equalopps_workbook
+2019,RELIGION,Jewish,17,5,,equalopps_workbook
+2019,RELIGION,Muslim,180,19,,equalopps_workbook
+2019,RELIGION,No religion,2504,426,,equalopps_workbook
+2019,RELIGION,Other religion,37,5,,equalopps_workbook
+2019,RELIGION,Prefer not to say,254,45,,equalopps_workbook
+2019,RELIGION,Sikh,46,,,equalopps_workbook
+2019,RELIGION,Total with a religion,1167,136,,equalopps_workbook
+2020,RELIGION,"Baha'i, Jain, Buddhist",40,5,,equalopps_workbook
+2020,RELIGION,Christian - Other,245,37,,equalopps_workbook
+2020,RELIGION,Christian - Protestant,244,40,,equalopps_workbook
+2020,RELIGION,Christian - Roman Catholic,298,33,,equalopps_workbook
+2020,RELIGION,Hindu,45,10,,equalopps_workbook
+2020,RELIGION,Jewish,21,5,,equalopps_workbook
+2020,RELIGION,Muslim,186,15,,equalopps_workbook
+2020,RELIGION,No religion,2637,548,,equalopps_workbook
+2020,RELIGION,Other religion,44,12,,equalopps_workbook
+2020,RELIGION,Prefer not to say,250,45,,equalopps_workbook
+2020,RELIGION,Religion (not specified),46,5,,equalopps_workbook
+2020,RELIGION,Sikh,43,7,,equalopps_workbook
+2020,RELIGION,Total with a religion,1212,169,,equalopps_workbook
+2021,RELIGION,"Baha'i, Jain, Buddhist",34,7,,equalopps_workbook
+2021,RELIGION,Christian - Other,250,61,,equalopps_workbook
+2021,RELIGION,Christian - Protestant,261,56,,equalopps_workbook
+2021,RELIGION,Christian - Roman Catholic,314,66,,equalopps_workbook
+2021,RELIGION,Hindu,57,8,,equalopps_workbook
+2021,RELIGION,Jewish,26,9,,equalopps_workbook
+2021,RELIGION,Muslim,238,42,,equalopps_workbook
+2021,RELIGION,No religion,2818,648,,equalopps_workbook
+2021,RELIGION,Other religion,69,14,,equalopps_workbook
+2021,RELIGION,Prefer not to say,279,58,,equalopps_workbook
+2021,RELIGION,Religion (not specified),33,9,,equalopps_workbook
+2021,RELIGION,Sikh,41,7,,equalopps_workbook
+2021,RELIGION,Total with a religion,1323,279,,equalopps_workbook
+2022,RELIGION,"Baha'i, Jain, Religion (not specified)",44,9,,equalopps_workbook
+2022,RELIGION,Buddhist,34,11,,equalopps_workbook
+2022,RELIGION,Christian - Other,247,55,,equalopps_workbook
+2022,RELIGION,Christian - Protestant,252,62,,equalopps_workbook
+2022,RELIGION,Christian - Roman Catholic,302,69,,equalopps_workbook
+2022,RELIGION,Hindu,67,20,,equalopps_workbook
+2022,RELIGION,Jewish,36,14,,equalopps_workbook
+2022,RELIGION,Muslim,280,54,,equalopps_workbook
+2022,RELIGION,No religion,2831,736,,equalopps_workbook
+2022,RELIGION,Other religion,86,24,,equalopps_workbook
+2022,RELIGION,Prefer not to say,286,72,,equalopps_workbook
+2022,RELIGION,Sikh,59,9,,equalopps_workbook
+2022,RELIGION,Total with a religion,1407,327,,equalopps_workbook
+2023,RELIGION,"Baha'i, Jain, Other religion",119,22,,equalopps_workbook
+2023,RELIGION,Buddhist,42,12,,equalopps_workbook
+2023,RELIGION,Christian - Other,315,67,,equalopps_workbook
+2023,RELIGION,Christian - Protestant,281,69,,equalopps_workbook
+2023,RELIGION,Christian - Roman Catholic,294,73,,equalopps_workbook
+2023,RELIGION,Hindu,81,23,,equalopps_workbook
+2023,RELIGION,Jewish,32,11,,equalopps_workbook
+2023,RELIGION,Muslim,374,60,,equalopps_workbook
+2023,RELIGION,No religion,3016,732,,equalopps_workbook
+2023,RELIGION,Prefer not to say,369,97,,equalopps_workbook
+2023,RELIGION,Sikh,67,15,,equalopps_workbook
+2023,RELIGION,Total with a religion,1605,352,,equalopps_workbook
+2024,RELIGION,"Baha'i, Jain, Other religion",150,22,,equalopps_workbook
+2024,RELIGION,Buddhist,48,9,,equalopps_workbook
+2024,RELIGION,Christian - Other,339,50,,equalopps_workbook
+2024,RELIGION,Christian - Protestant,319,69,,equalopps_workbook
+2024,RELIGION,Christian - Roman Catholic,349,55,,equalopps_workbook
+2024,RELIGION,Hindu,93,24,,equalopps_workbook
+2024,RELIGION,Jewish,38,11,,equalopps_workbook
+2024,RELIGION,Muslim,448,77,,equalopps_workbook
+2024,RELIGION,No religion,3334,744,,equalopps_workbook
+2024,RELIGION,Prefer not to say,415,77,,equalopps_workbook
+2024,RELIGION,Sikh,70,16,,equalopps_workbook
+2024,RELIGION,Total with a religion,1854,333,,equalopps_workbook
+2015,RESIDENT,Other EU/EEA,217,10,,equalopps_workbook
+2015,RESIDENT,Other residence,33,0,,equalopps_workbook
+2015,RESIDENT,Prefer not to say,7,0,,equalopps_workbook
+2015,RESIDENT,UK,3308,572,,equalopps_workbook
+2016,RESIDENT,Other EU/EEA,213,14,,equalopps_workbook
+2016,RESIDENT,Other residence,30,,,equalopps_workbook
+2016,RESIDENT,Prefer not to say,7,0,,equalopps_workbook
+2016,RESIDENT,UK,3321,571,,equalopps_workbook
+2017,RESIDENT,Other EU/EEA,200,17,,equalopps_workbook
+2017,RESIDENT,Other residence,32,,,equalopps_workbook
+2017,RESIDENT,Prefer not to say,6,0,,equalopps_workbook
+2017,RESIDENT,UK,3542,564,,equalopps_workbook
+2018,RESIDENT,Other EU/EEA,186,15,,equalopps_workbook
+2018,RESIDENT,Other residence,19,0,,equalopps_workbook
+2018,RESIDENT,Prefer not to say,6,0,Acceptance values reassigned to 'UK' row; set to 0 here (true value suppressed in source),equalopps_workbook
+2018,RESIDENT,UK,3554,574,Acceptance values moved here from misaligned 'Prefer not to say' row above; success rate recomputed,equalopps_workbook
+2019,RESIDENT,Other EU/EEA,176,7,,equalopps_workbook
+2019,RESIDENT,Other residence,44,0,,equalopps_workbook
+2019,RESIDENT,Prefer not to say,8,0,Acceptance values reassigned to 'UK' row; set to 0 here (true value suppressed in source),equalopps_workbook
+2019,RESIDENT,UK,3697,600,Acceptance values moved here from misaligned 'Prefer not to say' row above; success rate recomputed,equalopps_workbook
+2020,RESIDENT,Other EU/EEA,203,22,,equalopps_workbook
+2020,RESIDENT,Other residence,49,0,,equalopps_workbook
+2020,RESIDENT,Prefer not to say,9,0,Acceptance values reassigned to 'UK' row; set to 0 here (true value suppressed in source),equalopps_workbook
+2020,RESIDENT,UK,3838,740,Acceptance values moved here from misaligned 'Prefer not to say' row above; success rate recomputed,equalopps_workbook
+2021,RESIDENT,Other EU/EEA,160,17,,equalopps_workbook
+2021,RESIDENT,Other residence,51,,,equalopps_workbook
+2021,RESIDENT,Prefer not to say,8,0,Acceptance values reassigned to 'UK' row; set to 0 here (true value suppressed in source),equalopps_workbook
+2021,RESIDENT,UK,4201,968,Acceptance values moved here from misaligned 'Prefer not to say' row above; success rate recomputed,equalopps_workbook
+2022,RESIDENT,Other EU/EEA,139,18,,equalopps_workbook
+2022,RESIDENT,Other residence,47,,,equalopps_workbook
+2022,RESIDENT,Prefer not to say,14,0,Acceptance values reassigned to 'UK' row; set to 0 here (true value suppressed in source),equalopps_workbook
+2022,RESIDENT,UK,4324,1117,Acceptance values moved here from misaligned 'Prefer not to say' row above; success rate recomputed,equalopps_workbook
+2023,RESIDENT,Other EU/EEA,102,11,,equalopps_workbook
+2023,RESIDENT,Other residence,61,,,equalopps_workbook
+2023,RESIDENT,Prefer not to say,15,0,Acceptance values reassigned to 'UK' row; set to 0 here (true value suppressed in source),equalopps_workbook
+2023,RESIDENT,UK,4812,1170,Acceptance values moved here from misaligned 'Prefer not to say' row above; success rate recomputed,equalopps_workbook
+2024,RESIDENT,Other EU/EEA,125,15,,equalopps_workbook
+2024,RESIDENT,Other residence,80,,,equalopps_workbook
+2024,RESIDENT,Prefer not to say,23,0,Acceptance values reassigned to 'UK' row; set to 0 here (true value suppressed in source),equalopps_workbook
+2024,RESIDENT,UK,5375,1139,Acceptance values moved here from misaligned 'Prefer not to say' row above; success rate recomputed,equalopps_workbook
+2015,SEXUAL ORIENTATION,Bisexual,83,19,,equalopps_workbook
+2015,SEXUAL ORIENTATION,Gay man,81,12,,equalopps_workbook
+2015,SEXUAL ORIENTATION,Gay woman/lesbian,52,13,,equalopps_workbook
+2015,SEXUAL ORIENTATION,Heterosexual/straight,3206,514,,equalopps_workbook
+2015,SEXUAL ORIENTATION,Other sexual orientation,7,,,equalopps_workbook
+2015,SEXUAL ORIENTATION,Prefer not to say,136,24,,equalopps_workbook
+2016,SEXUAL ORIENTATION,Bisexual,108,22,,equalopps_workbook
+2016,SEXUAL ORIENTATION,Gay man,87,15,,equalopps_workbook
+2016,SEXUAL ORIENTATION,Gay woman/lesbian,59,14,,equalopps_workbook
+2016,SEXUAL ORIENTATION,Heterosexual/straight,3185,510,,equalopps_workbook
+2016,SEXUAL ORIENTATION,Other sexual orientation,13,,,equalopps_workbook
+2016,SEXUAL ORIENTATION,Prefer not to say,119,24,,equalopps_workbook
+2017,SEXUAL ORIENTATION,Bisexual,124,24,,equalopps_workbook
+2017,SEXUAL ORIENTATION,Gay man,94,12,,equalopps_workbook
+2017,SEXUAL ORIENTATION,Gay woman/lesbian,58,6,,equalopps_workbook
+2017,SEXUAL ORIENTATION,Heterosexual/straight,3358,519,,equalopps_workbook
+2017,SEXUAL ORIENTATION,Other sexual orientation,7,,,equalopps_workbook
+2017,SEXUAL ORIENTATION,Prefer not to say,139,20,,equalopps_workbook
+2018,SEXUAL ORIENTATION,Bisexual,171,24,,equalopps_workbook
+2018,SEXUAL ORIENTATION,Gay man,83,21,,equalopps_workbook
+2018,SEXUAL ORIENTATION,Gay woman/lesbian,65,14,,equalopps_workbook
+2018,SEXUAL ORIENTATION,Heterosexual/straight,3263,498,,equalopps_workbook
+2018,SEXUAL ORIENTATION,Other sexual orientation,19,,,equalopps_workbook
+2018,SEXUAL ORIENTATION,Prefer not to say,164,32,,equalopps_workbook
+2019,SEXUAL ORIENTATION,Bisexual,227,39,,equalopps_workbook
+2019,SEXUAL ORIENTATION,Gay man,78,10,,equalopps_workbook
+2019,SEXUAL ORIENTATION,Gay woman/lesbian,60,13,,equalopps_workbook
+2019,SEXUAL ORIENTATION,Heterosexual/straight,3364,511,,equalopps_workbook
+2019,SEXUAL ORIENTATION,Other sexual orientation,19,9,,equalopps_workbook
+2019,SEXUAL ORIENTATION,Prefer not to say,177,25,,equalopps_workbook
+2020,SEXUAL ORIENTATION,Bisexual,263,62,,equalopps_workbook
+2020,SEXUAL ORIENTATION,Gay man,89,21,,equalopps_workbook
+2020,SEXUAL ORIENTATION,Gay woman/lesbian,68,14,,equalopps_workbook
+2020,SEXUAL ORIENTATION,Heterosexual/straight,3449,611,,equalopps_workbook
+2020,SEXUAL ORIENTATION,Other sexual orientation,22,,,equalopps_workbook
+2020,SEXUAL ORIENTATION,Prefer not to say,208,54,,equalopps_workbook
+2021,SEXUAL ORIENTATION,Bisexual,318,79,,equalopps_workbook
+2021,SEXUAL ORIENTATION,Gay man,86,22,,equalopps_workbook
+2021,SEXUAL ORIENTATION,Gay woman/lesbian,76,21,,equalopps_workbook
+2021,SEXUAL ORIENTATION,Heterosexual/straight,3682,801,,equalopps_workbook
+2021,SEXUAL ORIENTATION,Other sexual orientation,41,10,,equalopps_workbook
+2021,SEXUAL ORIENTATION,Prefer not to say,217,52,,equalopps_workbook
+2022,SEXUAL ORIENTATION,Bisexual,508,140,,equalopps_workbook
+2022,SEXUAL ORIENTATION,Gay man,100,26,,equalopps_workbook
+2022,SEXUAL ORIENTATION,Gay woman/lesbian,89,27,,equalopps_workbook
+2022,SEXUAL ORIENTATION,Heterosexual/straight,3527,857,,equalopps_workbook
+2022,SEXUAL ORIENTATION,Other sexual orientation,65,22,,equalopps_workbook
+2022,SEXUAL ORIENTATION,Prefer not to say,235,63,,equalopps_workbook
+2023,SEXUAL ORIENTATION,Bisexual,642,181,,equalopps_workbook
+2023,SEXUAL ORIENTATION,Gay man,121,27,,equalopps_workbook
+2023,SEXUAL ORIENTATION,Gay woman/lesbian,94,30,,equalopps_workbook
+2023,SEXUAL ORIENTATION,Heterosexual/straight,3716,838,,equalopps_workbook
+2023,SEXUAL ORIENTATION,Other sexual orientation,85,26,,equalopps_workbook
+2023,SEXUAL ORIENTATION,Prefer not to say,332,79,,equalopps_workbook
+2024,SEXUAL ORIENTATION,Bisexual,713,178,,equalopps_workbook
+2024,SEXUAL ORIENTATION,Gay man,133,38,,equalopps_workbook
+2024,SEXUAL ORIENTATION,Gay woman/lesbian,109,31,,equalopps_workbook
+2024,SEXUAL ORIENTATION,Heterosexual/straight,4170,805,,equalopps_workbook
+2024,SEXUAL ORIENTATION,Other sexual orientation,100,22,,equalopps_workbook
+2024,SEXUAL ORIENTATION,Prefer not to say,378,80,,equalopps_workbook
+2015,SOCIO-ECONOMIC BACKGROUND,Prefer not to say or Not applicable,1053,131,,equalopps_workbook
+2015,SOCIO-ECONOMIC BACKGROUND,Quintile 1 (lowest participation rate in HE),228,26,,equalopps_workbook
+2015,SOCIO-ECONOMIC BACKGROUND,Quintile 2,344,56,,equalopps_workbook
+2015,SOCIO-ECONOMIC BACKGROUND,Quintile 3,468,72,,equalopps_workbook
+2015,SOCIO-ECONOMIC BACKGROUND,Quintile 4,599,124,,equalopps_workbook
+2015,SOCIO-ECONOMIC BACKGROUND,Quintile 5 (highest participation rate in HE),873,173,,equalopps_workbook
+2016,SOCIO-ECONOMIC BACKGROUND,Prefer not to say or Not applicable,854,101,,equalopps_workbook
+2016,SOCIO-ECONOMIC BACKGROUND,Quintile 1 (lowest participation rate in HE),226,31,,equalopps_workbook
+2016,SOCIO-ECONOMIC BACKGROUND,Quintile 2,399,70,,equalopps_workbook
+2016,SOCIO-ECONOMIC BACKGROUND,Quintile 3,505,90,,equalopps_workbook
+2016,SOCIO-ECONOMIC BACKGROUND,Quintile 4,653,103,,equalopps_workbook
+2016,SOCIO-ECONOMIC BACKGROUND,Quintile 5 (highest participation rate in HE),934,190,,equalopps_workbook
+2017,SOCIO-ECONOMIC BACKGROUND,Prefer not to say or Not applicable,808,84,,equalopps_workbook
+2017,SOCIO-ECONOMIC BACKGROUND,Quintile 1 (lowest participation rate in HE),272,43,,equalopps_workbook
+2017,SOCIO-ECONOMIC BACKGROUND,Quintile 2,424,68,,equalopps_workbook
+2017,SOCIO-ECONOMIC BACKGROUND,Quintile 3,552,72,,equalopps_workbook
+2017,SOCIO-ECONOMIC BACKGROUND,Quintile 4,725,128,,equalopps_workbook
+2017,SOCIO-ECONOMIC BACKGROUND,Quintile 5 (highest participation rate in HE),999,186,,equalopps_workbook
+2018,SOCIO-ECONOMIC BACKGROUND,Prefer not to say or Not applicable,719,84,,equalopps_workbook
+2018,SOCIO-ECONOMIC BACKGROUND,Quintile 1 (lowest participation rate in HE),300,27,,equalopps_workbook
+2018,SOCIO-ECONOMIC BACKGROUND,Quintile 2,421,66,,equalopps_workbook
+2018,SOCIO-ECONOMIC BACKGROUND,Quintile 3,559,92,,equalopps_workbook
+2018,SOCIO-ECONOMIC BACKGROUND,Quintile 4,764,114,,equalopps_workbook
+2018,SOCIO-ECONOMIC BACKGROUND,Quintile 5 (highest participation rate in HE),1002,206,,equalopps_workbook
+2019,SOCIO-ECONOMIC BACKGROUND,Prefer not to say or Not applicable,753,71,,equalopps_workbook
+2019,SOCIO-ECONOMIC BACKGROUND,Quintile 1 (lowest participation rate in HE),318,37,,equalopps_workbook
+2019,SOCIO-ECONOMIC BACKGROUND,Quintile 2,473,71,,equalopps_workbook
+2019,SOCIO-ECONOMIC BACKGROUND,Quintile 3,572,82,,equalopps_workbook
+2019,SOCIO-ECONOMIC BACKGROUND,Quintile 4,775,135,,equalopps_workbook
+2019,SOCIO-ECONOMIC BACKGROUND,Quintile 5 (highest participation rate in HE),1034,211,,equalopps_workbook
+2020,SOCIO-ECONOMIC BACKGROUND,Prefer not to say or Not applicable,799,115,,equalopps_workbook
+2020,SOCIO-ECONOMIC BACKGROUND,Quintile 1 (lowest participation rate in HE),362,49,,equalopps_workbook
+2020,SOCIO-ECONOMIC BACKGROUND,Quintile 2,479,82,,equalopps_workbook
+2020,SOCIO-ECONOMIC BACKGROUND,Quintile 3,631,107,,equalopps_workbook
+2020,SOCIO-ECONOMIC BACKGROUND,Quintile 4,796,167,,equalopps_workbook
+2020,SOCIO-ECONOMIC BACKGROUND,Quintile 5 (highest participation rate in HE),1032,242,,equalopps_workbook
+2021,SOCIO-ECONOMIC BACKGROUND,Prefer not to say or Not applicable,832,140,,equalopps_workbook
+2021,SOCIO-ECONOMIC BACKGROUND,Quintile 1 (lowest participation rate in HE),376,69,,equalopps_workbook
+2021,SOCIO-ECONOMIC BACKGROUND,Quintile 2,567,128,,equalopps_workbook
+2021,SOCIO-ECONOMIC BACKGROUND,Quintile 3,708,146,,equalopps_workbook
+2021,SOCIO-ECONOMIC BACKGROUND,Quintile 4,867,213,,equalopps_workbook
+2021,SOCIO-ECONOMIC BACKGROUND,Quintile 5 (highest participation rate in HE),1070,289,,equalopps_workbook
+2022,SOCIO-ECONOMIC BACKGROUND,Prefer not to say or Not applicable,840,177,,equalopps_workbook
+2022,SOCIO-ECONOMIC BACKGROUND,Quintile 1 (lowest participation rate in HE),403,77,,equalopps_workbook
+2022,SOCIO-ECONOMIC BACKGROUND,Quintile 2,561,138,,equalopps_workbook
+2022,SOCIO-ECONOMIC BACKGROUND,Quintile 3,719,194,,equalopps_workbook
+2022,SOCIO-ECONOMIC BACKGROUND,Quintile 4,881,235,,equalopps_workbook
+2022,SOCIO-ECONOMIC BACKGROUND,Quintile 5 (highest participation rate in HE),1120,314,,equalopps_workbook
+2023,SOCIO-ECONOMIC BACKGROUND,Prefer not to say or Not applicable,1121,212,SES POLAR for this year sourced from the Contextual Admissions page,contextual_admissions
+2023,SOCIO-ECONOMIC BACKGROUND,Quintile 1 (lowest participation rate in HE),472,101,SES POLAR for this year sourced from the Contextual Admissions page,contextual_admissions
+2023,SOCIO-ECONOMIC BACKGROUND,Quintile 2,574,128,SES POLAR for this year sourced from the Contextual Admissions page,contextual_admissions
+2023,SOCIO-ECONOMIC BACKGROUND,Quintile 3,749,186,SES POLAR for this year sourced from the Contextual Admissions page,contextual_admissions
+2023,SOCIO-ECONOMIC BACKGROUND,Quintile 4,910,229,SES POLAR for this year sourced from the Contextual Admissions page,contextual_admissions
+2023,SOCIO-ECONOMIC BACKGROUND,Quintile 5 (highest participation rate in HE),1164,325,SES POLAR for this year sourced from the Contextual Admissions page,contextual_admissions
+2024,SOCIO-ECONOMIC BACKGROUND,Prefer not to say or Not applicable,1231,203,SES POLAR for this year sourced from the Contextual Admissions page,contextual_admissions
+2024,SOCIO-ECONOMIC BACKGROUND,Quintile 1 (lowest participation rate in HE),558,109,SES POLAR for this year sourced from the Contextual Admissions page,contextual_admissions
+2024,SOCIO-ECONOMIC BACKGROUND,Quintile 2,724,141,SES POLAR for this year sourced from the Contextual Admissions page,contextual_admissions
+2024,SOCIO-ECONOMIC BACKGROUND,Quintile 3,794,173,SES POLAR for this year sourced from the Contextual Admissions page,contextual_admissions
+2024,SOCIO-ECONOMIC BACKGROUND,Quintile 4,1027,216,SES POLAR for this year sourced from the Contextual Admissions page,contextual_admissions
+2024,SOCIO-ECONOMIC BACKGROUND,Quintile 5 (highest participation rate in HE),1269,312,SES POLAR for this year sourced from the Contextual Admissions page,contextual_admissions
+2015,TOTALS,TOTALS,3565,582,,equalopps_workbook
+2016,TOTALS,TOTALS,3571,585,,equalopps_workbook
+2017,TOTALS,TOTALS,3780,581,,equalopps_workbook
+2018,TOTALS,TOTALS,3765,589,,equalopps_workbook
+2019,TOTALS,TOTALS,3925,607,,equalopps_workbook
+2020,TOTALS,TOTALS,4099,762,,equalopps_workbook
+2021,TOTALS,TOTALS,4420,985,,equalopps_workbook
+2022,TOTALS,TOTALS,4524,1135,,equalopps_workbook
+2023,TOTALS,TOTALS,4990,1181,,equalopps_workbook
+2024,TOTALS,TOTALS,5603,1154,,equalopps_workbook

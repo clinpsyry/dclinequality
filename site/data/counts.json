@@ -1,0 +1,4170 @@
+{
+  "meta": {
+    "source_file": "equalopps_2015-2024_merged.csv",
+    "generated_at": "2026-06-10T15:16:04",
+    "eras": {
+      "pre_dei": [2015, 2016, 2017, 2018, 2019],
+      "dei": [2021, 2022, 2023, 2024],
+      "excluded": 2020
+    },
+    "references": {
+      "ETHNICITY": "British English",
+      "AGE": "25-29 years",
+      "GENDER": "Female",
+      "RELIGION": "No religion",
+      "SEXUAL ORIENTATION": "Heterosexual/straight",
+      "MARITAL STATUS": "Single",
+      "RESIDENT": "UK",
+      "SOCIO-ECONOMIC BACKGROUND": "Quintile 3",
+      "ETHNIC GROUP (BROAD)": "White"
+    }
+  },
+  "groups": [
+    {
+      "characteristic": "AGE",
+      "group": "20-24 years",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 927,
+          "accepted": 114
+        },
+        {
+          "year": 2016,
+          "applicants": 969,
+          "accepted": 107
+        },
+        {
+          "year": 2017,
+          "applicants": 1045,
+          "accepted": 132
+        },
+        {
+          "year": 2018,
+          "applicants": 963,
+          "accepted": 126
+        },
+        {
+          "year": 2019,
+          "applicants": 1001,
+          "accepted": 116
+        },
+        {
+          "year": 2020,
+          "applicants": 996,
+          "accepted": 141
+        },
+        {
+          "year": 2021,
+          "applicants": 1014,
+          "accepted": 178
+        },
+        {
+          "year": 2022,
+          "applicants": 1025,
+          "accepted": 190
+        },
+        {
+          "year": 2023,
+          "applicants": 1160,
+          "accepted": 215
+        },
+        {
+          "year": 2024,
+          "applicants": 1244,
+          "accepted": 210
+        }
+      ]
+    },
+    {
+      "characteristic": "AGE",
+      "group": "25-29 years",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 1727,
+          "accepted": 373
+        },
+        {
+          "year": 2016,
+          "applicants": 1692,
+          "accepted": 355
+        },
+        {
+          "year": 2017,
+          "applicants": 1806,
+          "accepted": 339
+        },
+        {
+          "year": 2018,
+          "applicants": 1858,
+          "accepted": 343
+        },
+        {
+          "year": 2019,
+          "applicants": 1985,
+          "accepted": 391
+        },
+        {
+          "year": 2020,
+          "applicants": 2075,
+          "accepted": 471
+        },
+        {
+          "year": 2021,
+          "applicants": 2289,
+          "accepted": 609
+        },
+        {
+          "year": 2022,
+          "applicants": 2356,
+          "accepted": 709
+        },
+        {
+          "year": 2023,
+          "applicants": 2553,
+          "accepted": 716
+        },
+        {
+          "year": 2024,
+          "applicants": 2893,
+          "accepted": 709
+        }
+      ]
+    },
+    {
+      "characteristic": "AGE",
+      "group": "30-34 years",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 548,
+          "accepted": 62
+        },
+        {
+          "year": 2016,
+          "applicants": 541,
+          "accepted": 96
+        },
+        {
+          "year": 2017,
+          "applicants": 522,
+          "accepted": 73
+        },
+        {
+          "year": 2018,
+          "applicants": 556,
+          "accepted": 75
+        },
+        {
+          "year": 2019,
+          "applicants": 539,
+          "accepted": 77
+        },
+        {
+          "year": 2020,
+          "applicants": 590,
+          "accepted": 106
+        },
+        {
+          "year": 2021,
+          "applicants": 637,
+          "accepted": 143
+        },
+        {
+          "year": 2022,
+          "applicants": 631,
+          "accepted": 162
+        },
+        {
+          "year": 2023,
+          "applicants": 687,
+          "accepted": 170
+        },
+        {
+          "year": 2024,
+          "applicants": 797,
+          "accepted": 156
+        }
+      ]
+    },
+    {
+      "characteristic": "AGE",
+      "group": "35-39 years",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 184,
+          "accepted": 23
+        },
+        {
+          "year": 2016,
+          "applicants": 197,
+          "accepted": 15
+        },
+        {
+          "year": 2017,
+          "applicants": 209,
+          "accepted": 24
+        },
+        {
+          "year": 2018,
+          "applicants": 209,
+          "accepted": 28
+        },
+        {
+          "year": 2019,
+          "applicants": 201,
+          "accepted": 12
+        },
+        {
+          "year": 2020,
+          "applicants": 234,
+          "accepted": 29
+        },
+        {
+          "year": 2021,
+          "applicants": 233,
+          "accepted": 32
+        },
+        {
+          "year": 2022,
+          "applicants": 272,
+          "accepted": 55
+        },
+        {
+          "year": 2023,
+          "applicants": 275,
+          "accepted": 43
+        },
+        {
+          "year": 2024,
+          "applicants": 293,
+          "accepted": 47
+        }
+      ]
+    },
+    {
+      "characteristic": "AGE",
+      "group": "40-44 years",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 103,
+          "accepted": 10
+        },
+        {
+          "year": 2016,
+          "applicants": 98,
+          "accepted": 6
+        },
+        {
+          "year": 2017,
+          "applicants": 109,
+          "accepted": 7
+        },
+        {
+          "year": 2018,
+          "applicants": 78,
+          "accepted": 10
+        },
+        {
+          "year": 2019,
+          "applicants": 95,
+          "accepted": 11
+        },
+        {
+          "year": 2020,
+          "applicants": 93,
+          "accepted": 15
+        },
+        {
+          "year": 2021,
+          "applicants": 120,
+          "accepted": 14
+        },
+        {
+          "year": 2022,
+          "applicants": 137,
+          "accepted": 9
+        },
+        {
+          "year": 2023,
+          "applicants": 165,
+          "accepted": 20
+        },
+        {
+          "year": 2024,
+          "applicants": 199,
+          "accepted": 17
+        }
+      ]
+    },
+    {
+      "characteristic": "AGE",
+      "group": "45-49 years",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 51,
+          "accepted": null
+        },
+        {
+          "year": 2016,
+          "applicants": 48,
+          "accepted": 6
+        },
+        {
+          "year": 2017,
+          "applicants": 60,
+          "accepted": 6
+        },
+        {
+          "year": 2018,
+          "applicants": 67,
+          "accepted": 7
+        },
+        {
+          "year": 2019,
+          "applicants": 68,
+          "accepted": null
+        },
+        {
+          "year": 2020,
+          "applicants": 70,
+          "accepted": null
+        },
+        {
+          "year": 2021,
+          "applicants": 84,
+          "accepted": 9
+        },
+        {
+          "year": 2022,
+          "applicants": 67,
+          "accepted": 10
+        },
+        {
+          "year": 2023,
+          "applicants": 80,
+          "accepted": 9
+        },
+        {
+          "year": 2024,
+          "applicants": 102,
+          "accepted": 8
+        }
+      ]
+    },
+    {
+      "characteristic": "AGE",
+      "group": "50-54 years",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 13,
+          "accepted": 0
+        },
+        {
+          "year": 2019,
+          "applicants": 17,
+          "accepted": null
+        },
+        {
+          "year": 2020,
+          "applicants": 21,
+          "accepted": null
+        },
+        {
+          "year": 2021,
+          "applicants": 19,
+          "accepted": null
+        },
+        {
+          "year": 2022,
+          "applicants": 21,
+          "accepted": null
+        },
+        {
+          "year": 2023,
+          "applicants": 25,
+          "accepted": null
+        },
+        {
+          "year": 2024,
+          "applicants": 33,
+          "accepted": null
+        }
+      ]
+    },
+    {
+      "characteristic": "AGE",
+      "group": "55 and over",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 6,
+          "accepted": 0
+        },
+        {
+          "year": 2019,
+          "applicants": 6,
+          "accepted": 0
+        },
+        {
+          "year": 2020,
+          "applicants": 9,
+          "accepted": 0
+        },
+        {
+          "year": 2021,
+          "applicants": 9,
+          "accepted": 0
+        },
+        {
+          "year": 2022,
+          "applicants": 8,
+          "accepted": null
+        },
+        {
+          "year": 2023,
+          "applicants": 12,
+          "accepted": null
+        },
+        {
+          "year": 2024,
+          "applicants": 10,
+          "accepted": null
+        }
+      ]
+    },
+    {
+      "characteristic": "AGE",
+      "group": "50-54 years, 55 and over",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2016,
+          "applicants": 16,
+          "accepted": 0
+        },
+        {
+          "year": 2017,
+          "applicants": 17,
+          "accepted": null
+        }
+      ]
+    },
+    {
+      "characteristic": "AGE",
+      "group": "50-54 years. 55 and over",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2018,
+          "applicants": 20,
+          "accepted": null
+        }
+      ]
+    },
+    {
+      "characteristic": "DEPENDANTS",
+      "group": "Has dependants",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 381,
+          "accepted": 33
+        },
+        {
+          "year": 2016,
+          "applicants": 348,
+          "accepted": 42
+        },
+        {
+          "year": 2017,
+          "applicants": 362,
+          "accepted": 34
+        },
+        {
+          "year": 2018,
+          "applicants": 380,
+          "accepted": 47
+        },
+        {
+          "year": 2019,
+          "applicants": 385,
+          "accepted": 38
+        },
+        {
+          "year": 2020,
+          "applicants": 423,
+          "accepted": 42
+        },
+        {
+          "year": 2021,
+          "applicants": 489,
+          "accepted": 61
+        },
+        {
+          "year": 2022,
+          "applicants": 493,
+          "accepted": 70
+        },
+        {
+          "year": 2023,
+          "applicants": 577,
+          "accepted": 68
+        },
+        {
+          "year": 2024,
+          "applicants": 636,
+          "accepted": 82
+        }
+      ]
+    },
+    {
+      "characteristic": "DEPENDANTS",
+      "group": "No dependants",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 3156,
+          "accepted": 544
+        },
+        {
+          "year": 2016,
+          "applicants": 3200,
+          "accepted": 543
+        },
+        {
+          "year": 2017,
+          "applicants": 3396,
+          "accepted": 547
+        },
+        {
+          "year": 2018,
+          "applicants": 3367,
+          "accepted": 539
+        },
+        {
+          "year": 2019,
+          "applicants": 3510,
+          "accepted": 569
+        },
+        {
+          "year": 2020,
+          "applicants": 3652,
+          "accepted": 713
+        },
+        {
+          "year": 2021,
+          "applicants": 3899,
+          "accepted": 924
+        },
+        {
+          "year": 2022,
+          "applicants": 3993,
+          "accepted": 1052
+        },
+        {
+          "year": 2023,
+          "applicants": 4350,
+          "accepted": 1101
+        },
+        {
+          "year": 2024,
+          "applicants": 4910,
+          "accepted": 1064
+        }
+      ]
+    },
+    {
+      "characteristic": "DISABILITY",
+      "group": "Deaf/hearing impairment",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 12,
+          "accepted": null
+        },
+        {
+          "year": 2016,
+          "applicants": 10,
+          "accepted": null
+        },
+        {
+          "year": 2019,
+          "applicants": 14,
+          "accepted": null
+        },
+        {
+          "year": 2020,
+          "applicants": 14,
+          "accepted": null
+        },
+        {
+          "year": 2021,
+          "applicants": 14,
+          "accepted": null
+        },
+        {
+          "year": 2022,
+          "applicants": 10,
+          "accepted": 5
+        },
+        {
+          "year": 2023,
+          "applicants": 19,
+          "accepted": null
+        },
+        {
+          "year": 2024,
+          "applicants": 31,
+          "accepted": null
+        }
+      ]
+    },
+    {
+      "characteristic": "DISABILITY",
+      "group": "Dyslexia",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 143,
+          "accepted": 35
+        },
+        {
+          "year": 2016,
+          "applicants": 146,
+          "accepted": 29
+        },
+        {
+          "year": 2017,
+          "applicants": 159,
+          "accepted": 24
+        },
+        {
+          "year": 2018,
+          "applicants": 181,
+          "accepted": 19
+        },
+        {
+          "year": 2019,
+          "applicants": 194,
+          "accepted": 39
+        },
+        {
+          "year": 2020,
+          "applicants": 181,
+          "accepted": 44
+        },
+        {
+          "year": 2021,
+          "applicants": 195,
+          "accepted": 43
+        },
+        {
+          "year": 2022,
+          "applicants": 210,
+          "accepted": 45
+        },
+        {
+          "year": 2023,
+          "applicants": 220,
+          "accepted": 53
+        },
+        {
+          "year": 2024,
+          "applicants": 216,
+          "accepted": 48
+        }
+      ]
+    },
+    {
+      "characteristic": "DISABILITY",
+      "group": "Mental health difficulties",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 24,
+          "accepted": null
+        },
+        {
+          "year": 2016,
+          "applicants": 35,
+          "accepted": 6
+        },
+        {
+          "year": 2017,
+          "applicants": 44,
+          "accepted": null
+        },
+        {
+          "year": 2018,
+          "applicants": 34,
+          "accepted": null
+        },
+        {
+          "year": 2019,
+          "applicants": 53,
+          "accepted": 7
+        },
+        {
+          "year": 2020,
+          "applicants": 72,
+          "accepted": 11
+        },
+        {
+          "year": 2021,
+          "applicants": 87,
+          "accepted": 24
+        },
+        {
+          "year": 2022,
+          "applicants": 131,
+          "accepted": 37
+        },
+        {
+          "year": 2023,
+          "applicants": 152,
+          "accepted": 43
+        },
+        {
+          "year": 2024,
+          "applicants": 138,
+          "accepted": 32
+        }
+      ]
+    },
+    {
+      "characteristic": "DISABILITY",
+      "group": "No disability",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 3206,
+          "accepted": 513
+        },
+        {
+          "year": 2016,
+          "applicants": 3186,
+          "accepted": 506
+        },
+        {
+          "year": 2017,
+          "applicants": 3365,
+          "accepted": 522
+        },
+        {
+          "year": 2018,
+          "applicants": 3310,
+          "accepted": 519
+        },
+        {
+          "year": 2019,
+          "applicants": 3388,
+          "accepted": 520
+        },
+        {
+          "year": 2020,
+          "applicants": 3512,
+          "accepted": 633
+        },
+        {
+          "year": 2021,
+          "applicants": 3751,
+          "accepted": 832
+        },
+        {
+          "year": 2022,
+          "applicants": 3725,
+          "accepted": 931
+        },
+        {
+          "year": 2023,
+          "applicants": 4001,
+          "accepted": 915
+        },
+        {
+          "year": 2024,
+          "applicants": 4457,
+          "accepted": 916
+        }
+      ]
+    },
+    {
+      "characteristic": "DISABILITY",
+      "group": "Other disability",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 33,
+          "accepted": 8
+        },
+        {
+          "year": 2017,
+          "applicants": 31,
+          "accepted": 5
+        },
+        {
+          "year": 2018,
+          "applicants": 49,
+          "accepted": 10
+        },
+        {
+          "year": 2019,
+          "applicants": 70,
+          "accepted": null
+        },
+        {
+          "year": 2020,
+          "applicants": 75,
+          "accepted": 20
+        },
+        {
+          "year": 2021,
+          "applicants": 75,
+          "accepted": 15
+        },
+        {
+          "year": 2022,
+          "applicants": 90,
+          "accepted": 22
+        },
+        {
+          "year": 2023,
+          "applicants": 118,
+          "accepted": 37
+        },
+        {
+          "year": 2024,
+          "applicants": 194,
+          "accepted": 34
+        }
+      ]
+    },
+    {
+      "characteristic": "DISABILITY",
+      "group": "Personal care support",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 0,
+          "accepted": 0
+        },
+        {
+          "year": 2016,
+          "applicants": 0,
+          "accepted": 0
+        },
+        {
+          "year": 2017,
+          "applicants": 0,
+          "accepted": 0
+        },
+        {
+          "year": 2018,
+          "applicants": 0,
+          "accepted": 0
+        },
+        {
+          "year": 2019,
+          "applicants": 0,
+          "accepted": 0
+        },
+        {
+          "year": 2020,
+          "applicants": 0,
+          "accepted": 0
+        },
+        {
+          "year": 2021,
+          "applicants": 0,
+          "accepted": 0
+        },
+        {
+          "year": 2022,
+          "applicants": 0,
+          "accepted": 0
+        },
+        {
+          "year": 2023,
+          "applicants": 0,
+          "accepted": 0
+        },
+        {
+          "year": 2024,
+          "applicants": 0,
+          "accepted": 0
+        }
+      ]
+    },
+    {
+      "characteristic": "DISABILITY",
+      "group": "Two or more disabilities",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 22,
+          "accepted": null
+        },
+        {
+          "year": 2016,
+          "applicants": 27,
+          "accepted": null
+        },
+        {
+          "year": 2017,
+          "applicants": 34,
+          "accepted": 9
+        },
+        {
+          "year": 2018,
+          "applicants": 43,
+          "accepted": 10
+        },
+        {
+          "year": 2019,
+          "applicants": 43,
+          "accepted": 15
+        },
+        {
+          "year": 2020,
+          "applicants": 51,
+          "accepted": 7
+        },
+        {
+          "year": 2021,
+          "applicants": 72,
+          "accepted": 17
+        },
+        {
+          "year": 2022,
+          "applicants": 111,
+          "accepted": 34
+        },
+        {
+          "year": 2023,
+          "applicants": 139,
+          "accepted": 40
+        },
+        {
+          "year": 2024,
+          "applicants": 177,
+          "accepted": 36
+        }
+      ]
+    },
+    {
+      "characteristic": "DISABILITY",
+      "group": "Unseen disability eg diabetes, epilepsy, asthma",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 59,
+          "accepted": 12
+        },
+        {
+          "year": 2016,
+          "applicants": 72,
+          "accepted": 18
+        },
+        {
+          "year": 2017,
+          "applicants": 66,
+          "accepted": 14
+        },
+        {
+          "year": 2018,
+          "applicants": 76,
+          "accepted": 16
+        },
+        {
+          "year": 2019,
+          "applicants": 92,
+          "accepted": 12
+        },
+        {
+          "year": 2020,
+          "applicants": 97,
+          "accepted": 20
+        },
+        {
+          "year": 2021,
+          "applicants": 116,
+          "accepted": 30
+        },
+        {
+          "year": 2022,
+          "applicants": 119,
+          "accepted": 30
+        },
+        {
+          "year": 2023,
+          "applicants": 149,
+          "accepted": 44
+        },
+        {
+          "year": 2024,
+          "applicants": 161,
+          "accepted": 41
+        }
+      ]
+    },
+    {
+      "characteristic": "DISABILITY",
+      "group": "Wheelchair user/mobility difficulties",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 12,
+          "accepted": null
+        },
+        {
+          "year": 2016,
+          "applicants": 7,
+          "accepted": null
+        },
+        {
+          "year": 2017,
+          "applicants": 9,
+          "accepted": null
+        },
+        {
+          "year": 2018,
+          "applicants": 10,
+          "accepted": null
+        },
+        {
+          "year": 2019,
+          "applicants": 12,
+          "accepted": null
+        },
+        {
+          "year": 2020,
+          "applicants": 7,
+          "accepted": null
+        },
+        {
+          "year": 2021,
+          "applicants": 16,
+          "accepted": null
+        },
+        {
+          "year": 2022,
+          "applicants": 14,
+          "accepted": null
+        },
+        {
+          "year": 2023,
+          "applicants": 18,
+          "accepted": 10
+        },
+        {
+          "year": 2024,
+          "applicants": 19,
+          "accepted": 9
+        }
+      ]
+    },
+    {
+      "characteristic": "DISABILITY",
+      "group": "Blind/partially sighted",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2016,
+          "applicants": 7,
+          "accepted": 6
+        },
+        {
+          "year": 2020,
+          "applicants": 7,
+          "accepted": 0
+        },
+        {
+          "year": 2021,
+          "applicants": 11,
+          "accepted": 10
+        },
+        {
+          "year": 2022,
+          "applicants": 7,
+          "accepted": null
+        },
+        {
+          "year": 2023,
+          "applicants": 9,
+          "accepted": null
+        },
+        {
+          "year": 2024,
+          "applicants": 11,
+          "accepted": null
+        }
+      ]
+    },
+    {
+      "characteristic": "DISABILITY",
+      "group": "Blind/partially sighted, Deaf/hearing impairment",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2017,
+          "applicants": 14,
+          "accepted": 7
+        },
+        {
+          "year": 2018,
+          "applicants": 12,
+          "accepted": 6
+        }
+      ]
+    },
+    {
+      "characteristic": "ETHNICITY",
+      "group": "African",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 78,
+          "accepted": 8
+        },
+        {
+          "year": 2016,
+          "applicants": 88,
+          "accepted": 5
+        },
+        {
+          "year": 2017,
+          "applicants": 87,
+          "accepted": 10
+        },
+        {
+          "year": 2018,
+          "applicants": 94,
+          "accepted": 8
+        },
+        {
+          "year": 2019,
+          "applicants": 107,
+          "accepted": 12
+        },
+        {
+          "year": 2020,
+          "applicants": 137,
+          "accepted": 13
+        },
+        {
+          "year": 2021,
+          "applicants": 157,
+          "accepted": 39
+        },
+        {
+          "year": 2022,
+          "applicants": 165,
+          "accepted": 27
+        },
+        {
+          "year": 2023,
+          "applicants": 184,
+          "accepted": 37
+        },
+        {
+          "year": 2024,
+          "applicants": 212,
+          "accepted": 41
+        }
+      ]
+    },
+    {
+      "characteristic": "ETHNICITY",
+      "group": "Bangladeshi",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 17,
+          "accepted": 6
+        },
+        {
+          "year": 2016,
+          "applicants": 15,
+          "accepted": 8
+        },
+        {
+          "year": 2017,
+          "applicants": 25,
+          "accepted": 8
+        },
+        {
+          "year": 2018,
+          "applicants": 29,
+          "accepted": null
+        },
+        {
+          "year": 2019,
+          "applicants": 25,
+          "accepted": 7
+        },
+        {
+          "year": 2020,
+          "applicants": 32,
+          "accepted": 7
+        },
+        {
+          "year": 2021,
+          "applicants": 35,
+          "accepted": 6
+        },
+        {
+          "year": 2022,
+          "applicants": 36,
+          "accepted": 10
+        },
+        {
+          "year": 2023,
+          "applicants": 53,
+          "accepted": 11
+        },
+        {
+          "year": 2024,
+          "applicants": 59,
+          "accepted": 13
+        }
+      ]
+    },
+    {
+      "characteristic": "ETHNICITY",
+      "group": "British English",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 1779,
+          "accepted": 358
+        },
+        {
+          "year": 2016,
+          "applicants": 1747,
+          "accepted": 345
+        },
+        {
+          "year": 2017,
+          "applicants": 1874,
+          "accepted": 346
+        },
+        {
+          "year": 2018,
+          "applicants": 1928,
+          "accepted": 354
+        },
+        {
+          "year": 2019,
+          "applicants": 1985,
+          "accepted": 362
+        },
+        {
+          "year": 2020,
+          "applicants": 2008,
+          "accepted": 418
+        },
+        {
+          "year": 2021,
+          "applicants": 2103,
+          "accepted": 512
+        },
+        {
+          "year": 2022,
+          "applicants": 2115,
+          "accepted": 571
+        },
+        {
+          "year": 2023,
+          "applicants": 2396,
+          "accepted": 632
+        },
+        {
+          "year": 2024,
+          "applicants": 2636,
+          "accepted": 604
+        }
+      ]
+    },
+    {
+      "characteristic": "ETHNICITY",
+      "group": "British Scottish",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 168,
+          "accepted": 37
+        },
+        {
+          "year": 2016,
+          "applicants": 171,
+          "accepted": 29
+        },
+        {
+          "year": 2017,
+          "applicants": 191,
+          "accepted": 38
+        },
+        {
+          "year": 2018,
+          "applicants": 193,
+          "accepted": 34
+        },
+        {
+          "year": 2019,
+          "applicants": 186,
+          "accepted": 30
+        },
+        {
+          "year": 2020,
+          "applicants": 179,
+          "accepted": 35
+        },
+        {
+          "year": 2021,
+          "applicants": 212,
+          "accepted": 39
+        },
+        {
+          "year": 2022,
+          "applicants": 191,
+          "accepted": 44
+        },
+        {
+          "year": 2023,
+          "applicants": 231,
+          "accepted": 52
+        },
+        {
+          "year": 2024,
+          "applicants": 284,
+          "accepted": 56
+        }
+      ]
+    },
+    {
+      "characteristic": "ETHNICITY",
+      "group": "British Welsh",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 111,
+          "accepted": 19
+        },
+        {
+          "year": 2016,
+          "applicants": 120,
+          "accepted": 17
+        },
+        {
+          "year": 2017,
+          "applicants": 130,
+          "accepted": 30
+        },
+        {
+          "year": 2018,
+          "applicants": 129,
+          "accepted": 19
+        },
+        {
+          "year": 2019,
+          "applicants": 119,
+          "accepted": 25
+        },
+        {
+          "year": 2020,
+          "applicants": 126,
+          "accepted": 25
+        },
+        {
+          "year": 2021,
+          "applicants": 153,
+          "accepted": 29
+        },
+        {
+          "year": 2022,
+          "applicants": 154,
+          "accepted": 35
+        },
+        {
+          "year": 2023,
+          "applicants": 177,
+          "accepted": 39
+        },
+        {
+          "year": 2024,
+          "applicants": 212,
+          "accepted": 45
+        }
+      ]
+    },
+    {
+      "characteristic": "ETHNICITY",
+      "group": "Caribbean",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 54,
+          "accepted": null
+        },
+        {
+          "year": 2016,
+          "applicants": 52,
+          "accepted": 5
+        },
+        {
+          "year": 2017,
+          "applicants": 60,
+          "accepted": null
+        },
+        {
+          "year": 2018,
+          "applicants": 60,
+          "accepted": 6
+        },
+        {
+          "year": 2019,
+          "applicants": 63,
+          "accepted": 6
+        },
+        {
+          "year": 2020,
+          "applicants": 68,
+          "accepted": 14
+        },
+        {
+          "year": 2021,
+          "applicants": 84,
+          "accepted": 17
+        },
+        {
+          "year": 2022,
+          "applicants": 79,
+          "accepted": 26
+        },
+        {
+          "year": 2023,
+          "applicants": 69,
+          "accepted": 16
+        },
+        {
+          "year": 2024,
+          "applicants": 81,
+          "accepted": 15
+        }
+      ]
+    },
+    {
+      "characteristic": "ETHNICITY",
+      "group": "Chinese",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 34,
+          "accepted": 8
+        },
+        {
+          "year": 2016,
+          "applicants": 31,
+          "accepted": null
+        },
+        {
+          "year": 2017,
+          "applicants": 37,
+          "accepted": null
+        },
+        {
+          "year": 2018,
+          "applicants": 34,
+          "accepted": 6
+        },
+        {
+          "year": 2019,
+          "applicants": 27,
+          "accepted": 10
+        },
+        {
+          "year": 2020,
+          "applicants": 39,
+          "accepted": 10
+        },
+        {
+          "year": 2021,
+          "applicants": 36,
+          "accepted": 11
+        },
+        {
+          "year": 2022,
+          "applicants": 34,
+          "accepted": 5
+        },
+        {
+          "year": 2023,
+          "applicants": 49,
+          "accepted": 8
+        },
+        {
+          "year": 2024,
+          "applicants": 63,
+          "accepted": 15
+        }
+      ]
+    },
+    {
+      "characteristic": "ETHNICITY",
+      "group": "Indian",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 129,
+          "accepted": 20
+        },
+        {
+          "year": 2016,
+          "applicants": 104,
+          "accepted": 13
+        },
+        {
+          "year": 2017,
+          "applicants": 124,
+          "accepted": 5
+        },
+        {
+          "year": 2018,
+          "applicants": 121,
+          "accepted": 16
+        },
+        {
+          "year": 2019,
+          "applicants": 142,
+          "accepted": 9
+        },
+        {
+          "year": 2020,
+          "applicants": 138,
+          "accepted": 27
+        },
+        {
+          "year": 2021,
+          "applicants": 147,
+          "accepted": 29
+        },
+        {
+          "year": 2022,
+          "applicants": 201,
+          "accepted": 48
+        },
+        {
+          "year": 2023,
+          "applicants": 226,
+          "accepted": 51
+        },
+        {
+          "year": 2024,
+          "applicants": 228,
+          "accepted": 49
+        }
+      ]
+    },
+    {
+      "characteristic": "ETHNICITY",
+      "group": "Irish",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 183,
+          "accepted": 23
+        },
+        {
+          "year": 2016,
+          "applicants": 167,
+          "accepted": 20
+        },
+        {
+          "year": 2017,
+          "applicants": 203,
+          "accepted": 25
+        },
+        {
+          "year": 2018,
+          "applicants": 194,
+          "accepted": 28
+        },
+        {
+          "year": 2019,
+          "applicants": 190,
+          "accepted": 30
+        },
+        {
+          "year": 2020,
+          "applicants": 172,
+          "accepted": 32
+        },
+        {
+          "year": 2021,
+          "applicants": 188,
+          "accepted": 43
+        },
+        {
+          "year": 2022,
+          "applicants": 180,
+          "accepted": 46
+        },
+        {
+          "year": 2023,
+          "applicants": 180,
+          "accepted": 34
+        },
+        {
+          "year": 2024,
+          "applicants": 169,
+          "accepted": 30
+        }
+      ]
+    },
+    {
+      "characteristic": "ETHNICITY",
+      "group": "Middle Eastern/North African",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 28,
+          "accepted": 5
+        },
+        {
+          "year": 2016,
+          "applicants": 31,
+          "accepted": 7
+        },
+        {
+          "year": 2017,
+          "applicants": 25,
+          "accepted": 7
+        },
+        {
+          "year": 2018,
+          "applicants": 28,
+          "accepted": 6
+        },
+        {
+          "year": 2019,
+          "applicants": 26,
+          "accepted": 6
+        },
+        {
+          "year": 2020,
+          "applicants": 37,
+          "accepted": 12
+        },
+        {
+          "year": 2021,
+          "applicants": 53,
+          "accepted": 5
+        },
+        {
+          "year": 2022,
+          "applicants": 48,
+          "accepted": 16
+        },
+        {
+          "year": 2023,
+          "applicants": 56,
+          "accepted": 11
+        },
+        {
+          "year": 2024,
+          "applicants": 87,
+          "accepted": 16
+        }
+      ]
+    },
+    {
+      "characteristic": "ETHNICITY",
+      "group": "Other Black background",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 9,
+          "accepted": null
+        },
+        {
+          "year": 2019,
+          "applicants": 6,
+          "accepted": null
+        },
+        {
+          "year": 2020,
+          "applicants": 9,
+          "accepted": null
+        },
+        {
+          "year": 2021,
+          "applicants": 12,
+          "accepted": null
+        },
+        {
+          "year": 2023,
+          "applicants": 15,
+          "accepted": null
+        },
+        {
+          "year": 2024,
+          "applicants": 17,
+          "accepted": null
+        }
+      ]
+    },
+    {
+      "characteristic": "ETHNICITY",
+      "group": "Other British (white)",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 84,
+          "accepted": 12
+        },
+        {
+          "year": 2016,
+          "applicants": 81,
+          "accepted": 22
+        },
+        {
+          "year": 2017,
+          "applicants": 78,
+          "accepted": 15
+        },
+        {
+          "year": 2018,
+          "applicants": 72,
+          "accepted": 16
+        },
+        {
+          "year": 2019,
+          "applicants": 73,
+          "accepted": 17
+        },
+        {
+          "year": 2020,
+          "applicants": 72,
+          "accepted": 13
+        },
+        {
+          "year": 2021,
+          "applicants": 81,
+          "accepted": 24
+        },
+        {
+          "year": 2022,
+          "applicants": 88,
+          "accepted": 22
+        },
+        {
+          "year": 2023,
+          "applicants": 113,
+          "accepted": 30
+        },
+        {
+          "year": 2024,
+          "applicants": 116,
+          "accepted": 21
+        }
+      ]
+    },
+    {
+      "characteristic": "ETHNICITY",
+      "group": "Other White background",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 403,
+          "accepted": 37
+        },
+        {
+          "year": 2016,
+          "applicants": 395,
+          "accepted": 47
+        },
+        {
+          "year": 2017,
+          "applicants": 413,
+          "accepted": 37
+        },
+        {
+          "year": 2018,
+          "applicants": 394,
+          "accepted": 40
+        },
+        {
+          "year": 2019,
+          "applicants": 430,
+          "accepted": 39
+        },
+        {
+          "year": 2020,
+          "applicants": 461,
+          "accepted": 81
+        },
+        {
+          "year": 2021,
+          "applicants": 471,
+          "accepted": 75
+        },
+        {
+          "year": 2022,
+          "applicants": 491,
+          "accepted": 120
+        },
+        {
+          "year": 2023,
+          "applicants": 528,
+          "accepted": 105
+        },
+        {
+          "year": 2024,
+          "applicants": 577,
+          "accepted": 90
+        }
+      ]
+    },
+    {
+      "characteristic": "ETHNICITY",
+      "group": "Pakistani",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 56,
+          "accepted": 7
+        },
+        {
+          "year": 2016,
+          "applicants": 63,
+          "accepted": 5
+        },
+        {
+          "year": 2017,
+          "applicants": 72,
+          "accepted": 6
+        },
+        {
+          "year": 2018,
+          "applicants": 64,
+          "accepted": 8
+        },
+        {
+          "year": 2019,
+          "applicants": 88,
+          "accepted": 5
+        },
+        {
+          "year": 2020,
+          "applicants": 105,
+          "accepted": 9
+        },
+        {
+          "year": 2021,
+          "applicants": 111,
+          "accepted": 22
+        },
+        {
+          "year": 2022,
+          "applicants": 136,
+          "accepted": 28
+        },
+        {
+          "year": 2023,
+          "applicants": 178,
+          "accepted": 25
+        },
+        {
+          "year": 2024,
+          "applicants": 201,
+          "accepted": 33
+        }
+      ]
+    },
+    {
+      "characteristic": "ETHNICITY",
+      "group": "White & Asian",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 36,
+          "accepted": 5
+        },
+        {
+          "year": 2016,
+          "applicants": 44,
+          "accepted": 9
+        },
+        {
+          "year": 2017,
+          "applicants": 46,
+          "accepted": 5
+        },
+        {
+          "year": 2018,
+          "applicants": 43,
+          "accepted": 12
+        },
+        {
+          "year": 2019,
+          "applicants": 54,
+          "accepted": 9
+        },
+        {
+          "year": 2020,
+          "applicants": 48,
+          "accepted": 16
+        },
+        {
+          "year": 2021,
+          "applicants": 63,
+          "accepted": 20
+        },
+        {
+          "year": 2022,
+          "applicants": 67,
+          "accepted": 20
+        },
+        {
+          "year": 2023,
+          "applicants": 97,
+          "accepted": 30
+        },
+        {
+          "year": 2024,
+          "applicants": 105,
+          "accepted": 22
+        }
+      ]
+    },
+    {
+      "characteristic": "ETHNICITY",
+      "group": "White & Black African",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 12,
+          "accepted": 8
+        },
+        {
+          "year": 2016,
+          "applicants": 7,
+          "accepted": 0
+        },
+        {
+          "year": 2017,
+          "applicants": 9,
+          "accepted": 6
+        },
+        {
+          "year": 2018,
+          "applicants": 12,
+          "accepted": null
+        },
+        {
+          "year": 2019,
+          "applicants": 13,
+          "accepted": 6
+        },
+        {
+          "year": 2020,
+          "applicants": 17,
+          "accepted": 0
+        },
+        {
+          "year": 2021,
+          "applicants": 23,
+          "accepted": 6
+        },
+        {
+          "year": 2022,
+          "applicants": 28,
+          "accepted": 6
+        },
+        {
+          "year": 2023,
+          "applicants": 20,
+          "accepted": 8
+        },
+        {
+          "year": 2024,
+          "applicants": 30,
+          "accepted": 15
+        }
+      ]
+    },
+    {
+      "characteristic": "ETHNICITY",
+      "group": "White & Black Caribbean",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 27,
+          "accepted": null
+        },
+        {
+          "year": 2016,
+          "applicants": 24,
+          "accepted": 9
+        },
+        {
+          "year": 2017,
+          "applicants": 23,
+          "accepted": null
+        },
+        {
+          "year": 2018,
+          "applicants": 25,
+          "accepted": null
+        },
+        {
+          "year": 2019,
+          "applicants": 35,
+          "accepted": null
+        },
+        {
+          "year": 2020,
+          "applicants": 41,
+          "accepted": 9
+        },
+        {
+          "year": 2021,
+          "applicants": 38,
+          "accepted": 11
+        },
+        {
+          "year": 2022,
+          "applicants": 41,
+          "accepted": 13
+        },
+        {
+          "year": 2023,
+          "applicants": 50,
+          "accepted": 16
+        },
+        {
+          "year": 2024,
+          "applicants": 63,
+          "accepted": null
+        }
+      ]
+    },
+    {
+      "characteristic": "ETHNICITY",
+      "group": "Other Asian background",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2016,
+          "applicants": 37,
+          "accepted": null
+        },
+        {
+          "year": 2017,
+          "applicants": 50,
+          "accepted": null
+        },
+        {
+          "year": 2018,
+          "applicants": 43,
+          "accepted": null
+        },
+        {
+          "year": 2019,
+          "applicants": 38,
+          "accepted": null
+        },
+        {
+          "year": 2020,
+          "applicants": 44,
+          "accepted": null
+        },
+        {
+          "year": 2021,
+          "applicants": 68,
+          "accepted": null
+        },
+        {
+          "year": 2022,
+          "applicants": 75,
+          "accepted": 16
+        },
+        {
+          "year": 2023,
+          "applicants": 83,
+          "accepted": 18
+        },
+        {
+          "year": 2024,
+          "applicants": 115,
+          "accepted": 21
+        }
+      ]
+    },
+    {
+      "characteristic": "ETHNICITY",
+      "group": "Other Mixed background",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2016,
+          "applicants": 71,
+          "accepted": 12
+        },
+        {
+          "year": 2017,
+          "applicants": 70,
+          "accepted": 15
+        },
+        {
+          "year": 2022,
+          "applicants": 84,
+          "accepted": 20
+        },
+        {
+          "year": 2023,
+          "applicants": 118,
+          "accepted": 33
+        },
+        {
+          "year": 2024,
+          "applicants": 144,
+          "accepted": 30
+        }
+      ]
+    },
+    {
+      "characteristic": "ETHNICITY",
+      "group": "Other ethnic background",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2017,
+          "applicants": 19,
+          "accepted": null
+        },
+        {
+          "year": 2023,
+          "applicants": 57,
+          "accepted": 5
+        },
+        {
+          "year": 2024,
+          "applicants": 79,
+          "accepted": 19
+        }
+      ]
+    },
+    {
+      "characteristic": "GENDER",
+      "group": "Female",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 2922,
+          "accepted": 498
+        },
+        {
+          "year": 2016,
+          "applicants": 2934,
+          "accepted": 492
+        },
+        {
+          "year": 2017,
+          "applicants": 3088,
+          "accepted": 498
+        },
+        {
+          "year": 2018,
+          "applicants": 3103,
+          "accepted": 484
+        },
+        {
+          "year": 2019,
+          "applicants": 3233,
+          "accepted": 504
+        },
+        {
+          "year": 2020,
+          "applicants": 3393,
+          "accepted": 636
+        },
+        {
+          "year": 2021,
+          "applicants": 3677,
+          "accepted": 845
+        },
+        {
+          "year": 2022,
+          "applicants": 3743,
+          "accepted": 973
+        },
+        {
+          "year": 2023,
+          "applicants": 4083,
+          "accepted": 989
+        },
+        {
+          "year": 2024,
+          "applicants": 4619,
+          "accepted": 965
+        }
+      ]
+    },
+    {
+      "characteristic": "GENDER",
+      "group": "Male",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 633,
+          "accepted": 84
+        },
+        {
+          "year": 2016,
+          "applicants": 625,
+          "accepted": 93
+        },
+        {
+          "year": 2017,
+          "applicants": 678,
+          "accepted": 83
+        },
+        {
+          "year": 2018,
+          "applicants": 644,
+          "accepted": 105
+        },
+        {
+          "year": 2019,
+          "applicants": 677,
+          "accepted": 103
+        },
+        {
+          "year": 2020,
+          "applicants": 679,
+          "accepted": 120
+        },
+        {
+          "year": 2021,
+          "applicants": 715,
+          "accepted": 132
+        },
+        {
+          "year": 2022,
+          "applicants": 735,
+          "accepted": 150
+        },
+        {
+          "year": 2023,
+          "applicants": 839,
+          "accepted": 173
+        },
+        {
+          "year": 2024,
+          "applicants": 915,
+          "accepted": 179
+        }
+      ]
+    },
+    {
+      "characteristic": "MARITAL STATUS",
+      "group": "Divorced/Separated, Widowed",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 59,
+          "accepted": 8
+        },
+        {
+          "year": 2016,
+          "applicants": 49,
+          "accepted": 5
+        },
+        {
+          "year": 2017,
+          "applicants": 52,
+          "accepted": null
+        },
+        {
+          "year": 2018,
+          "applicants": 55,
+          "accepted": null
+        },
+        {
+          "year": 2019,
+          "applicants": 56,
+          "accepted": null
+        },
+        {
+          "year": 2020,
+          "applicants": 64,
+          "accepted": null
+        },
+        {
+          "year": 2021,
+          "applicants": 72,
+          "accepted": 8
+        },
+        {
+          "year": 2022,
+          "applicants": 73,
+          "accepted": 8
+        },
+        {
+          "year": 2023,
+          "applicants": 91,
+          "accepted": 13
+        },
+        {
+          "year": 2024,
+          "applicants": 91,
+          "accepted": 6
+        }
+      ]
+    },
+    {
+      "characteristic": "MARITAL STATUS",
+      "group": "Married/civil partnership/co-habiting",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 1186,
+          "accepted": 226
+        },
+        {
+          "year": 2016,
+          "applicants": 1160,
+          "accepted": 214
+        },
+        {
+          "year": 2017,
+          "applicants": 1202,
+          "accepted": 208
+        },
+        {
+          "year": 2018,
+          "applicants": 1239,
+          "accepted": 214
+        },
+        {
+          "year": 2019,
+          "applicants": 1269,
+          "accepted": 226
+        },
+        {
+          "year": 2020,
+          "applicants": 1303,
+          "accepted": 278
+        },
+        {
+          "year": 2021,
+          "applicants": 1417,
+          "accepted": 341
+        },
+        {
+          "year": 2022,
+          "applicants": 1424,
+          "accepted": 361
+        },
+        {
+          "year": 2023,
+          "applicants": 1563,
+          "accepted": 384
+        },
+        {
+          "year": 2024,
+          "applicants": 1726,
+          "accepted": 350
+        }
+      ]
+    },
+    {
+      "characteristic": "MARITAL STATUS",
+      "group": "Single",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 2280,
+          "accepted": 342
+        },
+        {
+          "year": 2016,
+          "applicants": 2322,
+          "accepted": 357
+        },
+        {
+          "year": 2017,
+          "applicants": 2467,
+          "accepted": 364
+        },
+        {
+          "year": 2018,
+          "applicants": 2413,
+          "accepted": 363
+        },
+        {
+          "year": 2019,
+          "applicants": 2547,
+          "accepted": 369
+        },
+        {
+          "year": 2020,
+          "applicants": 2674,
+          "accepted": 470
+        },
+        {
+          "year": 2021,
+          "applicants": 2859,
+          "accepted": 622
+        },
+        {
+          "year": 2022,
+          "applicants": 2945,
+          "accepted": 751
+        },
+        {
+          "year": 2023,
+          "applicants": 3231,
+          "accepted": 759
+        },
+        {
+          "year": 2024,
+          "applicants": 3685,
+          "accepted": 781
+        }
+      ]
+    },
+    {
+      "characteristic": "RELIGION",
+      "group": "Buddhist",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 39,
+          "accepted": 6
+        },
+        {
+          "year": 2016,
+          "applicants": 34,
+          "accepted": 11
+        },
+        {
+          "year": 2017,
+          "applicants": 47,
+          "accepted": 7
+        },
+        {
+          "year": 2018,
+          "applicants": 30,
+          "accepted": 8
+        },
+        {
+          "year": 2019,
+          "applicants": 29,
+          "accepted": 8
+        },
+        {
+          "year": 2022,
+          "applicants": 34,
+          "accepted": 11
+        },
+        {
+          "year": 2023,
+          "applicants": 42,
+          "accepted": 12
+        },
+        {
+          "year": 2024,
+          "applicants": 48,
+          "accepted": 9
+        }
+      ]
+    },
+    {
+      "characteristic": "RELIGION",
+      "group": "Christian - Other",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 233,
+          "accepted": 17
+        },
+        {
+          "year": 2016,
+          "applicants": 229,
+          "accepted": 22
+        },
+        {
+          "year": 2017,
+          "applicants": 220,
+          "accepted": 13
+        },
+        {
+          "year": 2018,
+          "applicants": 199,
+          "accepted": 35
+        },
+        {
+          "year": 2019,
+          "applicants": 219,
+          "accepted": 22
+        },
+        {
+          "year": 2020,
+          "applicants": 245,
+          "accepted": 37
+        },
+        {
+          "year": 2021,
+          "applicants": 250,
+          "accepted": 61
+        },
+        {
+          "year": 2022,
+          "applicants": 247,
+          "accepted": 55
+        },
+        {
+          "year": 2023,
+          "applicants": 315,
+          "accepted": 67
+        },
+        {
+          "year": 2024,
+          "applicants": 339,
+          "accepted": 50
+        }
+      ]
+    },
+    {
+      "characteristic": "RELIGION",
+      "group": "Christian - Protestant",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 279,
+          "accepted": 49
+        },
+        {
+          "year": 2016,
+          "applicants": 263,
+          "accepted": 44
+        },
+        {
+          "year": 2017,
+          "applicants": 263,
+          "accepted": 41
+        },
+        {
+          "year": 2018,
+          "applicants": 265,
+          "accepted": 43
+        },
+        {
+          "year": 2019,
+          "applicants": 250,
+          "accepted": 45
+        },
+        {
+          "year": 2020,
+          "applicants": 244,
+          "accepted": 40
+        },
+        {
+          "year": 2021,
+          "applicants": 261,
+          "accepted": 56
+        },
+        {
+          "year": 2022,
+          "applicants": 252,
+          "accepted": 62
+        },
+        {
+          "year": 2023,
+          "applicants": 281,
+          "accepted": 69
+        },
+        {
+          "year": 2024,
+          "applicants": 319,
+          "accepted": 69
+        }
+      ]
+    },
+    {
+      "characteristic": "RELIGION",
+      "group": "Christian - Roman Catholic",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 332,
+          "accepted": 37
+        },
+        {
+          "year": 2016,
+          "applicants": 308,
+          "accepted": 38
+        },
+        {
+          "year": 2017,
+          "applicants": 326,
+          "accepted": 40
+        },
+        {
+          "year": 2018,
+          "applicants": 311,
+          "accepted": 38
+        },
+        {
+          "year": 2019,
+          "applicants": 294,
+          "accepted": 32
+        },
+        {
+          "year": 2020,
+          "applicants": 298,
+          "accepted": 33
+        },
+        {
+          "year": 2021,
+          "applicants": 314,
+          "accepted": 66
+        },
+        {
+          "year": 2022,
+          "applicants": 302,
+          "accepted": 69
+        },
+        {
+          "year": 2023,
+          "applicants": 294,
+          "accepted": 73
+        },
+        {
+          "year": 2024,
+          "applicants": 349,
+          "accepted": 55
+        }
+      ]
+    },
+    {
+      "characteristic": "RELIGION",
+      "group": "Hindu",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 55,
+          "accepted": 7
+        },
+        {
+          "year": 2016,
+          "applicants": 45,
+          "accepted": 5
+        },
+        {
+          "year": 2017,
+          "applicants": 53,
+          "accepted": 6
+        },
+        {
+          "year": 2018,
+          "applicants": 52,
+          "accepted": null
+        },
+        {
+          "year": 2019,
+          "applicants": 53,
+          "accepted": null
+        },
+        {
+          "year": 2020,
+          "applicants": 45,
+          "accepted": 10
+        },
+        {
+          "year": 2021,
+          "applicants": 57,
+          "accepted": 8
+        },
+        {
+          "year": 2022,
+          "applicants": 67,
+          "accepted": 20
+        },
+        {
+          "year": 2023,
+          "applicants": 81,
+          "accepted": 23
+        },
+        {
+          "year": 2024,
+          "applicants": 93,
+          "accepted": 24
+        }
+      ]
+    },
+    {
+      "characteristic": "RELIGION",
+      "group": "Muslim",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 121,
+          "accepted": 11
+        },
+        {
+          "year": 2016,
+          "applicants": 134,
+          "accepted": 9
+        },
+        {
+          "year": 2017,
+          "applicants": 151,
+          "accepted": 10
+        },
+        {
+          "year": 2018,
+          "applicants": 150,
+          "accepted": 10
+        },
+        {
+          "year": 2019,
+          "applicants": 180,
+          "accepted": 19
+        },
+        {
+          "year": 2020,
+          "applicants": 186,
+          "accepted": 15
+        },
+        {
+          "year": 2021,
+          "applicants": 238,
+          "accepted": 42
+        },
+        {
+          "year": 2022,
+          "applicants": 280,
+          "accepted": 54
+        },
+        {
+          "year": 2023,
+          "applicants": 374,
+          "accepted": 60
+        },
+        {
+          "year": 2024,
+          "applicants": 448,
+          "accepted": 77
+        }
+      ]
+    },
+    {
+      "characteristic": "RELIGION",
+      "group": "No religion",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 2152,
+          "accepted": 398
+        },
+        {
+          "year": 2016,
+          "applicants": 2241,
+          "accepted": 414
+        },
+        {
+          "year": 2017,
+          "applicants": 2341,
+          "accepted": 421
+        },
+        {
+          "year": 2018,
+          "applicants": 2400,
+          "accepted": 404
+        },
+        {
+          "year": 2019,
+          "applicants": 2504,
+          "accepted": 426
+        },
+        {
+          "year": 2020,
+          "applicants": 2637,
+          "accepted": 548
+        },
+        {
+          "year": 2021,
+          "applicants": 2818,
+          "accepted": 648
+        },
+        {
+          "year": 2022,
+          "applicants": 2831,
+          "accepted": 736
+        },
+        {
+          "year": 2023,
+          "applicants": 3016,
+          "accepted": 732
+        },
+        {
+          "year": 2024,
+          "applicants": 3334,
+          "accepted": 744
+        }
+      ]
+    },
+    {
+      "characteristic": "RELIGION",
+      "group": "Other religion",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 54,
+          "accepted": 9
+        },
+        {
+          "year": 2016,
+          "applicants": 36,
+          "accepted": null
+        },
+        {
+          "year": 2017,
+          "applicants": 42,
+          "accepted": null
+        },
+        {
+          "year": 2018,
+          "applicants": 42,
+          "accepted": null
+        },
+        {
+          "year": 2019,
+          "applicants": 37,
+          "accepted": 5
+        },
+        {
+          "year": 2020,
+          "applicants": 44,
+          "accepted": 12
+        },
+        {
+          "year": 2021,
+          "applicants": 69,
+          "accepted": 14
+        },
+        {
+          "year": 2022,
+          "applicants": 86,
+          "accepted": 24
+        }
+      ]
+    },
+    {
+      "characteristic": "RELIGION",
+      "group": "Sikh",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 33,
+          "accepted": null
+        },
+        {
+          "year": 2016,
+          "applicants": 32,
+          "accepted": null
+        },
+        {
+          "year": 2017,
+          "applicants": 37,
+          "accepted": null
+        },
+        {
+          "year": 2018,
+          "applicants": 41,
+          "accepted": 5
+        },
+        {
+          "year": 2019,
+          "applicants": 46,
+          "accepted": null
+        },
+        {
+          "year": 2020,
+          "applicants": 43,
+          "accepted": 7
+        },
+        {
+          "year": 2021,
+          "applicants": 41,
+          "accepted": 7
+        },
+        {
+          "year": 2022,
+          "applicants": 59,
+          "accepted": 9
+        },
+        {
+          "year": 2023,
+          "applicants": 67,
+          "accepted": 15
+        },
+        {
+          "year": 2024,
+          "applicants": 70,
+          "accepted": 16
+        }
+      ]
+    },
+    {
+      "characteristic": "RELIGION",
+      "group": "Jewish",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2016,
+          "applicants": 23,
+          "accepted": null
+        },
+        {
+          "year": 2017,
+          "applicants": 24,
+          "accepted": null
+        },
+        {
+          "year": 2018,
+          "applicants": 26,
+          "accepted": 6
+        },
+        {
+          "year": 2019,
+          "applicants": 17,
+          "accepted": 5
+        },
+        {
+          "year": 2020,
+          "applicants": 21,
+          "accepted": 5
+        },
+        {
+          "year": 2021,
+          "applicants": 26,
+          "accepted": 9
+        },
+        {
+          "year": 2022,
+          "applicants": 36,
+          "accepted": 14
+        },
+        {
+          "year": 2023,
+          "applicants": 32,
+          "accepted": 11
+        },
+        {
+          "year": 2024,
+          "applicants": 38,
+          "accepted": 11
+        }
+      ]
+    },
+    {
+      "characteristic": "RESIDENT",
+      "group": "Other EU/EEA",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 217,
+          "accepted": 10
+        },
+        {
+          "year": 2016,
+          "applicants": 213,
+          "accepted": 14
+        },
+        {
+          "year": 2017,
+          "applicants": 200,
+          "accepted": 17
+        },
+        {
+          "year": 2018,
+          "applicants": 186,
+          "accepted": 15
+        },
+        {
+          "year": 2019,
+          "applicants": 176,
+          "accepted": 7
+        },
+        {
+          "year": 2020,
+          "applicants": 203,
+          "accepted": 22
+        },
+        {
+          "year": 2021,
+          "applicants": 160,
+          "accepted": 17
+        },
+        {
+          "year": 2022,
+          "applicants": 139,
+          "accepted": 18
+        },
+        {
+          "year": 2023,
+          "applicants": 102,
+          "accepted": 11
+        },
+        {
+          "year": 2024,
+          "applicants": 125,
+          "accepted": 15
+        }
+      ]
+    },
+    {
+      "characteristic": "RESIDENT",
+      "group": "Other residence",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 33,
+          "accepted": 0
+        },
+        {
+          "year": 2016,
+          "applicants": 30,
+          "accepted": null
+        },
+        {
+          "year": 2017,
+          "applicants": 32,
+          "accepted": null
+        },
+        {
+          "year": 2018,
+          "applicants": 19,
+          "accepted": 0
+        },
+        {
+          "year": 2019,
+          "applicants": 44,
+          "accepted": 0
+        },
+        {
+          "year": 2020,
+          "applicants": 49,
+          "accepted": 0
+        },
+        {
+          "year": 2021,
+          "applicants": 51,
+          "accepted": null
+        },
+        {
+          "year": 2022,
+          "applicants": 47,
+          "accepted": null
+        },
+        {
+          "year": 2023,
+          "applicants": 61,
+          "accepted": null
+        },
+        {
+          "year": 2024,
+          "applicants": 80,
+          "accepted": null
+        }
+      ]
+    },
+    {
+      "characteristic": "RESIDENT",
+      "group": "UK",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 3308,
+          "accepted": 572
+        },
+        {
+          "year": 2016,
+          "applicants": 3321,
+          "accepted": 571
+        },
+        {
+          "year": 2017,
+          "applicants": 3542,
+          "accepted": 564
+        },
+        {
+          "year": 2018,
+          "applicants": 3554,
+          "accepted": 574
+        },
+        {
+          "year": 2019,
+          "applicants": 3697,
+          "accepted": 600
+        },
+        {
+          "year": 2020,
+          "applicants": 3838,
+          "accepted": 740
+        },
+        {
+          "year": 2021,
+          "applicants": 4201,
+          "accepted": 968
+        },
+        {
+          "year": 2022,
+          "applicants": 4324,
+          "accepted": 1117
+        },
+        {
+          "year": 2023,
+          "applicants": 4812,
+          "accepted": 1170
+        },
+        {
+          "year": 2024,
+          "applicants": 5375,
+          "accepted": 1139
+        }
+      ]
+    },
+    {
+      "characteristic": "SEXUAL ORIENTATION",
+      "group": "Bisexual",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 83,
+          "accepted": 19
+        },
+        {
+          "year": 2016,
+          "applicants": 108,
+          "accepted": 22
+        },
+        {
+          "year": 2017,
+          "applicants": 124,
+          "accepted": 24
+        },
+        {
+          "year": 2018,
+          "applicants": 171,
+          "accepted": 24
+        },
+        {
+          "year": 2019,
+          "applicants": 227,
+          "accepted": 39
+        },
+        {
+          "year": 2020,
+          "applicants": 263,
+          "accepted": 62
+        },
+        {
+          "year": 2021,
+          "applicants": 318,
+          "accepted": 79
+        },
+        {
+          "year": 2022,
+          "applicants": 508,
+          "accepted": 140
+        },
+        {
+          "year": 2023,
+          "applicants": 642,
+          "accepted": 181
+        },
+        {
+          "year": 2024,
+          "applicants": 713,
+          "accepted": 178
+        }
+      ]
+    },
+    {
+      "characteristic": "SEXUAL ORIENTATION",
+      "group": "Gay man",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 81,
+          "accepted": 12
+        },
+        {
+          "year": 2016,
+          "applicants": 87,
+          "accepted": 15
+        },
+        {
+          "year": 2017,
+          "applicants": 94,
+          "accepted": 12
+        },
+        {
+          "year": 2018,
+          "applicants": 83,
+          "accepted": 21
+        },
+        {
+          "year": 2019,
+          "applicants": 78,
+          "accepted": 10
+        },
+        {
+          "year": 2020,
+          "applicants": 89,
+          "accepted": 21
+        },
+        {
+          "year": 2021,
+          "applicants": 86,
+          "accepted": 22
+        },
+        {
+          "year": 2022,
+          "applicants": 100,
+          "accepted": 26
+        },
+        {
+          "year": 2023,
+          "applicants": 121,
+          "accepted": 27
+        },
+        {
+          "year": 2024,
+          "applicants": 133,
+          "accepted": 38
+        }
+      ]
+    },
+    {
+      "characteristic": "SEXUAL ORIENTATION",
+      "group": "Gay woman/lesbian",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 52,
+          "accepted": 13
+        },
+        {
+          "year": 2016,
+          "applicants": 59,
+          "accepted": 14
+        },
+        {
+          "year": 2017,
+          "applicants": 58,
+          "accepted": 6
+        },
+        {
+          "year": 2018,
+          "applicants": 65,
+          "accepted": 14
+        },
+        {
+          "year": 2019,
+          "applicants": 60,
+          "accepted": 13
+        },
+        {
+          "year": 2020,
+          "applicants": 68,
+          "accepted": 14
+        },
+        {
+          "year": 2021,
+          "applicants": 76,
+          "accepted": 21
+        },
+        {
+          "year": 2022,
+          "applicants": 89,
+          "accepted": 27
+        },
+        {
+          "year": 2023,
+          "applicants": 94,
+          "accepted": 30
+        },
+        {
+          "year": 2024,
+          "applicants": 109,
+          "accepted": 31
+        }
+      ]
+    },
+    {
+      "characteristic": "SEXUAL ORIENTATION",
+      "group": "Heterosexual/straight",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 3206,
+          "accepted": 514
+        },
+        {
+          "year": 2016,
+          "applicants": 3185,
+          "accepted": 510
+        },
+        {
+          "year": 2017,
+          "applicants": 3358,
+          "accepted": 519
+        },
+        {
+          "year": 2018,
+          "applicants": 3263,
+          "accepted": 498
+        },
+        {
+          "year": 2019,
+          "applicants": 3364,
+          "accepted": 511
+        },
+        {
+          "year": 2020,
+          "applicants": 3449,
+          "accepted": 611
+        },
+        {
+          "year": 2021,
+          "applicants": 3682,
+          "accepted": 801
+        },
+        {
+          "year": 2022,
+          "applicants": 3527,
+          "accepted": 857
+        },
+        {
+          "year": 2023,
+          "applicants": 3716,
+          "accepted": 838
+        },
+        {
+          "year": 2024,
+          "applicants": 4170,
+          "accepted": 805
+        }
+      ]
+    },
+    {
+      "characteristic": "SEXUAL ORIENTATION",
+      "group": "Other sexual orientation",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 7,
+          "accepted": null
+        },
+        {
+          "year": 2016,
+          "applicants": 13,
+          "accepted": null
+        },
+        {
+          "year": 2017,
+          "applicants": 7,
+          "accepted": null
+        },
+        {
+          "year": 2018,
+          "applicants": 19,
+          "accepted": null
+        },
+        {
+          "year": 2019,
+          "applicants": 19,
+          "accepted": 9
+        },
+        {
+          "year": 2020,
+          "applicants": 22,
+          "accepted": null
+        },
+        {
+          "year": 2021,
+          "applicants": 41,
+          "accepted": 10
+        },
+        {
+          "year": 2022,
+          "applicants": 65,
+          "accepted": 22
+        },
+        {
+          "year": 2023,
+          "applicants": 85,
+          "accepted": 26
+        },
+        {
+          "year": 2024,
+          "applicants": 100,
+          "accepted": 22
+        }
+      ]
+    },
+    {
+      "characteristic": "SOCIO-ECONOMIC BACKGROUND",
+      "group": "Quintile 1 (lowest participation rate in HE)",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 228,
+          "accepted": 26
+        },
+        {
+          "year": 2016,
+          "applicants": 226,
+          "accepted": 31
+        },
+        {
+          "year": 2017,
+          "applicants": 272,
+          "accepted": 43
+        },
+        {
+          "year": 2018,
+          "applicants": 300,
+          "accepted": 27
+        },
+        {
+          "year": 2019,
+          "applicants": 318,
+          "accepted": 37
+        },
+        {
+          "year": 2020,
+          "applicants": 362,
+          "accepted": 49
+        },
+        {
+          "year": 2021,
+          "applicants": 376,
+          "accepted": 69
+        },
+        {
+          "year": 2022,
+          "applicants": 403,
+          "accepted": 77
+        },
+        {
+          "year": 2023,
+          "applicants": 472,
+          "accepted": 101
+        },
+        {
+          "year": 2024,
+          "applicants": 558,
+          "accepted": 109
+        }
+      ]
+    },
+    {
+      "characteristic": "SOCIO-ECONOMIC BACKGROUND",
+      "group": "Quintile 2",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 344,
+          "accepted": 56
+        },
+        {
+          "year": 2016,
+          "applicants": 399,
+          "accepted": 70
+        },
+        {
+          "year": 2017,
+          "applicants": 424,
+          "accepted": 68
+        },
+        {
+          "year": 2018,
+          "applicants": 421,
+          "accepted": 66
+        },
+        {
+          "year": 2019,
+          "applicants": 473,
+          "accepted": 71
+        },
+        {
+          "year": 2020,
+          "applicants": 479,
+          "accepted": 82
+        },
+        {
+          "year": 2021,
+          "applicants": 567,
+          "accepted": 128
+        },
+        {
+          "year": 2022,
+          "applicants": 561,
+          "accepted": 138
+        },
+        {
+          "year": 2023,
+          "applicants": 574,
+          "accepted": 128
+        },
+        {
+          "year": 2024,
+          "applicants": 724,
+          "accepted": 141
+        }
+      ]
+    },
+    {
+      "characteristic": "SOCIO-ECONOMIC BACKGROUND",
+      "group": "Quintile 3",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 468,
+          "accepted": 72
+        },
+        {
+          "year": 2016,
+          "applicants": 505,
+          "accepted": 90
+        },
+        {
+          "year": 2017,
+          "applicants": 552,
+          "accepted": 72
+        },
+        {
+          "year": 2018,
+          "applicants": 559,
+          "accepted": 92
+        },
+        {
+          "year": 2019,
+          "applicants": 572,
+          "accepted": 82
+        },
+        {
+          "year": 2020,
+          "applicants": 631,
+          "accepted": 107
+        },
+        {
+          "year": 2021,
+          "applicants": 708,
+          "accepted": 146
+        },
+        {
+          "year": 2022,
+          "applicants": 719,
+          "accepted": 194
+        },
+        {
+          "year": 2023,
+          "applicants": 749,
+          "accepted": 186
+        },
+        {
+          "year": 2024,
+          "applicants": 794,
+          "accepted": 173
+        }
+      ]
+    },
+    {
+      "characteristic": "SOCIO-ECONOMIC BACKGROUND",
+      "group": "Quintile 4",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 599,
+          "accepted": 124
+        },
+        {
+          "year": 2016,
+          "applicants": 653,
+          "accepted": 103
+        },
+        {
+          "year": 2017,
+          "applicants": 725,
+          "accepted": 128
+        },
+        {
+          "year": 2018,
+          "applicants": 764,
+          "accepted": 114
+        },
+        {
+          "year": 2019,
+          "applicants": 775,
+          "accepted": 135
+        },
+        {
+          "year": 2020,
+          "applicants": 796,
+          "accepted": 167
+        },
+        {
+          "year": 2021,
+          "applicants": 867,
+          "accepted": 213
+        },
+        {
+          "year": 2022,
+          "applicants": 881,
+          "accepted": 235
+        },
+        {
+          "year": 2023,
+          "applicants": 910,
+          "accepted": 229
+        },
+        {
+          "year": 2024,
+          "applicants": 1027,
+          "accepted": 216
+        }
+      ]
+    },
+    {
+      "characteristic": "SOCIO-ECONOMIC BACKGROUND",
+      "group": "Quintile 5 (highest participation rate in HE)",
+      "constructed": false,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 873,
+          "accepted": 173
+        },
+        {
+          "year": 2016,
+          "applicants": 934,
+          "accepted": 190
+        },
+        {
+          "year": 2017,
+          "applicants": 999,
+          "accepted": 186
+        },
+        {
+          "year": 2018,
+          "applicants": 1002,
+          "accepted": 206
+        },
+        {
+          "year": 2019,
+          "applicants": 1034,
+          "accepted": 211
+        },
+        {
+          "year": 2020,
+          "applicants": 1032,
+          "accepted": 242
+        },
+        {
+          "year": 2021,
+          "applicants": 1070,
+          "accepted": 289
+        },
+        {
+          "year": 2022,
+          "applicants": 1120,
+          "accepted": 314
+        },
+        {
+          "year": 2023,
+          "applicants": 1164,
+          "accepted": 325
+        },
+        {
+          "year": 2024,
+          "applicants": 1269,
+          "accepted": 312
+        }
+      ]
+    },
+    {
+      "characteristic": "RELIGION",
+      "group": "Christian (all)",
+      "constructed": true,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 844,
+          "accepted": 103
+        },
+        {
+          "year": 2016,
+          "applicants": 800,
+          "accepted": 104
+        },
+        {
+          "year": 2017,
+          "applicants": 809,
+          "accepted": 94
+        },
+        {
+          "year": 2018,
+          "applicants": 775,
+          "accepted": 116
+        },
+        {
+          "year": 2019,
+          "applicants": 763,
+          "accepted": 99
+        },
+        {
+          "year": 2020,
+          "applicants": 787,
+          "accepted": 110
+        },
+        {
+          "year": 2021,
+          "applicants": 825,
+          "accepted": 183
+        },
+        {
+          "year": 2022,
+          "applicants": 801,
+          "accepted": 186
+        },
+        {
+          "year": 2023,
+          "applicants": 890,
+          "accepted": 209
+        },
+        {
+          "year": 2024,
+          "applicants": 1007,
+          "accepted": 174
+        }
+      ]
+    },
+    {
+      "characteristic": "ETHNICITY",
+      "group": "Mixed (all)",
+      "constructed": true,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 130,
+          "accepted": 19
+        },
+        {
+          "year": 2016,
+          "applicants": 151,
+          "accepted": 30
+        },
+        {
+          "year": 2017,
+          "applicants": 154,
+          "accepted": 26
+        },
+        {
+          "year": 2018,
+          "applicants": 151,
+          "accepted": 24
+        },
+        {
+          "year": 2019,
+          "applicants": 171,
+          "accepted": 28
+        },
+        {
+          "year": 2020,
+          "applicants": 177,
+          "accepted": 32
+        },
+        {
+          "year": 2021,
+          "applicants": 211,
+          "accepted": 56
+        },
+        {
+          "year": 2022,
+          "applicants": 225,
+          "accepted": 59
+        },
+        {
+          "year": 2023,
+          "applicants": 285,
+          "accepted": 87
+        },
+        {
+          "year": 2024,
+          "applicants": 342,
+          "accepted": 67
+        }
+      ]
+    },
+    {
+      "characteristic": "ETHNIC GROUP (BROAD)",
+      "group": "White",
+      "constructed": true,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 2918,
+          "accepted": 504
+        },
+        {
+          "year": 2016,
+          "applicants": 2910,
+          "accepted": 501
+        },
+        {
+          "year": 2017,
+          "applicants": 3063,
+          "accepted": 512
+        },
+        {
+          "year": 2018,
+          "applicants": 3045,
+          "accepted": 507
+        },
+        {
+          "year": 2019,
+          "applicants": 3120,
+          "accepted": 518
+        },
+        {
+          "year": 2020,
+          "applicants": 3193,
+          "accepted": 627
+        },
+        {
+          "year": 2021,
+          "applicants": 3363,
+          "accepted": 752
+        },
+        {
+          "year": 2022,
+          "applicants": 3365,
+          "accepted": 862
+        },
+        {
+          "year": 2023,
+          "applicants": 3625,
+          "accepted": 892
+        },
+        {
+          "year": 2024,
+          "applicants": 3994,
+          "accepted": 846
+        }
+      ]
+    },
+    {
+      "characteristic": "ETHNIC GROUP (BROAD)",
+      "group": "Asian",
+      "constructed": true,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 242,
+          "accepted": 33
+        },
+        {
+          "year": 2016,
+          "applicants": 226,
+          "accepted": 26
+        },
+        {
+          "year": 2017,
+          "applicants": 278,
+          "accepted": 19
+        },
+        {
+          "year": 2018,
+          "applicants": 264,
+          "accepted": 24
+        },
+        {
+          "year": 2019,
+          "applicants": 307,
+          "accepted": 21
+        },
+        {
+          "year": 2020,
+          "applicants": 337,
+          "accepted": 43
+        },
+        {
+          "year": 2021,
+          "applicants": 379,
+          "accepted": 73
+        },
+        {
+          "year": 2022,
+          "applicants": 458,
+          "accepted": 102
+        },
+        {
+          "year": 2023,
+          "applicants": 540,
+          "accepted": 105
+        },
+        {
+          "year": 2024,
+          "applicants": 603,
+          "accepted": 116
+        }
+      ]
+    },
+    {
+      "characteristic": "ETHNIC GROUP (BROAD)",
+      "group": "Black",
+      "constructed": true,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 146,
+          "accepted": 8
+        },
+        {
+          "year": 2016,
+          "applicants": 155,
+          "accepted": 10
+        },
+        {
+          "year": 2017,
+          "applicants": 152,
+          "accepted": 10
+        },
+        {
+          "year": 2018,
+          "applicants": 163,
+          "accepted": 14
+        },
+        {
+          "year": 2019,
+          "applicants": 182,
+          "accepted": 18
+        },
+        {
+          "year": 2020,
+          "applicants": 220,
+          "accepted": 27
+        },
+        {
+          "year": 2021,
+          "applicants": 260,
+          "accepted": 56
+        },
+        {
+          "year": 2022,
+          "applicants": 259,
+          "accepted": 60
+        },
+        {
+          "year": 2023,
+          "applicants": 268,
+          "accepted": 53
+        },
+        {
+          "year": 2024,
+          "applicants": 310,
+          "accepted": 56
+        }
+      ]
+    },
+    {
+      "characteristic": "ETHNIC GROUP (BROAD)",
+      "group": "Mixed",
+      "constructed": true,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 130,
+          "accepted": 19
+        },
+        {
+          "year": 2016,
+          "applicants": 151,
+          "accepted": 30
+        },
+        {
+          "year": 2017,
+          "applicants": 154,
+          "accepted": 26
+        },
+        {
+          "year": 2018,
+          "applicants": 151,
+          "accepted": 24
+        },
+        {
+          "year": 2019,
+          "applicants": 171,
+          "accepted": 28
+        },
+        {
+          "year": 2020,
+          "applicants": 177,
+          "accepted": 32
+        },
+        {
+          "year": 2021,
+          "applicants": 211,
+          "accepted": 56
+        },
+        {
+          "year": 2022,
+          "applicants": 225,
+          "accepted": 59
+        },
+        {
+          "year": 2023,
+          "applicants": 285,
+          "accepted": 87
+        },
+        {
+          "year": 2024,
+          "applicants": 342,
+          "accepted": 67
+        }
+      ]
+    },
+    {
+      "characteristic": "ETHNIC GROUP (BROAD)",
+      "group": "Other",
+      "constructed": true,
+      "by_year": [
+        {
+          "year": 2015,
+          "applicants": 84,
+          "accepted": 13
+        },
+        {
+          "year": 2016,
+          "applicants": 86,
+          "accepted": 7
+        },
+        {
+          "year": 2017,
+          "applicants": 88,
+          "accepted": 7
+        },
+        {
+          "year": 2018,
+          "applicants": 90,
+          "accepted": 12
+        },
+        {
+          "year": 2019,
+          "applicants": 87,
+          "accepted": 16
+        },
+        {
+          "year": 2020,
+          "applicants": 103,
+          "accepted": 22
+        },
+        {
+          "year": 2021,
+          "applicants": 135,
+          "accepted": 26
+        },
+        {
+          "year": 2022,
+          "applicants": 137,
+          "accepted": 34
+        },
+        {
+          "year": 2023,
+          "applicants": 162,
+          "accepted": 24
+        },
+        {
+          "year": 2024,
+          "applicants": 229,
+          "accepted": 50
+        }
+      ]
+    }
+  ]
+}

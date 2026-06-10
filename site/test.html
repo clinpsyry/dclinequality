@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>DClinPsy Explorer - JS vs R oracle test</title>
+<style>
+  body { font: 15px/1.5 system-ui, sans-serif; margin: 2rem; color: #1a1a1a; }
+  h1 { font-size: 1.3rem; }
+  #banner { padding: .8rem 1rem; border-radius: 6px; font-weight: 600; margin: 1rem 0; }
+  .pass { background: #e3f4e3; color: #1a6b1a; border: 1px solid #9ad29a; }
+  .fail { background: #fbe3e3; color: #8b1a1a; border: 1px solid #e09a9a; }
+  table { border-collapse: collapse; margin-top: 1rem; font-size: 14px; }
+  th, td { border: 1px solid #ddd; padding: 4px 8px; text-align: right; }
+  th:first-child, td:first-child { text-align: left; }
+  td.ok { color: #1a6b1a; } td.bad { color: #8b1a1a; font-weight: 600; }
+  caption { text-align: left; color: #555; margin-bottom: .4rem; }
+</style>
+</head>
+<body>
+<h1>DClinPsy Explorer: browser statistics vs R oracle</h1>
+<p>Recomputes the ethnicity DEI (2021-2024) BH family live in your browser and
+checks every number against the R-generated <code>reference.json</code>.
+Verdicts must match exactly. This is governance rule 2a in action.</p>
+<div id="banner">Running...</div>
+<div id="out"></div>
+
+<script src="js/stats.js"></script>
+<script src="data.js"></script>
+<script src="reference.js"></script>
+<script>
+(function () {
+  var eth12 = ["British Scottish","British Welsh","Irish","Other White background",
+    "Indian","Pakistani","Bangladeshi","Chinese","African","Caribbean",
+    "Mixed (all)","Middle Eastern/North African"];
+  var dei = [2021, 2022, 2023, 2024];
+
+  function findGroup(ch, name) {
+    return window.COUNTS.groups.find(function (x) {
+      return x.characteristic === ch && x.group === name; });
+  }
+  var members = eth12.map(function (n) { return findGroup("ETHNICITY", n); });
+  var reference = findGroup("ETHNICITY", "British English");
+  var got = Stats.computeFamily(members, reference, dei);
+  var want = window.REFERENCE.ethnicity_dei;
+
+  var pass = got.m === want.m;
+  function near(a, b, tol) {
+    return (a == null && b == null) ||
+           (a != null && b != null && Math.abs(a - b) <= tol);
+  }
+
+  var html = "<table><caption>m (JS) = " + got.m + ", m (R) = " + want.m +
+    " &middot; reference British English = " + got.ref_accepted + "/" +
+    got.ref_applicants + "</caption><tr>" +
+    "<th>group</th><th>p_bh JS</th><th>p_bh R</th><th>sig</th><th>bar</th>" +
+    "<th>match</th></tr>";
+
+  want.rows.forEach(function (w) {
+    var g = got.rows.find(function (r) { return r.group === w.group; });
+    var rowOk = g && g.computable &&
+      near(g.p_bh, w.p_bh, 1e-3) && near(g.rate, w.rate, 0.02) &&
+      near(g.pp_lo, w.pp_lo, 0.05) && near(g.pp_hi, w.pp_hi, 0.05) &&
+      g.significant_after_bh === w.significant_after_bh &&
+      g.bar_excludes_null === w.bar_excludes_null;
+    if (!rowOk) pass = false;
+    html += "<tr><td>" + w.group + "</td>" +
+      "<td>" + g.p_bh.toFixed(5) + "</td>" +
+      "<td>" + w.p_bh.toFixed(5) + "</td>" +
+      "<td>" + (g.significant_after_bh ? "yes" : "no") + "</td>" +
+      "<td>" + (g.bar_excludes_null ? "excl" : "touches") + "</td>" +
+      "<td class='" + (rowOk ? "ok'>OK" : "bad'>FAIL") + "</td></tr>";
+  });
+  html += "</table>";
+
+  var invariant = got.rows.every(function (r) {
+    return !r.computable || r.bar_excludes_null === r.significant_after_bh; });
+  if (!invariant) pass = false;
+
+  var banner = document.getElementById("banner");
+  banner.className = pass ? "pass" : "fail";
+  banner.textContent = pass
+    ? "PASS: browser statistics reproduce the R oracle exactly (bar == sig on every row)."
+    : "FAIL: browser results do not match the R oracle. Do not ship.";
+  document.getElementById("out").innerHTML = html;
+})();
+</script>
+</body>
+</html>
