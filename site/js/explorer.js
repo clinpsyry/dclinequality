@@ -147,7 +147,8 @@
   }
 
   var state = { view:"trend", characteristic:"ETHNIC GROUP (BROAD)", selected:{}, showCI:false,
-    trendMode:"rate", smooth:1, eraMode:"rate", yearFrom:2021, yearTo:2024, measure:"pp",
+    trendMode:"rate", trendMeasure:"pp", trendFrom:2015, trendTo:2024, eraMode:"rate",
+    yearFrom:2021, yearTo:2024, measure:"pp",
     tableYearFrom:2015, tableYearTo:2024, tableSelected:{}, tableMode:"pooled",
     tableSort:{ col:null, dir:1 }, repYearFrom:2021, repYearTo:2024, repMode:"chart",
     repSort:{ col:null, dir:1 }, forestMode:"chart", forestSort:{ col:null, dir:1 },
@@ -156,16 +157,6 @@
   // ==========================================================================
   // TREND VIEW
   // ==========================================================================
-  // Smoothing: a point for year yr pools the accepted/applicant counts across a
-  // centered window of state.smooth years (1 = no smoothing). Pooling counts (not
-  // averaging rates) weights by sample size and damps small-year spikes; suppressed
-  // cells are dropped from the sum, never interpolated (rule 4).
-  function winYears(yr, w) {
-    var half = Math.floor(w / 2), out = [];
-    ALL_YEARS.forEach(function (y) { if (y >= yr - half && y <= yr + half) out.push(y); });
-    return out;
-  }
-  function smoothLabel(yr, w) { return w > 1 ? yr + " (" + w + "-yr avg)" : "" + yr; }
   var TRACE_STYLE = function (group, color, x, y, eHi, eLo, text) {
     return { name: group.group, x:x, y:y, type:"scatter", mode:"lines+markers",
       connectgaps:true, line:{ color:color, width:2 }, marker:{ color:color, size:6 },
@@ -177,46 +168,50 @@
   function traceFor(group, color) {
     var byYear = {};
     group.by_year.forEach(function (r) { byYear[r.year] = r; });
-    var w = state.smooth || 1, x = [], y = [], eHi = [], eLo = [], text = [];
+    var x = [], y = [], eHi = [], eLo = [], text = [];
     ALL_YEARS.forEach(function (yr) {
+      if (yr < state.trendFrom || yr > state.trendTo) return;
       x.push(yr);
-      var acc = 0, app = 0, present = false;
-      winYears(yr, w).forEach(function (yy) {
-        var r = byYear[yy];
-        if (r && r.accepted != null) { acc += r.accepted; app += r.applicants; present = true; }
-      });
-      if (!present || app === 0) { y.push(null); eHi.push(0); eLo.push(0); text.push(""); return; }
+      var r = byYear[yr];
+      if (!r || r.accepted == null || r.applicants === 0) {
+        y.push(null); eHi.push(0); eLo.push(0); text.push(""); return; }
+      var acc = r.accepted, app = r.applicants;
       var ci = Stats.wilsonCI(acc, app), rate = ci.rate * 100;
       y.push(rate); eHi.push(ci.hi*100 - rate); eLo.push(rate - ci.lo*100);
-      text.push(group.group + "<br>" + smoothLabel(yr, w) + ": " + rate.toFixed(1) + "% (" +
+      text.push(group.group + "<br>" + yr + ": " + rate.toFixed(1) + "% (" +
         acc + "/" + app + ")<br>95% CI " + (ci.lo*100).toFixed(1) + " to " + (ci.hi*100).toFixed(1));
     });
     return TRACE_STYLE(group, color, x, y, eHi, eLo, text);
   }
 
-  // Per-year difference vs the reference group, in pp, with plain 95% Newcombe
-  // intervals. A gap if either the group or the reference is suppressed that year.
-  function traceVsRef(group, refGroup, color) {
+  // Per-year contrast vs the reference group. rr=false: pp difference with a 95%
+  // Newcombe interval. rr=true: rate ratio (group rate / reference rate) with a 95%
+  // Katz-log interval. A gap if either group or reference is suppressed that year.
+  function traceVsRef(group, refGroup, color, rr) {
     var gy = {}, ry = {};
     group.by_year.forEach(function (r) { gy[r.year] = r; });
     refGroup.by_year.forEach(function (r) { ry[r.year] = r; });
-    var w = state.smooth || 1, x = [], y = [], eHi = [], eLo = [], text = [];
+    var x = [], y = [], eHi = [], eLo = [], text = [];
     ALL_YEARS.forEach(function (yr) {
+      if (yr < state.trendFrom || yr > state.trendTo) return;
       x.push(yr);
-      var gAcc = 0, gApp = 0, rAcc = 0, rApp = 0, present = false;
-      winYears(yr, w).forEach(function (yy) {
-        var g = gy[yy], rf = ry[yy];
-        if (g && rf && g.accepted != null && rf.accepted != null) {
-          gAcc += g.accepted; gApp += g.applicants; rAcc += rf.accepted; rApp += rf.applicants;
-          present = true;
-        }
-      });
-      if (!present || !gApp || !rApp) { y.push(null); eHi.push(0); eLo.push(0); text.push(""); return; }
+      var g = gy[yr], rf = ry[yr];
+      if (!g || !rf || g.accepted == null || rf.accepted == null || !g.applicants || !rf.applicants) {
+        y.push(null); eHi.push(0); eLo.push(0); text.push(""); return; }
+      var gAcc = g.accepted, gApp = g.applicants, rAcc = rf.accepted, rApp = rf.applicants;
+      if (rr) {
+        var R = Stats.rateRatioCI(gAcc, gApp, rAcc, rApp);
+        if (R.value == null) { y.push(null); eHi.push(0); eLo.push(0); text.push(""); return; }
+        y.push(R.value); eHi.push(R.hi - R.value); eLo.push(R.value - R.lo);
+        text.push(group.group + "<br>" + yr + ": " + R.value.toFixed(2) + "x " + refGroup.group +
+          "<br>95% CI " + R.lo.toFixed(2) + " to " + R.hi.toFixed(2) + "<br>n " + gAcc + "/" + gApp);
+        return;
+      }
       var diff = (gAcc/gApp - rAcc/rApp) * 100;
       var ci = Stats.newcombeCI(gAcc, gApp, rAcc, rApp);
       var lo = ci[0]*100, hi = ci[1]*100;
       y.push(diff); eHi.push(hi - diff); eLo.push(diff - lo);
-      text.push(group.group + "<br>" + smoothLabel(yr, w) + ": " + (diff>=0?"+":"") + diff.toFixed(1) +
+      text.push(group.group + "<br>" + yr + ": " + (diff>=0?"+":"") + diff.toFixed(1) +
         " pp vs " + refGroup.group + "<br>95% CI " + lo.toFixed(1) + " to " +
         hi.toFixed(1) + "<br>n " + gAcc + "/" + gApp);
     });
@@ -224,10 +219,9 @@
   }
 
   // Combine the selected (non-reference) groups into ONE pooled series: counts are
-  // summed across the groups (and the smoothing window), dropping suppressed cells
-  // (rule 4), then the same Wilson (rate) or Newcombe-vs-reference (vsref) maths.
-  function combinedTrace(groups, refGroup, vs, color) {
-    var w = state.smooth || 1;
+  // summed across the groups, dropping suppressed cells (rule 4), then the same
+  // Wilson (rate) or Newcombe-vs-reference (vsref) maths.
+  function combinedTrace(groups, refGroup, vs, color, rr) {
     var maps = groups.map(function (g) {
       var m = {}; g.by_year.forEach(function (r) { m[r.year] = r; }); return m; });
     var rmap = {}; if (refGroup) refGroup.by_year.forEach(function (r) { rmap[r.year] = r; });
@@ -235,27 +229,33 @@
     var listed = groups.map(function (g) { return g.group; }).join(" + ");
     var x = [], y = [], eHi = [], eLo = [], text = [];
     ALL_YEARS.forEach(function (yr) {
+      if (yr < state.trendFrom || yr > state.trendTo) return;
       x.push(yr);
       var acc = 0, app = 0, present = false;
-      winYears(yr, w).forEach(function (yy) {
-        maps.forEach(function (m) { var r = m[yy];
-          if (r && r.accepted != null) { acc += r.accepted; app += r.applicants; present = true; } });
-      });
+      maps.forEach(function (m) { var r = m[yr];
+        if (r && r.accepted != null) { acc += r.accepted; app += r.applicants; present = true; } });
       if (!vs) {
         if (!present || app === 0) { y.push(null); eHi.push(0); eLo.push(0); text.push(""); return; }
         var ci = Stats.wilsonCI(acc, app), rate = ci.rate * 100;
         y.push(rate); eHi.push(ci.hi*100 - rate); eLo.push(rate - ci.lo*100);
-        text.push(listed + "<br>" + smoothLabel(yr, w) + ": " + rate.toFixed(1) + "% (" + acc + "/" + app +
+        text.push(listed + "<br>" + yr + ": " + rate.toFixed(1) + "% (" + acc + "/" + app +
           ")<br>95% CI " + (ci.lo*100).toFixed(1) + " to " + (ci.hi*100).toFixed(1));
       } else {
-        var rAcc = 0, rApp = 0, rPresent = false;
-        winYears(yr, w).forEach(function (yy) { var r = rmap[yy];
-          if (r && r.accepted != null) { rAcc += r.accepted; rApp += r.applicants; rPresent = true; } });
+        var rf = rmap[yr], rAcc = 0, rApp = 0, rPresent = false;
+        if (rf && rf.accepted != null) { rAcc = rf.accepted; rApp = rf.applicants; rPresent = true; }
         if (!present || !app || !rPresent || !rApp) { y.push(null); eHi.push(0); eLo.push(0); text.push(""); return; }
+        if (rr) {
+          var R = Stats.rateRatioCI(acc, app, rAcc, rApp);
+          if (R.value == null) { y.push(null); eHi.push(0); eLo.push(0); text.push(""); return; }
+          y.push(R.value); eHi.push(R.hi - R.value); eLo.push(R.value - R.lo);
+          text.push(listed + "<br>" + yr + ": " + R.value.toFixed(2) + "x " + refGroup.group +
+            "<br>95% CI " + R.lo.toFixed(2) + " to " + R.hi.toFixed(2) + "<br>n " + acc + "/" + app);
+          return;
+        }
         var diff = (acc/app - rAcc/rApp) * 100, nc = Stats.newcombeCI(acc, app, rAcc, rApp);
         var lo = nc[0]*100, hi = nc[1]*100;
         y.push(diff); eHi.push(hi - diff); eLo.push(diff - lo);
-        text.push(listed + "<br>" + smoothLabel(yr, w) + ": " + (diff>=0?"+":"") + diff.toFixed(1) +
+        text.push(listed + "<br>" + yr + ": " + (diff>=0?"+":"") + diff.toFixed(1) +
           " pp vs " + refGroup.group + "<br>95% CI " + lo.toFixed(1) + " to " + hi.toFixed(1) +
           "<br>n " + acc + "/" + app);
       }
@@ -266,50 +266,57 @@
   function renderTrend() {
     var ch = state.characteristic, ref = refFor(ch), refGroup = getGroup(ch, ref);
     var vs = state.trendMode === "vsref" && !!refGroup;
+    var rr = vs && state.trendMeasure === "rr";
+    var mc = document.getElementById("trend-measure-ctl");
+    if (mc) mc.hidden = !vs;   // the pp/ratio measure choice only applies vs reference
     var traces = [], ai = 0;
     var selectedGroups = (byChar[ch] || []).filter(function (g) { return state.selected[g.group]; });
     var combining = state.combine &&
       selectedGroups.filter(function (g) { return g.group !== ref; }).length > 0;
     if (combining) {
       var pool = selectedGroups.filter(function (g) { return g.group !== ref; });
-      traces.push(combinedTrace(pool, refGroup, vs, RED));
+      traces.push(combinedTrace(pool, refGroup, vs, RED, rr));
       if (!vs && refGroup) traces.push(traceFor(refGroup, REF_COLOR));   // baseline to compare against
     } else {
       selectedGroups.forEach(function (g) {
         if (vs && g.group === ref) return;   // reference is the flat baseline
         var color = g.group === ref ? REF_COLOR : ACCENTS[ai++ % ACCENTS.length];
-        traces.push(vs ? traceVsRef(g, refGroup, color) : traceFor(g, color));
+        traces.push(vs ? traceVsRef(g, refGroup, color, rr) : traceFor(g, color));
       });
     }
     var label = CHAR_LABELS[ch];
-    var shapes = [{ type:"rect", xref:"x", yref:"paper", x0:2020.5, x1:2024.5, y0:0, y1:1,
-      fillcolor:"#efe7d6", opacity:0.4, line:{ width:0 }, layer:"below" }];
-    if (vs) shapes.push({ type:"line", xref:"paper", x0:0, x1:1, yref:"y", y0:0, y1:0,
+    var showDEI = state.trendTo >= 2021;   // only shade/label the DEI era if it's in view
+    var shapes = showDEI ? [{ type:"rect", xref:"x", yref:"paper", x0:2020.5, x1:2024.5, y0:0, y1:1,
+      fillcolor:"#efe7d6", opacity:0.4, line:{ width:0 }, layer:"below" }] : [];
+    if (vs) shapes.push({ type:"line", xref:"paper", x0:0, x1:1, yref:"y", y0:rr?1:0, y1:rr?1:0,
       line:{ color:"#7a6f5a", width:1.4, dash:"dot" } });
-    var yaxis = vs
+    var yaxis = rr
+      ? { title:"Acceptance ratio vs "+ref, ticksuffix:"x", showgrid:true,
+          gridcolor:GRID, zeroline:false, linecolor:AXISLINE, tickcolor:AXISLINE }
+      : vs
       ? { title:"Difference from "+ref+" (pp)", ticksuffix:" pp", showgrid:true,
           gridcolor:GRID, zeroline:false, linecolor:AXISLINE, tickcolor:AXISLINE }
       : { title:"Acceptance rate (%)", rangemode:"tozero", ticksuffix:"%", showgrid:true,
           gridcolor:GRID, zeroline:false, linecolor:AXISLINE, tickcolor:AXISLINE };
-    var sw = state.smooth || 1;
-    var cadence = sw > 1 ? sw + "-year rolling average" : "each year";
     var combNote = combining ? " The selected groups are pooled into one group (summed counts)." : "";
     setChartHead(label + (vs ? ": acceptance vs " + ref + " over time" : ": acceptance rate by year"),
-      (vs ? "Difference from " + ref + ", " + cadence + ", in percentage points, with 95% intervals."
-         : "Share of applicants accepted, " + cadence + ", with 95% Wilson intervals.") + combNote);
+      (rr ? "Ratio of each group's acceptance rate to " + ref + " each year (1 = parity), with 95% intervals."
+         : vs ? "Difference from " + ref + " each year, in percentage points, with 95% intervals."
+         : "Share of applicants accepted each year, with 95% Wilson intervals.") + combNote);
     var layout = {
       paper_bgcolor:BG, plot_bgcolor:BG, height:480,
       font:{ family:"Inter, system-ui, sans-serif", color:"#1a1a1a", size:13 },
       margin:{ t:22, r:24, b:70, l:64 },
-      xaxis:{ dtick: narrowView() ? 3 : 1, range:[2014.5,2024.5], showgrid:false, zeroline:false,
+      xaxis:{ dtick: narrowView() ? Math.max(1, Math.ceil((state.trendTo - state.trendFrom + 1) / 4)) : 1,
+        range:[state.trendFrom - 0.5, state.trendTo + 0.5], showgrid:false, zeroline:false,
         linecolor:AXISLINE, tickcolor:AXISLINE },
       yaxis:yaxis, hovermode:"closest",
       legend:{ orientation:"h", y:-0.18, bgcolor:"rgba(0,0,0,0)", font:{ size:12 } },
       shapes:shapes,
-      annotations:[
-        { x:2024.4, y:0.985, yref:"paper", xanchor:"right", yanchor:"top",
+      annotations: showDEI ? [
+        { x:Math.min(2024.4, state.trendTo + 0.4), y:0.985, yref:"paper", xanchor:"right", yanchor:"top",
           showarrow:false, text:"DEI era", font:{ size:11, color:"#8a7d64" } }
-      ]
+      ] : []
     };
     Plotly.react("chart", traces, lockZoom(layout), PLOT_CFG);
     var gd = document.getElementById("chart"); gd._lastHi = null; bindTrendHover(gd);
@@ -487,7 +494,8 @@
         var cls = sig ? "up" : "ns";   // all significant = red; the +/- value shows direction
         var val = pp ? ((diff >= 0 ? "+" : "") + (diff*100).toFixed(1)) : (ra/rb).toFixed(2);
         var tip = SES_Q[r].short + " vs " + SES_Q[c].short + ": " +
-          (pp ? val + " pp" : val + "x") + ", " + (sig ? "significant" : "not significant");
+          (pp ? val + " pp" : val + "x") + ", p (BH) " + pHover(info.pBh) + ", " +
+          (sig ? "significant" : "not significant");
         h += '<td class="' + cls + '" title="' + tip + '">' + val + "</td>";
       }
       h += "</tr>";
@@ -561,8 +569,8 @@
       if (s.lo != null) t += "<br>95% t-interval " + s.lo.toFixed(1) + " to " + s.hi.toFixed(1);
       if (era === "dei") {
         t += "<br>change " + (r.change >= 0 ? "+" : "") + r.change.toFixed(1) + " pp";
-        t += r.testable ? ("<br>" + (r.sig ? "significant" : "not significant") +
-          " (p_bh " + r.p_bh.toFixed(3) + ")") : "<br>not testable (too few years)";
+        t += r.testable ? ("<br>raw p " + pHover(r.raw_p) + ", p (BH) " + pHover(r.p_bh) +
+          "<br>" + (r.sig ? "significant" : "not significant")) : "<br>not testable (too few years)";
       }
       return t;
     }
@@ -637,11 +645,14 @@
       var hi = pp ? r.pp_hi.toFixed(1) : r.rr_hi.toFixed(2);
       var verdict = res.kind === "descriptive" ? "descriptive (no test)"
         : (isSig(res, r) ? "significant" : "not significant");
+      var ptxt = res.kind === "bh"
+        ? "<br>raw p " + pHover(r.raw_p) + ", p (BH) " + pHover(r.p_bh)
+        : res.kind === "single" ? "<br>p " + pHover(r.raw_p) : "";
       var head = res.master
         ? r.group + " (" + (CHAR_LABELS[r.characteristic] || r.characteristic) + ")"
         : r.group;
       return head + "<br>" + eff + " vs " + refWord + "<br>interval " + lo +
-        " to " + hi + "<br>n " + r.accepted + "/" + r.applicants + "<br>" + verdict;
+        " to " + hi + "<br>n " + r.accepted + "/" + r.applicants + ptxt + "<br>" + verdict;
     });
 
     var trace = { x:xs, y:ylab, type:"scatter", mode:"markers",
@@ -714,6 +725,8 @@
       '">' + glyph + "</span></th>";
   }
   function fmtP(p) { return p == null ? "&mdash;" : p < 0.001 ? "&lt;0.001" : p.toFixed(3); }
+  // Plain-text p for chart hovers (no HTML entities; not used in PNG export).
+  function pHover(p) { return p == null ? "n/a" : p < 0.001 ? "<0.001" : p.toFixed(3); }
   function sortRows(rows, srt, strCols) {
     if (!srt.col) return rows;
     return rows.slice().sort(function (a, b) {
@@ -728,30 +741,33 @@
     var res = isAllGroups() ? computeMaster(windowYears()) : computeForest(windowYears());
     setForestHead(res);
     var tbl = document.getElementById("table"), pp = state.measure === "pp", srt = state.forestSort;
-    var hasSig = res.kind !== "descriptive", master = !!res.master;
+    var hasSig = res.kind !== "descriptive", master = !!res.master, isBH = res.kind === "bh";
     var rows = res.rows.filter(function (r) {
       return r.computable && (pp ? r.pp != null : (r.rr != null && r.rr_lo != null));
     }).map(function (r) {
       return { group: r.group, ch: r.characteristic ? (CHAR_LABELS[r.characteristic] || r.characteristic) : "",
         n: r.applicants, rate: r.rate, eff: pp ? r.pp : r.rr, lo: pp ? r.pp_lo : r.rr_lo,
         hi: pp ? r.pp_hi : r.rr_hi, sig: hasSig ? isSig(res, r) : false,
-        p: r.p_bh != null ? r.p_bh : (r.raw_p != null ? r.raw_p : null) };
+        pRaw: r.raw_p != null ? r.raw_p : null, pBh: r.p_bh != null ? r.p_bh : null };
     });
     rows = sortRows(rows, srt, ["group", "ch"]);
     var effHdr = pp ? "vs ref (pp)" : "Rate ratio";
-    var pHdr = res.kind === "single" ? "p" : "p (BH)";
+    var pHead = isBH ? (sortTh(srt, "Raw p", "pRaw") + sortTh(srt, "p (BH)", "pBh"))
+      : res.kind === "single" ? sortTh(srt, "p", "pRaw") : "";
     function eff(r) { return pp ? (r.eff >= 0 ? "+" : "") + r.eff.toFixed(1) : r.eff.toFixed(2); }
     function ci(r) { return pp ? r.lo.toFixed(1) + " to " + r.hi.toFixed(1) : r.lo.toFixed(2) + " to " + r.hi.toFixed(2); }
     var h = '<table class="datatable"><thead><tr>' + sortTh(srt, "Group", "group", true) +
       (master ? sortTh(srt, "Characteristic", "ch", true) : "") + sortTh(srt, "Applicants", "n") +
       sortTh(srt, "Rate", "rate") + sortTh(srt, effHdr, "eff") + "<th>95% CI</th>" +
-      (hasSig ? sortTh(srt, pHdr, "p") : "") + "</tr></thead><tbody>";
+      pHead + "</tr></thead><tbody>";
     rows.forEach(function (r) {
       var effCell = "<td" + (r.sig ? ' style="color:' + RED + ';font-weight:600"' : "") + ">" + eff(r) + "</td>";
+      var pCells = isBH ? ("<td>" + fmtP(r.pRaw) + "</td><td>" + fmtP(r.pBh) + "</td>")
+        : res.kind === "single" ? ("<td>" + fmtP(r.pRaw) + "</td>") : "";
       h += "<tr><td style='text-align:left'>" + r.group + "</td>" +
         (master ? "<td style='text-align:left'>" + r.ch + "</td>" : "") +
         "<td>" + r.n + "</td><td>" + r.rate.toFixed(1) + "%</td>" + effCell +
-        "<td>" + ci(r) + "</td>" + (hasSig ? "<td>" + fmtP(r.p) + "</td>" : "") + "</tr>";
+        "<td>" + ci(r) + "</td>" + pCells + "</tr>";
     });
     h += "</tbody></table>";
     if (!rows.length) h += '<p class="table-sub">No computable groups in this window.</p>';
@@ -773,18 +789,18 @@
     var rows = res.rows.filter(function (r) { return r.pre.mean != null && r.dei.mean != null; })
       .map(function (r) {
         return { group: r.group, pre: r.pre.mean, dei: r.dei.mean, change: r.change,
-          sig: r.testable && r.sig, p: r.testable ? r.p_bh : null };
+          sig: r.testable && r.sig, pRaw: r.testable ? r.raw_p : null, pBh: r.testable ? r.p_bh : null };
       });
     rows = sortRows(rows, srt, ["group"]);
     function v(x) { return x == null ? "&mdash;" : x.toFixed(1) + unit; }
     var h = '<table class="datatable"><thead><tr>' + sortTh(srt, "Group", "group", true) +
       sortTh(srt, "Pre-DEI", "pre") + sortTh(srt, "DEI", "dei") + sortTh(srt, "Change", "change") +
-      sortTh(srt, "p (BH)", "p") + "</tr></thead><tbody>";
+      sortTh(srt, "Raw p", "pRaw") + sortTh(srt, "p (BH)", "pBh") + "</tr></thead><tbody>";
     rows.forEach(function (r) {
       var chCell = "<td" + (r.sig ? ' style="color:' + RED + ';font-weight:600"' : "") + ">" +
         (r.change == null ? "&mdash;" : (r.change >= 0 ? "+" : "") + r.change.toFixed(1) + " pp") + "</td>";
       h += "<tr><td style='text-align:left'>" + r.group + "</td><td>" + v(r.pre) + "</td><td>" +
-        v(r.dei) + "</td>" + chCell + "<td>" + fmtP(r.p) + "</td></tr>";
+        v(r.dei) + "</td>" + chCell + "<td>" + fmtP(r.pRaw) + "</td><td>" + fmtP(r.pBh) + "</td></tr>";
     });
     h += "</tbody></table>";
     if (!rows.length) h += '<p class="table-sub">No groups with both eras in this view.</p>';
@@ -1295,9 +1311,10 @@
     }
     note.textContent = state.view === "trend"
       ? ((state.trendMode === "vsref"
-        ? "Each point is the group's gap from the reference that year, in pp, with a 95% interval. The dotted line is the reference (no gap). A year with no dot is a suppressed or missing count; the line bridges it rather than treating it as zero. Grey marks the DEI era."
-        : "Each point is that group's acceptance rate for the year. Hover for n and the interval. A year with no dot is a suppressed or missing count, never a zero; the line bridges it. Grey marks the DEI era, from 2021.")
-        + (state.smooth > 1 ? " Smoothing is on: each point pools the applicant and accepted counts over a " + state.smooth + "-year window centred on that year, so single-year spikes are damped (it is a sample-weighted average, not a mean of yearly rates)." : ""))
+        ? (state.trendMeasure === "rr"
+          ? "Each point is the ratio of the group's acceptance rate to the reference that year (a 95% Katz-log interval). The dotted line is parity (ratio 1): below 1 means accepted less often than the reference, above 1 more often. A year with no dot is a suppressed, missing or zero count; the line bridges it. Grey marks the DEI era."
+          : "Each point is the group's gap from the reference that year, in pp, with a 95% interval. The dotted line is the reference (no gap). A year with no dot is a suppressed or missing count; the line bridges it rather than treating it as zero. Grey marks the DEI era.")
+        : "Each point is that group's acceptance rate for the year. Hover for n and the interval. A year with no dot is a suppressed or missing count, never a zero; the line bridges it. Grey marks the DEI era, from 2021."))
       : state.view === "rep"
         ? (function () {
           var isTbl = state.repMode === "table";
@@ -1417,6 +1434,29 @@
       if (state.yearTo < state.yearFrom) { state.yearFrom = state.yearTo; from.value = state.yearFrom; }
       render();
     });
+    buildRangeSelect("trend-year-from", "trend-year-to", "trendFrom", "trendTo");
+  }
+
+  // Generic from/to year-range select pair bound to two state keys.
+  function buildRangeSelect(fromId, toId, fromKey, toKey) {
+    var from = document.getElementById(fromId), to = document.getElementById(toId);
+    if (!from || !to) return;
+    ALL_YEARS.forEach(function (y) {
+      var a = document.createElement("option"); a.value = y; a.textContent = y;
+      if (y === state[fromKey]) a.selected = true; from.appendChild(a);
+      var b = document.createElement("option"); b.value = y; b.textContent = y;
+      if (y === state[toKey]) b.selected = true; to.appendChild(b);
+    });
+    from.addEventListener("change", function () {
+      state[fromKey] = +from.value;
+      if (state[fromKey] > state[toKey]) { state[toKey] = state[fromKey]; to.value = state[toKey]; }
+      render();
+    });
+    to.addEventListener("change", function () {
+      state[toKey] = +to.value;
+      if (state[toKey] < state[fromKey]) { state[fromKey] = state[toKey]; from.value = state[fromKey]; }
+      render();
+    });
   }
 
   function buildTrendModeSeg() {
@@ -1428,11 +1468,11 @@
         x.classList.toggle("active", x === b); });
       render();
     });
-    var sm = document.getElementById("smooth-seg");
-    sm.addEventListener("click", function (e) {
+    var ms = document.getElementById("trend-measure-seg");
+    if (ms) ms.addEventListener("click", function (e) {
       var b = e.target.closest(".seg-btn"); if (!b) return;
-      state.smooth = +b.getAttribute("data-win");
-      sm.querySelectorAll(".seg-btn").forEach(function (x) {
+      state.trendMeasure = b.getAttribute("data-measure");
+      ms.querySelectorAll(".seg-btn").forEach(function (x) {
         x.classList.toggle("active", x === b); });
       render();
     });

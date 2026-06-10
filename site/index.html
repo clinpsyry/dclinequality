@@ -258,12 +258,17 @@
           <button class="seg-btn" data-mode="vsref">Vs reference</button>
         </div>
       </div>
+      <div class="ctl" id="trend-measure-ctl" hidden>
+        <label class="cap">Measure</label>
+        <div class="seg" id="trend-measure-seg">
+          <button class="seg-btn active" data-measure="pp">Percentage points</button>
+          <button class="seg-btn" data-measure="rr">Rate ratio</button>
+        </div>
+      </div>
       <div class="ctl">
-        <label class="cap">Smoothing<span class="info" tabindex="0" title="Reduces the year-to-year noise that comes from small group sizes. Yearly shows the raw single-year rates. 3-yr and 5-yr pool the applicant and accepted counts over a window centred on each year (a sample-weighted average, not a mean of rates). Suppressed years are skipped, never zero-filled.">i</span></label>
-        <div class="seg" id="smooth-seg">
-          <button class="seg-btn active" data-win="1">Yearly</button>
-          <button class="seg-btn" data-win="3">3-yr</button>
-          <button class="seg-btn" data-win="5">5-yr</button>
+        <label class="cap">Years shown</label>
+        <div class="yearrange">
+          <select id="trend-year-from"></select><span>to</span><select id="trend-year-to"></select>
         </div>
       </div>
       <div class="ctl">
@@ -441,6 +446,17 @@
         difference, and grey means not significant. Direction (better or worse than the reference) is
         shown by position, sign, or the direction of an arrow, never by colour. This keeps the
         significant findings unambiguous at a glance.</p>
+        <p><strong>Reading the p-values:</strong> hover any point, or open the Table view, to see the
+        exact p-values. A <strong>p-value</strong> is the probability of seeing a difference at least
+        this large if the groups truly accepted at the same rate: smaller means stronger evidence
+        against "no difference". It is <em>not</em> the size of the gap, nor the probability that the
+        gap is real, and 0.05 is a convention, not a law of nature. We show two: <strong>raw p</strong>
+        is the single uncorrected test, and <strong>p (BH)</strong> is that p-value after the
+        Benjamini-Hochberg correction across the family. The corrected one is what decides the red/grey
+        verdict, so always read it alongside the raw one. A result that only just clears 0.05 (for
+        example Black ethnicity at p (BH) &asymp; 0.046 over 2021 to 2024) is genuine but fragile, and
+        should be read as "just significant", not as settled fact: the confidence interval, which shows
+        how big and how uncertain the gap is, matters more than the p-value alone.</p>
 
         <h2>Eras: pre-DEI versus DEI</h2>
         <p>The "Pre-DEI vs DEI" view compares the pre-DEI years (2015 to 2019) with the DEI years
@@ -497,6 +513,10 @@
           characteristic (for example British English for ethnicity).</dd>
           <dt>Wilson / Newcombe interval</dt><dd>95% confidence intervals for a single rate, and for a
           difference between two rates.</dd>
+          <dt>p-value</dt><dd>The probability of a difference at least this large if the groups really
+          accepted at the same rate. Smaller means stronger evidence against "no difference"; it is not
+          the size of the gap. <em>raw p</em> is uncorrected; <em>p (BH)</em> is after the
+          Benjamini-Hochberg correction and is what sets the verdict.</dd>
           <dt>Benjamini-Hochberg</dt><dd>A correction that controls the false discovery rate when many
           groups are tested together.</dd>
           <dt>POLAR</dt><dd>Participation Of Local Areas: an area-based measure of how many young
