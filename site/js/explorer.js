@@ -56,7 +56,7 @@
       // does not double-count. Suppressed bands drop out (rule 4).
       { label:"40+ years", components:[
         "40-44 years","45-49 years","50-54 years","55 and over",
-        "50-54 years, 55 and over","50-54 years. 55 and over"] }] },
+        "50-54 years, 55 and over"] }] },
     "DISABILITY": { type:"bh", ref:"No disability", members:[
       "Dyslexia","Mental health difficulties",
       "Unseen disability eg diabetes, epilepsy, asthma","Two or more disabilities",
@@ -107,7 +107,7 @@
   var TREND_AGGREGATES = {
     "AGE": { label:"40+ years", components:[
       "40-44 years","45-49 years","50-54 years","55 and over",
-      "50-54 years, 55 and over","50-54 years. 55 and over"] },
+      "50-54 years, 55 and over"] },
     // Mixed (all) already exists as an R-built group, so this only HIDES the
     // individual mixed sub-groups from the trend list (no rebuild: the guard
     // below skips building when the label already exists).

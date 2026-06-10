@@ -154,16 +154,18 @@
     font-size: .88rem; color: var(--muted); }
 
   /* Ko-fi support button (self-contained link, no external widget script) */
-  a.kofi-btn { display: inline-flex; align-items: center; gap: .5rem; background: #72a4f2;
-    color: #fff; font-weight: 600; font-size: .86rem; line-height: 1; padding: .55rem .85rem;
-    border-radius: 10px; text-decoration: none; border: none;
-    box-shadow: 0 1px 2px rgba(45,35,15,.12); transition: filter .15s, transform .05s; }
-  a.kofi-btn:hover { filter: brightness(1.05); }
+  a.kofi-btn { display: inline-flex; align-items: center; gap: .45rem; background: #72a4f2;
+    color: #fff; font-weight: 600; font-size: .86rem; line-height: 1; padding: .55rem .9rem;
+    border-radius: 999px; text-decoration: none; border: none;
+    box-shadow: 0 2px 8px rgba(45,90,200,.24); transition: background .15s, transform .06s, box-shadow .15s; }
+  a.kofi-btn:hover { background: #5b93ef; box-shadow: 0 4px 14px rgba(45,90,200,.32); }
   a.kofi-btn:active { transform: translateY(1px); }
-  a.kofi-btn svg { width: 17px; height: 17px; }
+  a.kofi-btn svg { width: 18px; height: 18px; opacity: .95; }
+  a.kofi-btn .kofi-label-sm { display: none; }
   .about a.kofi-btn { margin-top: .9rem; }
   a.kofi-float { position: fixed; bottom: 1.15rem; right: 1.15rem; z-index: 60;
-    padding: .6rem 1rem; box-shadow: 0 4px 16px rgba(45,35,15,.26); }
+    padding: .6rem 1.05rem; box-shadow: 0 5px 18px rgba(45,90,200,.32); }
+  a.kofi-float:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(45,90,200,.40); }
 
   /* SES pairwise matrix */
   #matrix { display: none; padding: .4rem .25rem .4rem; }
@@ -228,9 +230,9 @@
   @media (max-width: 860px) {
     .chartwrap .dl-btn { position: static; margin: 0 0 .8rem; }   /* flow above the title */
     #chart-head { padding-right: 0; }
-    a.kofi-float { padding: .6rem; border-radius: 50%; bottom: .8rem; right: .8rem; }
-    a.kofi-float .kofi-label { display: none; }                   /* icon-only on mobile */
-    a.kofi-float svg { width: 22px; height: 22px; }
+    a.kofi-float { bottom: .8rem; right: .8rem; padding: .52rem .85rem; font-size: .82rem; }
+    a.kofi-float .kofi-label { display: none; }                   /* hide long label */
+    a.kofi-float .kofi-label-sm { display: inline; }              /* show "Support Me" */
   }
 </style>
 </head>
@@ -544,10 +546,12 @@
           <p>Built for <a href="https://noncogito.substack.com/" target="_blank"
           rel="noopener">noncogito.substack.com</a>. House style: significance is red, direction is
           shown separately; "pp" for percentage points.</p>
-          <p>If this is useful, you can support the work:</p>
+          <p>This is built and maintained independently, in my own time — free, with no ads and no
+          funding. If it is useful to you, please consider supporting it so it can stay free, ad-free,
+          and kept up to date.</p>
           <a class="kofi-btn" href="https://ko-fi.com/Q5Q51YZ8GK" target="_blank" rel="noopener"
-            title="Support this work on Ko-fi">
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 3h13a2 2 0 0 1 2 2v1h1a3 3 0 0 1 0 6h-1.2A6 6 0 0 1 13 17H8a6 6 0 0 1-6-6V5a2 2 0 0 1 2-2zm15 7a1 1 0 0 0 0-2h-1v2h1zM3 20h17a1 1 0 0 1 0 2H3a1 1 0 0 1 0-2z"/></svg>Support this project</a>
+            title="Please consider supporting this project">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><text x="12" y="19" text-anchor="middle" font-size="22" font-weight="700" font-family="Georgia, 'Times New Roman', serif" fill="currentColor">&#968;</text></svg>Support this project</a>
         </div>
       </article></div>
     </div>
@@ -555,8 +559,8 @@
 </div>
 
 <a class="kofi-btn kofi-float" href="https://ko-fi.com/Q5Q51YZ8GK" target="_blank" rel="noopener"
-  title="Support this project on Ko-fi">
-  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 3h13a2 2 0 0 1 2 2v1h1a3 3 0 0 1 0 6h-1.2A6 6 0 0 1 13 17H8a6 6 0 0 1-6-6V5a2 2 0 0 1 2-2zm15 7a1 1 0 0 0 0-2h-1v2h1zM3 20h17a1 1 0 0 1 0 2H3a1 1 0 0 1 0-2z"/></svg><span class="kofi-label">Support this project</span></a>
+  title="Please consider supporting this project — it keeps it free and independent">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><text x="12" y="19" text-anchor="middle" font-size="22" font-weight="700" font-family="Georgia, 'Times New Roman', serif" fill="currentColor">&#968;</text></svg><span class="kofi-label">Support this project</span><span class="kofi-label-sm">Support Me</span></a>
 
 <script src="js/plotly.min.js" charset="utf-8"></script>
 <script src="js/stats.js"></script>

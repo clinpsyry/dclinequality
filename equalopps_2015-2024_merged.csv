@@ -30,7 +30,7 @@ Year,Section,Category,applicants_n,accepted_n,note,source
 2018,AGE,35-39 years,209,28,,equalopps_workbook
 2018,AGE,40-44 years,78,10,,equalopps_workbook
 2018,AGE,45-49 years,67,7,,equalopps_workbook
-2018,AGE,50-54 years. 55 and over,20,,,equalopps_workbook
+2018,AGE,"50-54 years, 55 and over",20,,,equalopps_workbook
 2018,AGE,Prefer not to say,14,0,Acceptance values reassigned to '25-29 years' row; set to 0 here (true value suppressed in source),equalopps_workbook
 2019,AGE,20-24 years,1001,116,,equalopps_workbook
 2019,AGE,25-29 years,1985,391,Acceptance values moved here from misaligned 'Prefer not to say' row above; success rate recomputed,equalopps_workbook

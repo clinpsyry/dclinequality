@@ -1,7 +1,7 @@
 {
   "meta": {
     "source_file": "equalopps_2015-2024_merged.csv",
-    "generated_at": "2026-06-10T15:16:04",
+    "generated_at": "2026-06-10T16:55:13",
     "eras": {
       "pre_dei": [2015, 2016, 2017, 2018, 2019],
       "dei": [2021, 2022, 2023, 2024],
@@ -460,14 +460,7 @@
           "year": 2017,
           "applicants": 17,
           "accepted": null
-        }
-      ]
-    },
-    {
-      "characteristic": "AGE",
-      "group": "50-54 years. 55 and over",
-      "constructed": false,
-      "by_year": [
+        },
         {
           "year": 2018,
           "applicants": 20,

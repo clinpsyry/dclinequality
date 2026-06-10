@@ -26,7 +26,7 @@ rawp <- function(a1, n1, a2, n2) {
 }
 
 AGE_OLD <- c("40-44 years","45-49 years","50-54 years","55 and over",
-             "50-54 years, 55 and over","50-54 years. 55 and over")
+             "50-54 years, 55 and over")
 families <- list(
   "ETHNICITY" = list(ref = "British English", members = as.list(c(
     "British Scottish","British Welsh","Irish","Other White background","Indian",
