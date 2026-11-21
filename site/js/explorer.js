@@ -443,7 +443,9 @@
     var span = (hi - lo) || 1, total = span / (1 - padL - padR);
     return [lo - padL * total, hi + padR * total];
   }
-  var LABEL_PAD = 0.15;   // about 50 px of a 340 px plot: fits "+12.3" at 12 px plus its offset
+  var LABEL_PAD = 0.15;
+  // Signed value to 1 dp for chart labels; zero has no sign ("0.0", never "+0.0" or "-0.0").
+  function sgn1(v) { var t = v.toFixed(1); return t === "0.0" || t === "-0.0" ? "0.0" : (v > 0 ? "+" : "") + t; }   // about 50 px of a 340 px plot: fits "+12.3" at 12 px plus its offset
 
   function renderTrend() {
     if (state.trendMode === "numbers") { renderNumbers(); return; }
@@ -895,7 +897,7 @@
     if (pp) shapes.push({ type: "line", xref: "x", x0: 0, x1: 0, yref: "paper", y0: 0, y1: 1,
       line: { color: "#7a6f5a", width: 1.4, dash: "dot" } });
     setEraHead(res);
-    var f = function (v) { return (pp && v >= 0 ? "+" : "") + v.toFixed(1); };
+    var f = function (v) { return pp ? sgn1(v) : v.toFixed(1); };
     // Desktop: "pre → DEI" at the right of every row. Phones: the pre value beside
     // its dot, on the side away from the arrow, and the DEI value beyond the
     // arrowhead. Bold when the change is significant.
@@ -1028,7 +1030,7 @@
     }
     var annos = info.map(function (o) {
       var strong = o.c !== "ns" && o.c !== "desc";
-      var txt = (strong ? "<b>" : "") + (pp ? (val(o.r) >= 0 ? "+" : "") + val(o.r).toFixed(1) : val(o.r).toFixed(2) + "x") + (strong ? "</b>" : "");
+      var txt = (strong ? "<b>" : "") + (pp ? sgn1(val(o.r)) : val(o.r).toFixed(2) + "x") + (strong ? "</b>" : "");
       var font = { size: 12, color: strong ? INK : "#7a6f5f" };
       if (narrow) return { xref:"x", x: hiEnd(o), xanchor:"left", xshift: 7, yref:"y", y:o.i,
         showarrow:false, text: txt, font: font, bgcolor: BG };
@@ -1372,7 +1374,7 @@
       traces[1].y = idx.map(function (i) { return i + 0.26; }); traces[1].width = 0.32;
     }
     // zero has no sign: a value that rounds to 0.0 prints as "0.0", never "+0.0" or "-0.0"
-    var fmt = function (v) { var t = v.toFixed(1); return t === "0.0" || t === "-0.0" ? "0.0" : (v > 0 ? "+" : "") + t; };
+    var fmt = sgn1;
     var annos = [{ x: 0, xref: "x", y: 1.0, yref: "paper", yanchor: "bottom", xanchor: "center", text: annoLabel,
       showarrow: false, font: { size: 10.5, color: "#7a6c55" } }];
     // phones: the name above its pair of bars, each value at its own bar's end
