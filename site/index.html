@@ -159,7 +159,13 @@
     .options-toggle[hidden] { display: none; }
     .options-drawer.open { display: block; background: var(--card); border-bottom: 1px solid var(--line); }
     .options-drawer .rail { border: none; padding: .2rem 1.1rem 1.1rem; }
-    .chartwrap { padding: 1rem .8rem .8rem; border-radius: 12px; }
+    /* Phones: the card runs edge to edge (no page gutter, no side padding), so
+       the plot is the full screen width: 375 px instead of 312 px on a 375 px
+       phone, about 20% more. The text keeps a .8rem inset. */
+    .content { padding: 1.1rem 0; }
+    .chartwrap { padding: 1rem 0 .8rem; border-radius: 0; border-left: none; border-right: none; }
+    .chartwrap #chart-head, .chartwrap .note, .chartwrap .note-toggle, .chartwrap .dl-group,
+    .chartwrap #table, .chartwrap #matrix { margin-left: .8rem; margin-right: .8rem; }
     .chartwrap .chart-title { font-size: 1.05rem; }
   }
   .dl-group { position: absolute; top: 1.2rem; right: 1.3rem; z-index: 3; display: flex; gap: .35rem; }
@@ -270,7 +276,7 @@
   @media (max-width: 860px) {
     /* title first; the download buttons move under the chart */
     .chartwrap { display: flex; flex-direction: column; }
-    .chartwrap .dl-group { position: static; order: 10; margin: .9rem 0 0; }
+    .chartwrap .dl-group { position: static; order: 10; margin: .9rem .8rem 0; }
     #chart-head { padding-right: 0; }
     /* the floating support button covered charts: it moves under the chart card */
     a.kofi-float { display: none; }
@@ -279,9 +285,21 @@
   /* Phone layout forced On on a larger screen: the chart column takes a phone's
      width, so what you see is what a phone reader (and the phone PNG) gets. */
   body.phone-preview .content > .chartwrap { max-width: 430px; margin: 0 auto; display: flex; flex-direction: column; }
-  body.phone-preview .chartwrap .dl-group { position: static; order: 10; margin: .9rem 0 0; }
+  body.phone-preview .chartwrap .dl-group { position: static; order: 10; margin: .9rem .8rem 0; }
   body.phone-preview #chart-head { padding-right: 0; }
   body.phone-preview .chartwrap .chart-title { font-size: 1.05rem; }
+  body.phone-preview .content > .chartwrap { padding: 1rem 0 .8rem; }
+  body.phone-preview #chart-head, body.phone-preview .chartwrap .note, body.phone-preview .chartwrap .note-toggle,
+  body.phone-preview .chartwrap .dl-group, body.phone-preview .chartwrap #table,
+  body.phone-preview .chartwrap #matrix { margin-left: .8rem; margin-right: .8rem; }
+  /* Phone layout: the chart footnote folds behind a "How to read this chart" button */
+  .note-toggle { display: none; }
+  body.phone-charts .note-toggle { display: inline-flex; align-items: center; gap: .35rem; margin-top: .7rem;
+    align-self: flex-start; font: inherit; font-size: .82rem; font-weight: 600; color: #5f574a;
+    background: #f3eadc; border: 1px solid #d6c6ac; border-radius: 9px; padding: .4rem .7rem; cursor: pointer; }
+  body.phone-charts .note-toggle:hover { color: var(--ink); }
+  body.phone-charts .chartwrap .note.folded { display: none; }
+  body.phone-charts .chartwrap .note { padding-right: 0; }
   /* Phone layout: every data table becomes a list of cards (one per row) */
   body.phone-charts table.datatable thead { display: none; }
   body.phone-charts table.datatable, body.phone-charts table.datatable tbody { display: block; width: 100%; }
@@ -521,6 +539,7 @@
         <div id="chart"></div>
         <div id="matrix"></div>
         <div id="table"></div>
+        <button class="note-toggle" id="note-toggle" type="button" aria-expanded="false" aria-controls="chart-note">How to read this chart <span class="chev">▾</span></button>
         <p class="note" id="chart-note"></p>
       </div>
       <div class="mobile-support">

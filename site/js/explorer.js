@@ -97,6 +97,30 @@
   var ACCENTS = ["#990F3D","#2D6CA2","#B07A2D","#4F7942","#7A3B69","#1A6B6B",
     "#A0522D","#41506B"];
   var AXISLINE = "#c9bca6", GRID = "#d9ccb6", MUTED = "#6f6757";
+  // Phone layout (narrowView): 13 px tick labels, thicker marks, lighter
+  // gridlines. The grid colour is GRID mixed halfway towards the panel BG, so
+  // the lines stay in the palette but recede on a small screen.
+  function mixHex(a, b, t) {
+    var pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16), out = "#";
+    [16, 8, 0].forEach(function (sh) {
+      var ca = (pa >> sh) & 255, cb = (pb >> sh) & 255, c = Math.round(ca + (cb - ca) * t);
+      out += (c < 16 ? "0" : "") + c.toString(16);
+    });
+    return out;
+  }
+  var GRID_PHONE = mixHex(GRID, BG, 0.5);
+  var PH = { tick: 13, line: 3, marker: 8, ciThick: 1.6, faint: 1.3 };
+  // Apply the phone tick size and light gridlines to every axis of a layout.
+  function phoneAxes(layout) {
+    if (!narrowView()) return layout;
+    Object.keys(layout).forEach(function (k) {
+      if (!/^[xy]axis\d*$/.test(k)) return;
+      var ax = layout[k];
+      ax.tickfont = Object.assign({}, ax.tickfont || {}, { size: PH.tick });
+      if (ax.showgrid) ax.gridcolor = GRID_PHONE;
+    });
+    return layout;
+  }
 
   // index groups by characteristic
   var byChar = {};
@@ -182,7 +206,7 @@
     tableSort:{ col:null, dir:1 }, repYearFrom:DEI_FROM, repYearTo:LATEST, repMode:"chart",
     repSort:{ col:null, dir:1 }, forestMode:"chart", forestSort:{ col:null, dir:1 },
     eraView:"chart", eraSort:{ col:null, dir:1 }, combine:false, sub:"",
-    yCustom:false, yMin:"", yMax:"", showDEI:true, phoneMode:"auto", pngFormat:"phone" };
+    yCustom:false, yMin:"", yMax:"", showDEI:true, phoneMode:"auto", pngFormat:"phone", noteOpen:false };
 
   // ---- pooled cells (RULES.md C8): flagged, not changed --------------------------
   // A row's acceptances may include hidden rows (pooled_with), or its own
@@ -210,10 +234,11 @@
   // TREND VIEW
   // ==========================================================================
   var TRACE_STYLE = function (group, color, x, y, eHi, eLo, text) {
+    var ph = narrowView();
     return { name: group.group, x:x, y:y, type:"scatter", mode:"lines+markers",
-      connectgaps:true, line:{ color:color, width:2 }, marker:{ color:color, size:6 },
+      connectgaps:true, line:{ color:color, width: ph ? PH.line : 2 }, marker:{ color:color, size: ph ? PH.marker : 6 },
       error_y: state.showCI ? { type:"data", symmetric:false, array:eHi,
-        arrayminus:eLo, color:color, thickness:1, width:3, opacity:0.55 }
+        arrayminus:eLo, color:color, thickness: ph ? PH.ciThick : 1, width:3, opacity:0.55 }
         : { visible:false },
       hovertemplate:"%{text}<extra></extra>", text:text };
   };
@@ -339,11 +364,10 @@
         align: "left", text: "<b>" + wrapLabel(escAnn(l.text), 13) + "</b>", font: { size: 12, color: l.color } };
     }));
     layout.showlegend = false;
-    if (layout.yaxis) { delete layout.yaxis.title; layout.yaxis.tickfont = { size: 12 }; }
-    layout.xaxis.tickfont = { size: 12 };
+    if (layout.yaxis) delete layout.yaxis.title;
     layout.margin = { t: 16, r: 104, b: 36, l: 44 };
     layout.height = 440;
-    return layout;
+    return phoneAxes(layout);
   }
 
   // User-set y-axis range (Over time). Applied only when both ends are numbers
@@ -384,7 +408,7 @@
         var name = (groups.length > 1 || (ch !== "OVERALL" && !combined) ? g.group + ": " : "") + word;
         return { name: name, x: xs, type:"scatter", mode:"lines+markers", connectgaps:false,
           y: xs.map(function (y) { var r = by[y]; return r ? (key === "applicants" ? r.applicants : r.accepted) : null; }),
-          line:{ color: color, width: 2.4, dash: dash }, marker:{ color: color, size: 7 },
+          line:{ color: color, width: narrowView() ? PH.line : 2.4, dash: dash }, marker:{ color: color, size: narrowView() ? PH.marker : 7 },
           hovertemplate: "%{x}: %{y:,} " + word.toLowerCase() + (groups.length > 1 ? "<br>" + g.group : "") + "<extra></extra>" };
       }
       traces.push(series("applicants", "solid", "Applicants"));
@@ -408,8 +432,20 @@
         gridcolor:GRID, zeroline:false, linecolor:AXISLINE, tickcolor:AXISLINE }),
       hovermode:"closest", legend:{ orientation:"h", y:-0.18, bgcolor:"rgba(0,0,0,0)", font:{ size:12 } }
     };
+    document.getElementById("chart")._smallMult = false;
     Plotly.react("chart", traces, lockZoom(phoneLines(layout, traces)), PLOT_CFG);
   }
+
+  // Phones: x range padded so the value labels beside the marks have room.
+  // lo/hi: data extent; padL/padR: the share of the axis kept free on each side.
+  // A custom range (applyX) still wins, because applyX runs after this.
+  function padRange(lo, hi, padL, padR) {
+    var span = (hi - lo) || 1, total = span / (1 - padL - padR);
+    return [lo - padL * total, hi + padR * total];
+  }
+  var LABEL_PAD = 0.15;
+  // Signed value to 1 dp for chart labels; zero has no sign ("0.0", never "+0.0" or "-0.0").
+  function sgn1(v) { var t = v.toFixed(1); return t === "0.0" || t === "-0.0" ? "0.0" : (v > 0 ? "+" : "") + t; }   // about 50 px of a 340 px plot: fits "+12.3" at 12 px plus its offset
 
   function renderTrend() {
     if (state.trendMode === "numbers") { renderNumbers(); return; }
@@ -457,6 +493,15 @@
       (rr ? "Ratio of each group's acceptance rate to " + ref + " each year (1 = parity), with 95% intervals."
          : vs ? "Difference from " + ref + " each year, in percentage points, with 95% intervals."
          : "Share of applicants accepted each year, with 95% Wilson intervals.") + combNote);
+    var gd = document.getElementById("chart");
+    // Phones, 3 or more separate lines: one small panel per group instead of a tangle.
+    if (narrowView() && !combining && traces.length >= 3) {
+      var sm = smallMultiples(traces, { vs: vs, rr: rr, showDEI: showDEI });
+      gd._smallMult = true;
+      Plotly.react("chart", sm.data, lockZoom(sm.layout), PLOT_CFG);
+      return;
+    }
+    gd._smallMult = false;
     var layout = {
       paper_bgcolor:BG, plot_bgcolor:BG, height:480,
       font:{ family:"Inter, system-ui, sans-serif", color:"#1a1a1a", size:13 },
@@ -473,7 +518,92 @@
       ] : []
     };
     Plotly.react("chart", traces, lockZoom(phoneLines(layout, traces)), PLOT_CFG);
-    var gd = document.getElementById("chart"); gd._lastHi = null; bindTrendHover(gd);
+    gd._lastHi = null; bindTrendHover(gd);
+  }
+
+  // Small multiples (phones, Over time, Rate or Vs reference, 3+ lines): one
+  // panel per group in 2 columns. Each panel draws its own group in colour over
+  // the other groups in faint grey, with one shared y range for every panel, the
+  // DEI band and the reference line in each panel, and only the first and last
+  // year on the x axis. The panel title names the group and its latest value.
+  var SM = { cols: 2, panelH: 118, rowGap: 30, colGap: 0.07, titleLine: 16, nameWrap: 16, lineFit: 21 };
+  function smallMultiples(traces, o) {
+    var n = traces.length, cols = SM.cols, rows = Math.ceil(n / cols);
+    var x0 = state.trendFrom - 0.5, x1 = state.trendTo + 0.5, refY = o.rr ? 1 : 0;
+    // shared y range: every value (and interval end, when shown), the reference
+    // line in Vs reference and zero for rates; a user-set range wins (applyY)
+    var lo = Infinity, hi = -Infinity;
+    traces.forEach(function (t) {
+      t.y.forEach(function (v, k) {
+        if (v == null) return;
+        var a = v, b = v;
+        if (state.showCI && t.error_y && t.error_y.array) { b = v + t.error_y.array[k]; a = v - t.error_y.arrayminus[k]; }
+        lo = Math.min(lo, a); hi = Math.max(hi, b);
+      });
+    });
+    if (!isFinite(lo)) { lo = refY; hi = refY + 1; }
+    if (o.vs) { lo = Math.min(lo, refY); hi = Math.max(hi, refY); } else lo = Math.min(lo, 0);
+    var pad = (hi - lo || 1) * 0.06, yr = [o.vs || lo < 0 ? lo - pad : lo, hi + pad];
+    var user = applyY({});
+    if (user.range) yr = user.range;
+    function fmtV(v) {
+      return o.rr ? v.toFixed(2) + "x" : o.vs ? (v >= 0 ? "+" : "") + v.toFixed(1) + " pp" : v.toFixed(1) + "%";
+    }
+    // titles: wrapped name plus the latest value, on the name's last line if it fits
+    var titles = traces.map(function (t) {
+      var i = t.y.length - 1; while (i >= 0 && t.y[i] == null) i--;
+      var val = i >= 0 ? fmtV(t.y[i]) + " in " + t.x[i] : "no data";
+      var lines = wrapLabel(escAnn(t.name), SM.nameWrap).split("<br>");
+      var last = lines[lines.length - 1].replace(/&amp;/g, "&");
+      var color = (t.line && t.line.color) || INK, name = "<b>" + lines.join("<br>") + "</b>";
+      var vSpan = '<span style="color:' + INK + '">' + val + "</span>";
+      var same = last.length + 1 + val.length <= SM.lineFit;
+      return { text: name + (same ? " " : "<br>") + vSpan, lines: lines.length + (same ? 0 : 1), color: color };
+    });
+    var titleH = Math.max.apply(null, titles.map(function (t) { return t.lines; })) * SM.titleLine + 6;
+    var m = { t: 8, r: 20, b: 26, l: 40 };
+    var plotH = rows * (titleH + SM.panelH) + (rows - 1) * SM.rowGap;
+    var H = plotH + m.t + m.b;
+    var colW = (1 - SM.colGap * (cols - 1)) / cols;
+    var layout = { paper_bgcolor: BG, plot_bgcolor: BG, height: H, margin: m, showlegend: false,
+      font: { family: "Inter, system-ui, sans-serif", color: "#1a1a1a", size: 13 },
+      hovermode: "closest", shapes: [], annotations: [] };
+    var data = [];
+    traces.forEach(function (t, p) {
+      var r = Math.floor(p / cols), c = p % cols, sfx = p === 0 ? "" : String(p + 1);
+      var xa = "x" + sfx, ya = "y" + sfx;
+      var top = 1 - (r * (titleH + SM.panelH + SM.rowGap) + titleH) / plotH;
+      var bot = top - SM.panelH / plotH;
+      var xd = [c * (colW + SM.colGap), c * (colW + SM.colGap) + colW];
+      layout["xaxis" + sfx] = { domain: xd, anchor: ya, range: [x0, x1], showgrid: false, zeroline: false,
+        linecolor: AXISLINE, tickcolor: AXISLINE, tickmode: "array",
+        tickvals: state.trendFrom === state.trendTo ? [state.trendFrom] : [state.trendFrom, state.trendTo],
+        ticktext: state.trendFrom === state.trendTo ? [String(state.trendFrom)] : [String(state.trendFrom), String(state.trendTo)] };
+      layout["yaxis" + sfx] = { domain: [bot, top], anchor: xa, range: yr.slice(), autorange: false,
+        showgrid: true, gridcolor: GRID, zeroline: false, linecolor: AXISLINE, tickcolor: AXISLINE, nticks: 4,
+        showticklabels: c === 0, ticksuffix: o.rr ? "x" : o.vs ? "" : "%" };
+      if (o.showDEI) layout.shapes.push({ type: "rect", xref: xa, yref: ya, x0: DEI_FROM - 0.5, x1: Math.min(DEI_TO + 0.5, x1),
+        y0: yr[0], y1: yr[1], fillcolor: "#ddcfb8", opacity: 0.55, line: { width: 0 }, layer: "below" });
+      if (o.vs) layout.shapes.push({ type: "line", xref: xa, yref: ya, x0: x0, x1: x1, y0: refY, y1: refY,
+        line: { color: "#7a6f5a", width: 1.4, dash: "dot" } });
+      // the other groups, faint, behind
+      traces.forEach(function (u, q) {
+        if (q === p) return;
+        data.push({ type: "scatter", mode: "lines", x: u.x, y: u.y, xaxis: xa, yaxis: ya, connectgaps: true,
+          line: { color: NOSIG, width: PH.faint }, opacity: 0.75, hoverinfo: "skip", showlegend: false });
+      });
+      // this group, in colour, on top (intervals only here, when shown)
+      var own = JSON.parse(JSON.stringify(t));
+      own.xaxis = xa; own.yaxis = ya; own.showlegend = false;
+      data.push(own);
+      // titles hang from the top of their slot, so one-line and two-line titles align
+      layout.annotations.push({ xref: "paper", yref: "paper", x: xd[0], y: top + titleH / plotH, xanchor: "left", yanchor: "top",
+        showarrow: false, align: "left", text: titles[p].text, font: { size: 12.5, color: titles[p].color } });
+    });
+    if (o.showDEI) layout.annotations.push({ xref: "x", yref: "paper", x: Math.min(DEI_TO + 0.4, x1 - 0.1),
+      y: 1 - titleH / plotH, xanchor: "right", yanchor: "top", yshift: -2, showarrow: false, text: "DEI era",
+      font: { size: 10.5, color: "#7a6c55" } });
+    return { data: data, layout: phoneAxes(layout) };
   }
 
   // Hover to focus: hovering a line dims the others so a tangle is readable on
@@ -483,7 +613,7 @@
     if (gd._trendHoverBound) return;
     gd._trendHoverBound = true;
     gd.on("plotly_hover", function (ev) {
-      if (state.view !== "trend") return;
+      if (state.view !== "trend" || gd._smallMult) return;
       var n = gd.data.length; if (n < 2) return;
       var hi = (ev.points && ev.points.length) ? ev.points[0].curveNumber : -1;
       if (hi < 0 || hi === gd._lastHi) return;
@@ -492,7 +622,7 @@
       Plotly.restyle(gd, { opacity: op });
     });
     gd.on("plotly_unhover", function () {
-      if (state.view !== "trend" || gd._lastHi == null) return;
+      if (state.view !== "trend" || gd._smallMult || gd._lastHi == null) return;
       gd._lastHi = null;
       var op = []; for (var i = 0; i < gd.data.length; i++) op.push(1);
       Plotly.restyle(gd, { opacity: op });
@@ -751,12 +881,14 @@
       hovertemplate: "%{text}<extra></extra>", text: rows.map(function (r) { return hov(r, "dei"); }) };
 
     // one arrow per group: pre-DEI -> DEI, coloured only when significant
+    var narrow = narrowView();
+    if (narrow) preTrace.marker.size = 9;
     var arrows = rows.map(function (r, i) {
       var sig = r.testable && r.sig;
       var col = sig ? RED : "#bdb29a";   // red when significant; direction is the arrow
       return { x: r.dei.mean, y: i, ax: r.pre.mean, ay: i,
         xref: "x", yref: "y", axref: "x", ayref: "y",
-        showarrow: true, arrowhead: 3, arrowsize: 1.2, arrowwidth: sig ? 3 : 1.6,
+        showarrow: true, arrowhead: 3, arrowsize: 1.2, arrowwidth: sig ? (narrow ? 3.6 : 3) : (narrow ? 2.2 : 1.6),
         arrowcolor: col, standoff: 5, startstandoff: 4 };
     });
 
@@ -765,14 +897,31 @@
     if (pp) shapes.push({ type: "line", xref: "x", x0: 0, x1: 0, yref: "paper", y0: 0, y1: 1,
       line: { color: "#7a6f5a", width: 1.4, dash: "dot" } });
     setEraHead(res);
-    var narrow = narrowView();
-    // value text "pre → DEI" at the right of every row (bold when the change is significant)
-    var vals = rows.map(function (r, i) {
-      var sig = r.testable && r.sig, f = function (v) { return (pp && v >= 0 ? "+" : "") + v.toFixed(1); };
-      return { xref: "paper", x: 1, xanchor: narrow ? "right" : "left", xshift: narrow ? 0 : 10, yref: "y", y: i, yshift: narrow ? 15 : 0, showarrow: false,
-        text: (sig ? "<b>" : "") + f(r.pre.mean) + " → " + f(r.dei.mean) + (sig ? "</b>" : ""),
-        font: { size: 12, color: sig ? INK : "#7a6f5f" } };
+    var f = function (v) { return pp ? sgn1(v) : v.toFixed(1); };
+    // Desktop: "pre → DEI" at the right of every row. Phones: the pre value beside
+    // its dot, on the side away from the arrow, and the DEI value beyond the
+    // arrowhead. Bold when the change is significant.
+    var vals = [];
+    rows.forEach(function (r, i) {
+      var sig = r.testable && r.sig, font = { size: 12, color: sig ? INK : "#7a6f5f" };
+      var b0 = sig ? "<b>" : "", b1 = sig ? "</b>" : "";
+      if (!narrow) {
+        vals.push({ xref: "paper", x: 1, xanchor: "left", xshift: 10, yref: "y", y: i, showarrow: false,
+          text: b0 + f(r.pre.mean) + " → " + f(r.dei.mean) + b1, font: font });
+        return;
+      }
+      var up = r.dei.mean >= r.pre.mean;
+      vals.push({ xref: "x", x: r.pre.mean, yref: "y", y: i, xanchor: up ? "right" : "left", xshift: up ? -8 : 8,
+        showarrow: false, text: f(r.pre.mean), font: { size: 12, color: "#7a6f5f" }, bgcolor: BG });
+      vals.push({ xref: "x", x: r.dei.mean, yref: "y", y: i, xanchor: up ? "left" : "right", xshift: up ? 9 : -9,
+        showarrow: false, text: b0 + f(r.dei.mean) + b1, font: font, bgcolor: BG });
     });
+    var eraX = null;
+    if (narrow && rows.length) {
+      var all = []; rows.forEach(function (r) { all.push(r.pre.mean, r.dei.mean); });
+      if (pp) all.push(0);
+      eraX = padRange(Math.min.apply(null, all), Math.max.apply(null, all), LABEL_PAD, LABEL_PAD);
+    }
     var names = narrow ? rows.map(function (r, i) {
       return { xref: "paper", x: 0, xanchor: "left", yref: "y", y: i, yshift: 15, showarrow: false,
         text: escAnn(r.group), font: { size: 12, color: INK }, bgcolor: BG };
@@ -780,8 +929,9 @@
     var layout = {
       paper_bgcolor: BG, plot_bgcolor: BG, height: Math.max(260, rows.length * (narrow ? 52 : 40) + 70),
       font: { family: "Inter, system-ui, sans-serif", color: "#1a1a1a", size: 13 },
-      margin: narrow ? { t: 26, r: 96, b: 40, l: 10 } : { t: 18, r: 120, b: 54, l: 200 },
+      margin: narrow ? { t: 26, r: 10, b: 40, l: 10 } : { t: 18, r: 120, b: 54, l: 200 },
       xaxis: applyX("era", { title: narrow ? undefined : xtitle, showgrid: true, gridcolor: GRID, zeroline: false,
+        range: eraX || undefined, autorange: eraX ? false : undefined,
         linecolor: AXISLINE, tickcolor: AXISLINE, ticksuffix: pp ? "" : "%", tickformat: pp ? "+," : "",
         tickfont: { size: 12 } }),
       yaxis: { tickvals: narrow ? [] : idx, ticktext: narrow ? [] : ys, autorange: "reversed", showgrid: false,
@@ -790,7 +940,7 @@
       hovermode: "closest", showlegend: false, shapes: shapes,
       annotations: arrows.concat(vals, names)
     };
-    Plotly.react("chart", [preTrace, deiTrace], lockZoom(layout), PLOT_CFG);
+    Plotly.react("chart", [preTrace, deiTrace], lockZoom(phoneAxes(layout)), PLOT_CFG);
   }
 
   // Source groups behind a forest row, for the pooled-cell flags.
@@ -857,27 +1007,41 @@
     var withCmp = info.filter(function (o) { return o.cmp != null; });
     if (withCmp.length) traces.push({ type:"scatter", mode:"markers", hoverinfo:"skip",
       x: withCmp.map(function (o) { return o.cmp; }), y: withCmp.map(function (o) { return o.i; }),
-      marker:{ symbol:"line-ns", size: narrow ? 15 : 18, line:{ color:INK, width:2.6 } } });
+      marker:{ symbol:"line-ns", size: narrow ? 17 : 18, line:{ color:INK, width: narrow ? 3 : 2.6 } } });
     ["ns", "desc", "sig", "above", "below"].forEach(function (k) {
       var g = info.filter(function (o) { return o.c === k; }); if (!g.length) return;
       var hollow = k === "ns";
       traces.push({ type:"scatter", mode:"markers",
         x: g.map(function (o) { return val(o.r); }), y: g.map(function (o) { return o.i; }),
-        error_x:{ type:"data", symmetric:false, color: COL[k], thickness: 2.4, width: 0,
+        error_x:{ type:"data", symmetric:false, color: COL[k], thickness: narrow ? 3.2 : 2.4, width: 0,
           array: g.map(function (o) { return pp ? o.r.pp_hi - o.r.pp : o.r.rr_hi - o.r.rr; }),
           arrayminus: g.map(function (o) { return pp ? o.r.pp - o.r.pp_lo : o.r.rr - o.r.rr_lo; }) },
-        marker:{ size: hollow ? 11 : 12, color: hollow ? BG : COL[k],
-          line:{ color: hollow ? "#8a8073" : COL[k], width: hollow ? 2 : 0 } },
+        marker:{ size: (hollow ? 11 : 12) + (narrow ? 2 : 0), color: hollow ? BG : COL[k],
+          line:{ color: hollow ? "#8a8073" : COL[k], width: hollow ? (narrow ? 2.4 : 2) : 0 } },
         hovertemplate:"%{text}<extra></extra>", text: g.map(hover) });
     });
 
-    // value at the right of each row; on phones the name sits above the row
+    // Desktop: the value at the right of each row. Phones: the value just right
+    // of the interval's upper end (or of the comparison tick, if that is further
+    // right, so the two never overlap), and the name above the row.
+    function hiEnd(o) {
+      var h = pp ? o.r.pp_hi : o.r.rr_hi;
+      return o.cmp != null ? Math.max(h, o.cmp) : h;
+    }
     var annos = info.map(function (o) {
       var strong = o.c !== "ns" && o.c !== "desc";
-      return { xref:"paper", x:1, xanchor:"right", yref:"y", y:o.i, yshift: narrow ? 15 : 0,
-        showarrow:false, text: (strong ? "<b>" : "") + (pp ? (val(o.r) >= 0 ? "+" : "") + val(o.r).toFixed(1) : val(o.r).toFixed(2) + "x") + (strong ? "</b>" : ""),
-        font:{ size: 12, color: strong ? INK : "#7a6f5f" } };
+      var txt = (strong ? "<b>" : "") + (pp ? sgn1(val(o.r)) : val(o.r).toFixed(2) + "x") + (strong ? "</b>" : "");
+      var font = { size: 12, color: strong ? INK : "#7a6f5f" };
+      if (narrow) return { xref:"x", x: hiEnd(o), xanchor:"left", xshift: 7, yref:"y", y:o.i,
+        showarrow:false, text: txt, font: font, bgcolor: BG };
+      return { xref:"paper", x:1, xanchor:"right", yref:"y", y:o.i, showarrow:false, text: txt, font: font };
     });
+    var forestX = null;
+    if (narrow && info.length) {
+      var ext = [pp ? 0 : 1];
+      info.forEach(function (o) { ext.push(pp ? o.r.pp_lo : o.r.rr_lo, hiEnd(o)); });
+      forestX = padRange(Math.min.apply(null, ext), Math.max.apply(null, ext), 0.03, LABEL_PAD);
+    }
     if (narrow) info.forEach(function (o) {
       annos.push({ xref:"paper", x:0, xanchor:"left", yref:"y", y:o.i, yshift:15, showarrow:false,
         text: escAnn(o.label), font:{ size:12, color:INK }, bgcolor: BG });
@@ -889,8 +1053,9 @@
     var layout = {
       paper_bgcolor:BG, plot_bgcolor:BG, height: Math.max(260, rows.length * rowH + 70),
       font:{ family:"Inter, system-ui, sans-serif", color:"#1a1a1a", size:13 },
-      margin:{ t: narrow ? 26 : 10, r: 58, b:44, l: narrow ? 8 : 10 },
+      margin:{ t: narrow ? 26 : 10, r: narrow ? 10 : 58, b:44, l:10 },
       xaxis: applyX("forest", { showgrid:true, gridcolor:GRID, zeroline:false, linecolor:AXISLINE, tickcolor:AXISLINE,
+        range: forestX || undefined, autorange: forestX ? false : undefined,
         tickformat: pp ? "+," : "", ticksuffix: pp ? "" : "x", fixedrange:true }),
       yaxis:{ automargin:true, showgrid:false, zeroline:false, showline:false, autorange:"reversed",
         tickvals: narrow ? [] : info.map(function (o) { return o.i; }),
@@ -901,7 +1066,7 @@
         line:{ color:"#6d6252", width:1.3, dash:"dash" } }],
       annotations: annos
     };
-    Plotly.react("chart", traces, lockZoom(layout), PLOT_CFG);
+    Plotly.react("chart", traces, lockZoom(phoneAxes(layout)), PLOT_CFG);
   }
 
   // Shared title/subtitle for the forest and master views (chart and table).
@@ -1205,25 +1370,36 @@
     if (narrow) {
       // phones: numeric rows so the name can sit above its two bars, full width
       var idx = ys.map(function (_, i) { return i; });
-      traces[0].y = idx.map(function (i) { return i - 0.1; }); traces[0].width = 0.26;
-      traces[1].y = idx.map(function (i) { return i + 0.2; }); traces[1].width = 0.26;
+      traces[0].y = idx.map(function (i) { return i - 0.08; }); traces[0].width = 0.32;
+      traces[1].y = idx.map(function (i) { return i + 0.26; }); traces[1].width = 0.32;
     }
-    var fmt = function (v) { return (v >= 0 ? "+" : "") + v.toFixed(1); };
+    // zero has no sign: a value that rounds to 0.0 prints as "0.0", never "+0.0" or "-0.0"
+    var fmt = sgn1;
     var annos = [{ x: 0, xref: "x", y: 1.0, yref: "paper", yanchor: "bottom", xanchor: "center", text: annoLabel,
       showarrow: false, font: { size: 10.5, color: "#7a6c55" } }];
-    if (narrow) ys.forEach(function (c, i) {
-      annos.push({ xref: "paper", x: 0, xanchor: "left", yref: "y", y: i - 0.3, yanchor: "bottom", showarrow: false,
-        text: escAnn(c), font: { size: 12, color: INK }, bgcolor: BG });
-      annos.push({ xref: "paper", x: 1, xanchor: "right", yref: "y", y: i - 0.3, yanchor: "bottom", showarrow: false,
-        text: '<span style="color:' + BLUE + '">' + fmt(appDev[i]) + '</span>  <span style="color:' + RED + '">' + fmt(accDev[i]) + "</span>",
-        font: { size: 12 } });
-    });
+    // phones: the name above its pair of bars, each value at its own bar's end
+    // (outside right for a positive bar, outside left for a negative one)
+    var repX = null;
+    if (narrow) {
+      ys.forEach(function (c, i) {
+        annos.push({ xref: "paper", x: 0, xanchor: "left", yref: "y", y: i - 0.3, yanchor: "bottom", showarrow: false,
+          text: escAnn(c), font: { size: 12, color: INK }, bgcolor: BG });
+        [[appDev[i], traces[0].y[i], BLUE], [accDev[i], traces[1].y[i], RED]].forEach(function (b) {
+          annos.push({ xref: "x", x: b[0], yref: "y", y: b[1], xanchor: b[0] >= 0 ? "left" : "right",
+            xshift: b[0] >= 0 ? 4 : -4, showarrow: false, text: fmt(b[0]), font: { size: 12, color: b[2] } });
+        });
+      });
+      var all = appDev.concat(accDev, [0]);
+      var lo = Math.min.apply(null, all), hi = Math.max.apply(null, all);
+      repX = padRange(lo, hi, lo < 0 ? LABEL_PAD : 0.03, hi > 0 ? LABEL_PAD : 0.03);
+    }
     var layout = {
       paper_bgcolor: BG, plot_bgcolor: BG, height: Math.max(280, ys.length * (narrow ? 76 : 64) + 70),
       font: { family: "Inter, system-ui, sans-serif", color: "#1a1a1a", size: 13 },
       margin: narrow ? { t: 30, r: 12, b: 40, l: 10 } : { t: 26, r: 26, b: 56, l: 168 },
       barmode: narrow ? "overlay" : "group", bargap: 0.4, bargroupgap: 0.12,
       xaxis: applyX("rep", { ticksuffix: narrow ? "" : " pp", tickformat: "+,", showgrid: true, gridcolor: GRID,
+        range: repX || undefined, autorange: repX ? false : undefined,
         zeroline: false, linecolor: AXISLINE, tickcolor: AXISLINE, tickfont: { size: 12 } }),
       yaxis: narrow ? { tickvals: [], autorange: "reversed", showgrid: false, zeroline: false, showline: false,
           range: [ys.length - 0.45, -0.75] }
@@ -1236,7 +1412,7 @@
         line: { color: "#7a6f5a", width: 1.4, dash: "dot" } }],
       annotations: annos
     };
-    Plotly.react("chart", traces, lockZoom(layout), PLOT_CFG);
+    Plotly.react("chart", traces, lockZoom(phoneAxes(layout)), PLOT_CFG);
   }
 
   // ==========================================================================
@@ -1606,6 +1782,24 @@
     }
     labelTableCells();
     updateNote();
+    foldNote();
+  }
+
+  // Phones: the footnote folds behind a "How to read this chart" button, closed
+  // by default. Desktop shows it in full (the CSS only folds under phone-charts),
+  // and the PNG always carries the full text (it is built from state.sub).
+  function foldNote() {
+    var note = document.getElementById("chart-note"), btn = document.getElementById("note-toggle");
+    if (!note || !btn) return;
+    var open = !!state.noteOpen;
+    note.classList.toggle("folded", !open);
+    btn.hidden = !note.textContent;
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+    btn.querySelector(".chev").textContent = open ? "▴" : "▾";
+  }
+  function buildNoteToggle() {
+    var btn = document.getElementById("note-toggle");
+    if (btn) btn.addEventListener("click", function () { state.noteOpen = !state.noteOpen; foldNote(); });
   }
 
   function updateNote() {
@@ -2133,7 +2327,7 @@
   buildTabs(); buildCharPicker(); defaultSelection(); buildGroupList();
   buildToggles(); buildTrendModeSeg(); buildEraSeg(); buildRepControls();
   buildYearControls(); buildMeasureSeg(); buildLegendKey(); buildCompareControls(); buildYControls(); buildXControls();
-  buildTableCatList(); buildTableControls(); buildViewToggles(); buildPhoneControls(); buildOptionsToggle();
+  buildTableCatList(); buildTableControls(); buildViewToggles(); buildPhoneControls(); buildOptionsToggle(); buildNoteToggle();
   document.getElementById("dl-png").addEventListener("click", downloadChart);
   updateCharOptions();
   render();
