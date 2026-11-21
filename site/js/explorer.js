@@ -769,7 +769,7 @@
     // value text "pre → DEI" at the right of every row (bold when the change is significant)
     var vals = rows.map(function (r, i) {
       var sig = r.testable && r.sig, f = function (v) { return (pp && v >= 0 ? "+" : "") + v.toFixed(1); };
-      return { xref: "paper", x: 1, xanchor: "right", yref: "y", y: i, yshift: narrow ? 15 : 0, showarrow: false,
+      return { xref: "paper", x: 1, xanchor: narrow ? "right" : "left", xshift: narrow ? 0 : 10, yref: "y", y: i, yshift: narrow ? 15 : 0, showarrow: false,
         text: (sig ? "<b>" : "") + f(r.pre.mean) + " → " + f(r.dei.mean) + (sig ? "</b>" : ""),
         font: { size: 12, color: sig ? INK : "#7a6f5f" } };
     });
@@ -987,7 +987,7 @@
         : res.kind === "single" ? ("<td>" + fmtP(r.pRaw) + "</td>") : "";
       h += "<tr><td style='text-align:left'>" + r.group + "</td>" +
         (master ? "<td style='text-align:left'>" + r.ch + "</td>" : "") +
-        "<td>" + r.n + "</td><td>" + r.rate.toFixed(1) + "%</td>" + effCell +
+        "<td>" + (r.n != null ? r.n.toLocaleString("en-GB") : "") + "</td><td>" + r.rate.toFixed(1) + "%</td>" + effCell +
         "<td>" + ci(r) + "</td>" + pCells + "</tr>";
     });
     h += "</tbody></table>";
@@ -1325,7 +1325,7 @@
   };
   function fmtRate(r) { return r.rate == null ? "&mdash;" : r.rate.toFixed(1) + "%"; }
   function fmtCI(r) { return r.lo == null ? "&mdash;" : r.lo.toFixed(1) + " to " + r.hi.toFixed(1); }
-  function fmtAcc(r) { return r.suppressed ? '<span class="supp">suppressed</span>' : r.accepted; }
+  function fmtAcc(r) { return r.suppressed ? '<span class="supp">suppressed</span>' : r.accepted.toLocaleString("en-GB"); }
 
   function tableSortVal(r, col) {
     switch (col) {
@@ -1349,7 +1349,7 @@
     var range = state.tableYearFrom + " to " + state.tableYearTo;
     var h = '<div class="table-title">' + CHAR_LABELS[state.characteristic] + ': data table</div>';
     h += '<div class="table-sub">' + (pooled
-      ? "Applicants, accepted, and acceptance rate POOLED over " + range + ", with 95% Wilson " +
+      ? "Applicants, accepted, and acceptance rate pooled over " + range + ", with 95% Wilson " +
         "interval. Suppressed years are excluded from the pool (a suppressed year contributes neither applicants nor acceptances)."
       : "Applicants, accepted, and acceptance rate per year, " + range + ", with 95% Wilson " +
         "interval. A suppressed acceptance is too small to report; it is not zero.") +
@@ -1365,7 +1365,7 @@
       return "<tr" + (r.isAll ? ' class="allrow"' : "") + "><td>" + r.category +
         (CONSTRUCTED[r.category] ? " *" : "") + (INCOMPLETE[r.category] ? " †" : "") + "</td>" +
         (pooled ? "" : "<td>" + r.year + "</td>") +
-        "<td>" + r.applicants + "</td><td>" + fmtAcc(r) + "</td><td>" + fmtRate(r) +
+        "<td>" + r.applicants.toLocaleString("en-GB") + "</td><td>" + fmtAcc(r) + "</td><td>" + fmtRate(r) +
         "</td><td>" + fmtCI(r) + "</td>" +
         (pooled ? ("<td>" + (r.yearsPooled != null ? r.yearsPooled : "") +
           (r.nSupp ? " (" + r.nSupp + " suppressed)" : "") + "</td>") : "") +
@@ -1425,10 +1425,31 @@
   // keep hover tooltips. fixedrange on both axes is the bulletproof way.
   function lockZoom(layout) {
     layout.dragmode = false;
+    // Plotly.react reuses the width it measured last time and only re-measures on
+    // a window resize, so after the phone switch (or a view that was hidden) the
+    // chart would overflow or underfill its card. Give it the card's width now.
+    var gd = document.getElementById("chart");
+    var cw = gd ? Math.floor(gd.getBoundingClientRect().width) : 0;   // floor: never 1 px wider than the card
+    if (cw) layout.width = cw;
     ["xaxis", "yaxis"].forEach(function (k) { if (layout[k]) layout[k].fixedrange = true; });
     return layout;
   }
   var PLOT_CFG = { responsive: true, displayModeBar: false, scrollZoom: false, doubleClick: false };
+  // Signed axes ("+,") label zero as "+0"; zero has no sign. Plotly has no format
+  // for "sign except at zero", so the label is corrected after drawing (on screen)
+  // or fixed as explicit ticks (in the PNG export).
+  var SIGNED_ZERO = /^\+0(\.0+)?( pp|%|x)?$/;
+  function unsignZero(gd) {
+    gd.querySelectorAll(".xtick text, .ytick text").forEach(function (t) {
+      if (SIGNED_ZERO.test(t.textContent)) t.textContent = t.textContent.slice(1); });
+  }
+  function unsignZeroExport(gd) {
+    var ax = gd._fullLayout && gd._fullLayout.xaxis, v = ax && ax._vals;
+    if (!v || !v.some(function (t) { return SIGNED_ZERO.test(t.text); })) return Promise.resolve();
+    return Plotly.relayout(gd, { "xaxis.tickmode": "array",
+      "xaxis.tickvals": v.map(function (t) { return t.x; }),
+      "xaxis.ticktext": v.map(function (t) { return SIGNED_ZERO.test(t.text) ? t.text.slice(1) : t.text; }) });
+  }
   // Narrow viewport (phones): used to shrink the big left label margins so the plot
   // area is not crushed. Plotly automargin still keeps labels from being clipped.
   // Phone chart layout: the PNG being made decides while exporting; otherwise the
@@ -1523,6 +1544,7 @@
     document.body.appendChild(tmp);
     function cleanup() { try { Plotly.purge(tmp); } catch (e) {} tmp.remove(); }
     var done = Plotly.newPlot(tmp, data, layout, { displayModeBar: false, staticPlot: true })
+      .then(function () { return unsignZeroExport(tmp); })
       .then(function () { return Plotly.toImage(tmp, { format: "png", width: W, height: H, scale: SCALE }); })
       .then(function (url) {
         if (!returnUrl) {
@@ -1546,10 +1568,9 @@
     var repTable = state.view === "rep" && state.repMode === "table";
     var forestTable = state.view === "forest" && state.forestMode === "table" && !isSESPairwise();
     var eraTable = state.view === "era" && state.eraView === "table";
-    var dl = document.getElementById("dl-png");
-    if (dl) dl.style.display =
-      (state.view === "table" || isSESPairwise() || repTable || forestTable || eraTable)
-        ? "none" : "inline-flex";
+    // the download button and its format picker go together: hidden when there is no chart
+    var dl = document.getElementById("dl-group");
+    if (dl) dl.hidden = state.view === "table" || isSESPairwise() || repTable || forestTable || eraTable;
     // Hide the forest View toggle when the forest is the SES pairwise matrix (which
     // is itself a table), so the toggle never offers a redundant/empty mode.
     var fvc = document.getElementById("forest-view-ctl");
@@ -1579,6 +1600,9 @@
       else if (state.view === "era") renderEra();
       else if (state.view === "rep") renderRep();
       else renderForest();
+      if (!chart.__zeroHook && chart.on) {
+        chart.on("plotly_afterplot", function () { unsignZero(chart); }); chart.__zeroHook = true; }
+      unsignZero(chart);
     }
     labelTableCells();
     updateNote();
@@ -1613,12 +1637,14 @@
           var tail = isTbl ? "Each row lists the shares and the representation ratio."
             : "Hover for the shares and representation ratio.";
           if (state.characteristic === "DISABILITY")
-            return lead + " the applicant and accepted disability shares sit above (+) or below (-) the age-adjusted population rate" + dl + ". Applicants are young and disability rises with age, so the whole-population rate (about 18%) misleads; instead the Census 2021 age-specific rates are re-weighted to each pool's age profile (indirect standardisation), giving an expected rate of about 12%. This adjusts for age, not the definition gap (Census day-to-day limitation vs self-reported conditions) or sex. " + tail;
+            return lead + " the applicant and accepted disability shares sit above (+) or below (−) the age-adjusted population rate" + dl + ". Applicants are young and disability rises with age, so the whole-population rate (about 18%) misleads; instead the Census 2021 age-specific rates are re-weighted to each pool's age profile (indirect standardisation), giving an expected rate of about 12%. This adjusts for age, not the definition gap (Census day-to-day limitation vs self-reported conditions) or sex. " + tail;
           if (state.characteristic === "SOCIO-ECONOMIC BACKGROUND")
-            return lead + " the applicant and accepted shares in each POLAR quintile sit above (+) or below (-) 20%" + dl + ". POLAR groups areas by the share of young people entering higher education, in equal fifths, so 20% per quintile is the representative baseline. Quintile 1 is the lowest-participation, most disadvantaged areas. It is an area-based proxy assigned from home postcode, not individual socio-economic status. " + tail;
+            return lead + " the applicant and accepted shares in each POLAR quintile sit above (+) or below (−) 20%" + dl + ". POLAR groups areas by the share of young people entering higher education, in equal fifths, so 20% per quintile is the representative baseline. Quintile 1 is the lowest-participation, most disadvantaged areas. It is an area-based proxy assigned from home postcode, not individual socio-economic status. " + tail;
           if (state.characteristic === "ETHNICITY")
-            return lead + " each group's applicant and accepted share sits above (+) or below (-) its population share" + (isTbl ? " (Census 2021)" : " (dotted line, Census 2021)") + ". British English, Scottish and Welsh are combined as White British, which the Census does not split. " + tail;
-          return lead + " each group's applicant and accepted share sits above (+) or below (-) its population share. " + (isTbl ? "The benchmark is the population (Census 2021). " : "The dotted line is the population (Census 2021). ") + tail;
+            return lead + " each group's applicant and accepted share sits above (+) or below (−) its population share" + (isTbl ? " (Census 2021)" : " (dotted line, Census 2021)") + ". British English, Scottish and Welsh are combined as White British, which the Census does not split. " + tail;
+          // chart mode: the subtitle already says what a bar is, so only say how to read it
+          if (!isTbl) return "Right of the dotted line: over-represented; left: under-represented. " + tail;
+          return lead + " each group's applicant and accepted share sits above (+) or below (−) its population share. The benchmark is the population (Census 2021). " + tail;
         })()
       : state.view === "era"
         ? "Each value is the mean of the group's per-year figures in that era, with a 95% t-interval. Source: Clearing House for Postgraduate Courses in Clinical Psychology."
@@ -2111,6 +2137,16 @@
   document.getElementById("dl-png").addEventListener("click", downloadChart);
   updateCharOptions();
   render();
+  // Safety net: if the card changes width for any other reason (a scrollbar, the
+  // options panel), redraw the chart at the new width rather than overflow.
+  if (window.ResizeObserver) {
+    var chartEl = document.getElementById("chart");
+    new ResizeObserver(function () {
+      if (state.exporting || !chartEl._fullLayout || chartEl.style.display === "none") return;
+      var w = Math.floor(chartEl.getBoundingClientRect().width);
+      if (w && Math.abs(w - chartEl._fullLayout.width) > 1) Plotly.relayout(chartEl, { width: w });
+    }).observe(chartEl.parentElement);
+  }
   // Debug and test hook (read-only): lets the browser check reproduce the R oracle.
   window.__explorer = { computeMaster: computeMaster, computeContextAll: computeContextAll, exportPNG: exportPNG,
     computeForest: function (ch, years) { var s = state.characteristic; state.characteristic = ch;
