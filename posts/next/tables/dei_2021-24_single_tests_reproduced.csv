@@ -1,0 +1,5 @@
+"test","app","acc","ref_app","ref_acc","rate","ref_rate","gap_pp","lo","hi","p","sig"
+"Male vs Female",3204,634,16122,3772,19.79,23.4,-3.61,-5.11,-2.05,0,TRUE
+"40+ vs under 40",963,96,18359,4344,9.97,23.66,-13.69,-15.54,-11.55,0,TRUE
+"Has dependants vs No dependants",2195,281,17152,4141,12.8,24.14,-11.34,-12.82,-9.75,0,TRUE
+"Q1 vs Q5 (lowest vs highest HE participation)",1809,356,4623,1240,19.68,26.82,-7.14,-9.33,-4.87,0,TRUE

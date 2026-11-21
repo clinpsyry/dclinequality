@@ -2,7 +2,7 @@
 # drifting residual rows across years, to decide how Mixed (all) and Christian
 # are built and how merged residuals are handled. Read-only.
 
-d <- read.csv("equalopps_2015-2024_merged.csv", stringsAsFactors = FALSE,
+d <- read.csv("data/equalopps_merged.csv", stringsAsFactors = FALSE,
               check.names = FALSE, na.strings = c("", "NA"))
 
 show <- function(sec, pattern) {

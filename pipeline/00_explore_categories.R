@@ -2,7 +2,7 @@
 # years each appears in, so the cleaning rules match the data precisely.
 # Read-only. Does not write anything.
 
-csv_path <- "equalopps_2015-2024_merged.csv"
+csv_path <- "data/equalopps_merged.csv"
 d <- read.csv(csv_path, stringsAsFactors = FALSE, check.names = FALSE,
               na.strings = c("", "NA"))
 

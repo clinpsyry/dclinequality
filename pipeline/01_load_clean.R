@@ -1,18 +1,18 @@
 # ============================================================================
 # Phase 1: Data layer for the DClinPsy Equal-Opportunities Explorer
 #
-# Reads equalopps_2015-2024_merged.csv and produces a clean, tidy group-year
+# Reads data/equalopps_merged.csv (built by 00_merge_raw.R) and produces a clean, tidy group-year
 # table with coherence classification, reference-group flags, era tags,
 # suppression flags, and the transparently constructed aggregate groups.
 # Prints a reconciliation table. NO statistics here (those are Phase 2):
 # this script does not compute a rate, interval, p-value, or effect size.
 #
 # House style: no em dashes, colons; "pp" for percentage points.
-# Governance: extracted_docs/STATS_AND_TOOL_GOVERNANCE.md (esp. rules 1, 3, 4,
+# Governance: docs/STATS_AND_TOOL_GOVERNANCE.md (esp. rules 1, 3, 4,
 # 8a, 10, 11). Where this script and that doc disagree, the doc wins.
 # ============================================================================
 
-CSV_PATH <- "equalopps_2015-2024_merged.csv"
+CSV_PATH <- "data/equalopps_merged.csv"
 
 # ---- Eras (governance rule 3) ----------------------------------------------
 ERA_PRE_DEI  <- c(2015, 2016, 2017, 2018, 2019)
@@ -262,9 +262,10 @@ main <- function() {
   for (sec in names(REFERENCE_GROUP)) {
     ref <- REFERENCE_GROUP[[sec]]
     yrs <- sort(unique(d$Year[d$Section == sec & d$Category == ref]))
-    ok <- length(yrs) == 10
+    n_all <- length(unique(d$Year))
+    ok <- length(yrs) == n_all
     cat(sprintf("  %-26s ref '%s': %s\n", sec, ref,
-                if (ok) "all 10 years" else paste("ONLY", paste(yrs, collapse=","))))
+                if (ok) sprintf("all %d years", n_all) else paste("ONLY", paste(yrs, collapse=","))))
   }
   cat("\n")
 

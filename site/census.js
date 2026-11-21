@@ -10,7 +10,7 @@
 //    clinical-psychology-specific representation.
 //  - Geography is England & Wales; applicants are UK-wide.
 //
-// Source files (ONS Census 2021 bulletins) in the project root:
+// Source files (ONS Census 2021 bulletins) in data/raw/census/:
 //  Census Ethnicity.xlsx, Census Religion.xlsx, Census Sexuality.xlsx,
 //  Census Disability.xlsx, percentage-of-males-and-females-in-each-ethnic-group.csv
 // ============================================================================

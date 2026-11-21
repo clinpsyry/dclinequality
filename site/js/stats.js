@@ -99,7 +99,11 @@
     var se = Math.sqrt(pp * (1 - pp) * (1 / n1 + 1 / n2));
     if (se === 0) return null;
     var zstat = (p1 - p2) / se;
-    return 2 * (1 - pnorm(Math.abs(zstat)));
+    // Two-sided p = 2 * (1 - pnorm(|z|)) = erfc(|z| / sqrt 2). Computed directly
+    // from erfc: the subtraction form cancels to exactly 0 below about 1e-17,
+    // which tied the smallest p-values in the BH ranking (found Nov 2026 when the
+    // full forest was checked against R: age 20-24 and dependants, p ~ 1e-32).
+    return erfc(Math.abs(zstat) / Math.SQRT2);
   }
 
   // ---- Rate ratio p1/p2 with Katz log interval (rule 5), null = 1 -----------

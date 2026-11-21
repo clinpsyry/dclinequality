@@ -13,3 +13,9 @@ node_modules/
 
 # RStudio session files
 .Rproj.user/
+
+# Local only: old working files, R session state, raw Clearing House downloads
+archive/
+.RData
+.Rhistory
+data/raw/clearing_house/

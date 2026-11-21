@@ -37,6 +37,7 @@ CONSTRUCTED_GRPS <- c("Christian (all)", "Mixed (all)")
 nchk <- 0; nbad <- 0; bad_eg <- character(0)
 for (g in counts$groups) {
   if (g$characteristic %in% CONSTRUCTED_SECS || g$group %in% CONSTRUCTED_GRPS) next
+  if (isTRUE(g$constructed) || isTRUE(g$contextual)) next   # checked in sections 6 and 7
   for (by in g$by_year) {
     s <- src1(g$characteristic, g$group, by$year); nchk <- nchk + 1
     bad <- FALSE
@@ -58,6 +59,7 @@ cat("\n== 3. No zero-fills: every source-suppressed cell is null in counts.json 
 zf <- 0
 for (g in counts$groups) {
   if (g$characteristic %in% CONSTRUCTED_SECS || g$group %in% CONSTRUCTED_GRPS) next
+  if (isTRUE(g$constructed) || isTRUE(g$contextual)) next
   for (by in g$by_year) {
     s <- src1(g$characteristic, g$group, by$year)
     if (nrow(s) == 1 && is.na(s$accepted_n) && !is.null(by$accepted)) zf <- zf + 1
@@ -110,12 +112,47 @@ ok("Broad Other = published 'Total in the Other group'",
 cat("\n== 5. Reference groups present every year ==\n")
 refs <- counts$meta$references
 present_all <- TRUE
+n_all <- length(unique(raw$Year))
 for (sec in names(refs)) {
-  if (sec == "ETHNIC GROUP (BROAD)") next
+  if (sec == "ETHNIC GROUP (BROAD)" || startsWith(sec, "CONTEXT: ")) next
   yrs <- length(unique(raw$Year[raw$Section == sec & raw$Category == refs[[sec]]]))
-  if (yrs != 10) { present_all <- FALSE; cat("    ", sec, refs[[sec]], yrs, "yrs\n") }
+  if (yrs != n_all) { present_all <- FALSE; cat("    ", sec, refs[[sec]], yrs, "yrs\n") }
 }
-ok("all references present in all 10 years", present_all)
+ok(sprintf("all references present in all %d years", n_all), present_all)
+
+cat("\n== 6. Contextual questions round-trip vs the Contextual admissions files ==\n")
+source("pipeline/00c_contextual.R")
+ctx <- read_contextual(); cbad <- 0; cn <- 0
+for (g in Filter(function(g) isTRUE(g$contextual), counts$groups)) {
+  q <- sub("^CONTEXT: ", "", g$characteristic)
+  for (by in g$by_year) {
+    s <- ctx[ctx$question == q & ctx$answer == g$group & ctx$Year == by$year, ]; cn <- cn + 1
+    if (nrow(s) != 1 || s$applicants_n != by$applicants || !isTRUE(s$accepted_n == by$accepted)) cbad <- cbad + 1
+  }
+}
+ok(sprintf("all %d contextual group-years match the source files", cn), cbad == 0 && cn == nrow(ctx))
+
+cat("\n== 6b. Overall (all applicants) = the published yearly TOTALS row ==\n")
+og <- Filter(function(g) g$characteristic == "OVERALL", counts$groups)[[1]]
+ok(sprintf("overall applicants and acceptances match TOTALS in all %d years", length(og$by_year)),
+   length(og$by_year) == n_all && all(sapply(og$by_year, function(by) {
+     s <- src1("TOTALS", "TOTALS", by$year); nrow(s) == 1 && s$applicants_n == by$applicants && s$accepted_n == by$accepted })))
+
+cat("\n== 7. Combined disability group and pooled-cell flags ==\n")
+SENS <- c("Wheelchair user/mobility difficulties", "Deaf/hearing impairment", "Blind/partially sighted")
+cg <- Filter(function(g) g$group == "Wheelchair, deaf or blind (combined)", counts$groups)[[1]]
+ok("combined group applicants = sum of the three rows, every year", all(sapply(cg$by_year, function(by)
+  by$applicants == sum(raw$applicants_n[raw$Section == "DISABILITY" & raw$Year == by$year & raw$Category %in% SENS]))))
+ok("combined acceptances, where shown, = sum of the reported rows", all(sapply(cg$by_year, function(by)
+  is.null(by$accepted) || by$accepted == sum(raw$accepted_n[raw$Section == "DISABILITY" & raw$Year == by$year &
+    raw$Category %in% SENS], na.rm = TRUE))))
+nflag <- sum(sapply(counts$groups, function(g) sum(sapply(g$by_year, function(by) !is.null(by$pooled_with)))))
+shown <- unique(unlist(lapply(counts$groups, function(g) paste(g$characteristic, g$group))))
+kp <- raw[grepl("^Source pools", raw$note), ]
+nkeep <- sum(paste(kp$Section, kp$Category) %in% shown)   # pools led by a row the explorer shows
+ok(sprintf("every 'keep' pool led by a shown row is flagged (%d of %d)", nflag, nkeep), nflag == nkeep)
+ninto <- sum(sapply(counts$groups, function(g) sum(sapply(g$by_year, function(by) !is.null(by$pooled_into)))))
+ok(sprintf("hidden rows of pools are flagged as pooled into another row (%d)", ninto), ninto > 0)
 
 cat(sprintf("\n%s  (%d failure%s)\n",
     if (fails == 0) "ALL DATA CHECKS PASS" else "DATA VERIFICATION FAILED",

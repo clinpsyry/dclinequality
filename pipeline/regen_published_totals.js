@@ -8,7 +8,7 @@ const path = require("path");
 const ROOT = path.join(__dirname, "..");
 
 // --- 1. published broad totals from the source CSV --------------------------
-const lines = fs.readFileSync(path.join(ROOT, "equalopps_2015-2024_merged.csv"), "utf8")
+const lines = fs.readFileSync(path.join(ROOT, "data", "equalopps_merged.csv"), "utf8")
   .split(/\r?\n/).filter(Boolean);
 function broadKey(cat) {
   if (/Mixed/.test(cat)) return "Mixed";

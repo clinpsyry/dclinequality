@@ -89,5 +89,36 @@ chkT("welch t", tt.t, -4.700097, 1e-4);
 chkT("welch df", tt.df, 6.980769, 1e-4);
 chkT("welch p", tt.p, 0.00222460, 1e-6);
 
+// ---- Full forest and contextual questions vs R (families.js) ---------------------
+const Families = require("../js/families.js");
+function checkTable(name, got, want, keyOf) {
+  console.log("\n" + name + ":");
+  let bad = 0;
+  want.forEach((w) => {
+    const g = got.rows.find((r) => keyOf(r) === keyOf(w));
+    if (!g) { bad++; console.log("  [FAIL] missing " + keyOf(w)); return; }
+    if (!!g.computable !== (w.computable !== false)) { bad++; console.log("  [FAIL] computable " + keyOf(w)); return; }
+    if (w.computable === false) return;
+    if (Math.abs(g.pp - w.pp) > 0.02 || Math.abs(g.pp_lo - w.pp_lo) > 0.05 || Math.abs(g.pp_hi - w.pp_hi) > 0.05 ||
+        Math.abs(g.p_bh - w.p_bh) > 1e-3 || g.significant_after_bh !== w.significant_after_bh ||
+        g.bar_excludes_null !== w.bar_excludes_null) {
+      bad++; console.log(`  [FAIL] ${keyOf(w)}: pp ${g.pp.toFixed(3)} vs ${w.pp}, sig ${g.significant_after_bh} vs ${w.significant_after_bh}`);
+    }
+  });
+  const m = want.find((w) => w.m != null);
+  if (m && got.m !== m.m) { bad++; console.log(`  [FAIL] m: got ${got.m} want ${m.m}`); }
+  const sig = got.rows.filter((r) => r.significant_after_bh).length;
+  console.log(`  ${want.length} rows, m = ${got.m}, significant ${sig}: ${bad ? "MISMATCH" : "all match R"}`);
+  if (bad) pass = false;
+}
+const yrs = counts.meta.years, latest = counts.meta.latest_year;
+checkTable("Full forest, 2021-24", Families.master(counts, dei), ref.master_dei, (r) => r.characteristic + "|" + r.group);
+checkTable("Full forest, " + latest, Families.master(counts, [latest]), ref.master_latest, (r) => r.characteristic + "|" + r.group);
+checkTable("Contextual questions, " + latest, Families.context(counts, [latest]), ref.context_latest, (r) => r.characteristic);
+// published May chart: 22 significant groups in 2021-24
+const nsig = Families.master(counts, dei).rows.filter((r) => r.significant_after_bh).length;
+console.log("  published full forest (22 significant in 2021-24): " + (nsig === 22 ? "OK" : "FAIL " + nsig));
+if (nsig !== 22) pass = false;
+
 console.log("\n" + (pass ? "ALL JS-vs-R ORACLE CHECKS PASS" : "ORACLE MISMATCH"));
 process.exit(pass ? 0 : 1);

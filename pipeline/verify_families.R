@@ -45,7 +45,9 @@ families <- list(
   "DISABILITY" = list(ref = "No disability", members = list(
     "Dyslexia","Mental health difficulties","Unseen disability eg diabetes, epilepsy, asthma",
     "Two or more disabilities","Other disability","Personal care support",
-    "Wheelchair user/mobility difficulties","Deaf/hearing impairment","Blind/partially sighted")),
+    # Wheelchair, Deaf and Blind are pooled with each other in the source, so only
+    # their combined rate is knowable (RULES.md C8; explorer revamp, Nov 2026).
+    "Wheelchair, deaf or blind (combined)")),
   "RESIDENT" = list(ref = "UK", members = list("Other EU/EEA","Other residence")),
   "DEPENDANTS" = list(ref = "No dependants", members = list("Has dependants"))
 )

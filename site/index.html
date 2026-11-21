@@ -4,16 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DClinPsy Equal-Opportunities Explorer</title>
-<meta name="description" content="Interactive explorer of UK Doctorate in Clinical Psychology (DClinPsy) equal-opportunities admissions, 2015-2024: acceptance rates and disparities by applicant characteristic, computed live and verified against an offline statistical reference.">
+<meta name="description" content="Interactive explorer of UK Doctorate in Clinical Psychology (DClinPsy) equal-opportunities admissions, 2015-2025: acceptance rates and disparities by applicant characteristic, computed live and verified against an offline statistical reference.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%23990F3D'/><text x='16' y='24' font-size='23' text-anchor='middle' fill='%23fff' font-family='Georgia,serif'>%CF%88</text></svg>">
 <meta property="og:title" content="DClinPsy Equal-Opportunities Explorer">
-<meta property="og:description" content="UK clinical psychology doctorate admissions, 2015-2024: acceptance rates and disparities by applicant characteristic, computed live and statistically verified.">
+<meta property="og:description" content="UK clinical psychology doctorate admissions, 2015-2025: acceptance rates and disparities by applicant characteristic, computed live and statistically verified.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dclinequality.pages.dev/">
 <meta property="og:image" content="https://dclinequality.pages.dev/og-preview.png">
 <meta property="og:image:width" content="1918">
 <meta property="og:image:height" content="913">
-<meta property="og:image:alt" content="The DClinPsy Equal-Opportunities Explorer, showing acceptance-rate trends by broad ethnic group, 2015-2024.">
+<meta property="og:image:alt" content="The DClinPsy Equal-Opportunities Explorer, showing acceptance-rate trends by broad ethnic group, 2015-2025.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://dclinequality.pages.dev/og-preview.png">
 <style>
@@ -68,10 +68,12 @@
     .brand h1 { font-size: 1.18rem; }
     .main { order: 2; min-height: 0; }
     .rail { order: 3; border-right: none; border-top: 1px solid var(--line); overflow: visible;
-      padding: 1rem 1.1rem 5rem; }
+      padding: 1rem 1.1rem 1.1rem; }
     .content { overflow: visible; padding: 1.1rem; }
-    .tabs { padding: 0 1.1rem; position: sticky; top: 0; z-index: 20; }
-    .tab { font-size: .85rem; padding: .7rem .6rem; }
+    .tabs { padding: 0 1.1rem; position: sticky; top: 0; z-index: 20; flex-wrap: nowrap;
+      overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab { font-size: .85rem; padding: .7rem .6rem; white-space: nowrap; flex: 0 0 auto; }
   }
   select { width: 100%; padding: .55rem .75rem; padding-right: 2rem; font: inherit; font-size: .92rem;
     color: var(--ink); border: 1px solid var(--line); border-radius: 10px; background-color: var(--card);
@@ -130,8 +132,29 @@
   .chart-sub { color: var(--muted); font-size: .88rem; margin-top: .35rem; max-width: 80ch; line-height: 1.5; }
   .note { font-size: .8rem; color: var(--muted); margin-top: .7rem; line-height: 1.5;
     max-width: 88ch; padding-right: 1rem; }
-  .chartwrap { position: relative; background: var(--card); border: 1px solid var(--line);
+  /* Chart card in the blog chart style: warm beige panel */
+  .chartwrap { position: relative; background: #EADDCA; border: 1px solid #dccdb5;
     border-radius: 16px; padding: 1.4rem 1.5rem 1rem; box-shadow: var(--shadow); }
+  .chartwrap .chart-title { color: #1c1a16; max-width: 46ch; }
+  .chartwrap .note { color: #5f574a; }
+  .chartwrap .dl-btn { background: #f3eadc; border-color: #d6c6ac; }
+  #table, #matrix { background: var(--card); border-radius: 10px; }
+  #cmp-ctl .cap { display: flex; align-items: center; gap: .45rem; cursor: pointer; }
+  #cmp-ctl .cap input { margin: 0; }
+  #cmp-years { margin-top: .45rem; }
+  /* Phones: the controls sit in a collapsible panel under the tabs */
+  .options-toggle { display: none; }
+  .options-drawer { display: none; }
+  @media (max-width: 860px) {
+    .options-toggle { display: flex; justify-content: space-between; align-items: center;
+      font: inherit; font-size: .9rem; font-weight: 600; color: var(--ink); background: var(--card);
+      border: none; border-bottom: 1px solid var(--line); padding: .75rem 1.1rem; cursor: pointer; }
+    .options-toggle[hidden] { display: none; }
+    .options-drawer.open { display: block; background: var(--card); border-bottom: 1px solid var(--line); }
+    .options-drawer .rail { border: none; padding: .2rem 1.1rem 1.1rem; }
+    .chartwrap { padding: 1rem .8rem .8rem; border-radius: 12px; }
+    .chartwrap .chart-title { font-size: 1.05rem; }
+  }
   .dl-btn { position: absolute; top: 1.2rem; right: 1.3rem; z-index: 3; font: inherit;
     font-size: .8rem; font-weight: 600; color: var(--muted); background: var(--card);
     border: 1px solid var(--line); border-radius: 9px; padding: .42rem .7rem; cursor: pointer;
@@ -245,7 +268,7 @@
 <body>
 <div class="app">
   <header class="brand">
-    <div class="eyebrow">Admissions equity &middot; 2015 to 2024</div>
+    <div class="eyebrow">Admissions equity &middot; 2015 to 2025</div>
     <h1>DClinPsy Equal-Opportunities Explorer</h1>
   </header>
   <aside class="rail">
@@ -262,6 +285,7 @@
         <div class="seg" id="trendmode-seg">
           <button class="seg-btn active" data-mode="rate">Rate</button>
           <button class="seg-btn" data-mode="vsref">Vs reference</button>
+          <button class="seg-btn" data-mode="numbers">Numbers</button>
         </div>
       </div>
       <div class="ctl" id="trend-measure-ctl" hidden>
@@ -305,7 +329,13 @@
           <select id="year-from"></select><span>to</span><select id="year-to"></select>
         </div>
       </div>
-      <div class="ctl">
+      <div class="ctl" id="cmp-ctl">
+        <label class="cap"><input type="checkbox" id="cmp-on"> Compare with (dark tick)</label>
+        <div class="yearrange" id="cmp-years">
+          <select id="cmp-year-from"></select><span>to</span><select id="cmp-year-to"></select>
+        </div>
+      </div>
+      <div class="ctl" id="measure-ctl">
         <label class="cap">Measure</label>
         <div class="seg" id="measure-seg">
           <button class="seg-btn active" data-measure="pp">Percentage points</button>
@@ -385,6 +415,9 @@
       <button class="tab" data-view="table">Data table</button>
       <button class="tab" data-view="about">About &amp; methods</button>
     </nav>
+    <button class="options-toggle" id="options-toggle" type="button" aria-expanded="false" hidden>
+      Chart options <span class="chev">▾</span></button>
+    <div class="options-drawer" id="options-drawer"></div>
     <div class="content">
       <div class="chartwrap" id="chartwrap">
         <button class="dl-btn" id="dl-png" title="Download this chart as a PNG">
@@ -401,7 +434,7 @@
         <h2>About this explorer</h2>
         <p class="lead">An interactive, statistically honest look at who applies to, and who is
         accepted onto, the Doctorate in Clinical Psychology (DClinPsy) in the UK, by applicant
-        characteristic, from 2015 to 2024.</p>
+        characteristic, from 2015 to 2025.</p>
         <p>The data is the Clearing House for Postgraduate Courses in Clinical Psychology
         equal-opportunities monitoring, published each year. The "acceptance rate" is the share of
         applicants in a group who were accepted onto a course. Every number on this site is computed
@@ -423,6 +456,38 @@
         withheld value means "too small to report", not zero. These cells are dropped before any sum,
         never interpolated and never filled with zero. In the trend charts a suppressed year breaks
         the line rather than dropping it to the floor, and the table marks suppressed cells explicitly.</p>
+
+        <h3>Pooled cells are flagged, not changed</h3>
+        <p>Sometimes the Clearing House hides a small count by adding it to the row above: that row's
+        acceptances then include the hidden row's, while its applicant count is its own, so its rate is
+        slightly overstated. The explorer finds every such case from the source's own success rates and
+        marks the affected groups with <strong>†</strong>; hover a point or row for the detail. The
+        figures themselves follow the source, as in the published posts. One exception: wheelchair users,
+        Deaf applicants and Blind applicants are pooled with each other in most years, so they are shown
+        only as one combined group (<em>Wheelchair, deaf or blind (combined)</em>), the only figure the
+        source supports. Earlier versions of this site showed two of those rows as significant; that was
+        an artefact of the pooling.</p>
+
+        <h2>What is new in this version</h2>
+        <ul>
+          <li><strong>2025 entry</strong> data in every view. 2025 is reported as the latest year; the
+          pre-DEI (2015 to 2019) and DEI (2021 to 2024) eras are unchanged.</li>
+          <li><strong>Comparison ticks.</strong> In Compare groups, a dark tick shows each group's figure
+          for a comparison period (2021 to 2024 by default), so a single year can be read against the
+          published era.</li>
+          <li><strong>All groups (full forest)</strong> now uses the method of the published chart: every
+          group with 300 or more applicants in 2021 to 2024, across nine characteristics, each against
+          the largest group of its characteristic (socio-economic: Quintiles 2 and 3 combined), with one
+          Benjamini-Hochberg correction across all of them. As published, red is above the reference and
+          blue below.</li>
+          <li><strong>Contextual background:</strong> the ten contextual-admissions questions the Clearing
+          House has asked since 2023 entry (first in family at university, free school meals, family
+          breakdown, care experience and others), each 'yes' against 'no', plus an overview of all ten.</li>
+          <li><strong>All applicants (overall):</strong> everyone who applied and everyone accepted, from
+          the published yearly totals, with a Numbers option to show counts as well as rates.</li>
+          <li><strong>Charts in the blog style</strong>, built for phones, and a PNG download in the same
+          shape as the charts in the posts.</li>
+        </ul>
 
         <h2>Uncertainty</h2>
         <p>Every rate is an estimate from a finite number of applicants, so it carries a confidence
@@ -448,10 +513,10 @@
         selection. Because the family size is pinned, a group can be significant in the pooled "All
         groups" view but not within its own smaller family, since the correction differs. British
         Welsh is the known borderline case.</p>
-        <p><strong>Reading the colour:</strong> red always means a statistically significant
-        difference, and grey means not significant. Direction (better or worse than the reference) is
-        shown by position, sign, or the direction of an arrow, never by colour. This keeps the
-        significant findings unambiguous at a glance.</p>
+        <p><strong>Reading the colour:</strong> red means a statistically significant difference, and a
+        hollow grey point means no clear difference. Direction (better or worse than the reference) is
+        shown by position, sign, or the direction of an arrow. The one exception is the full forest,
+        which follows the published chart: red above its reference, blue below.</p>
         <p><strong>Reading the p-values:</strong> hover any point, or open the Table view, to see the
         exact p-values. A <strong>p-value</strong> is the probability of seeing a difference at least
         this large if the groups truly accepted at the same rate: smaller means stronger evidence
@@ -566,13 +631,13 @@
 
         <div class="src">
           <p>Source: Clearing House for Postgraduate Courses in Clinical Psychology,
-          equal-opportunities data 2015 to 2024. Census benchmarks: Office for National Statistics,
+          equal-opportunities data 2015 to 2025 and contextual admissions data 2023 to 2025. Census benchmarks: Office for National Statistics,
           Census 2021 (England and Wales). Charts and analysis are computed live and verified against
           an offline R reference.</p>
           <p>Built for <a href="https://noncogito.substack.com/" target="_blank"
           rel="noopener">noncogito.substack.com</a>. House style: significance is red, direction is
           shown separately; "pp" for percentage points.</p>
-          <p>This is built and maintained independently, in my own time — free, with no ads and no
+          <p>This is built and maintained independently, in my own time: free, with no ads and no
           funding. If it is useful to you, please consider supporting it so it can stay free, ad-free,
           and kept up to date.</p>
           <a class="kofi-btn" href="https://ko-fi.com/Q5Q51YZ8GK" target="_blank" rel="noopener"
@@ -585,11 +650,12 @@
 </div>
 
 <a class="kofi-btn kofi-float" href="https://ko-fi.com/Q5Q51YZ8GK" target="_blank" rel="noopener"
-  title="Please consider supporting this project — it keeps it free and independent">
+  title="Please consider supporting this project: it keeps it free and independent">
   <svg viewBox="0 0 24 24" aria-hidden="true"><text x="12" y="19" text-anchor="middle" font-size="22" font-weight="700" font-family="Georgia, 'Times New Roman', serif" fill="currentColor">&#968;</text></svg><span class="kofi-label">Support this project</span><span class="kofi-label-sm">Support Me</span></a>
 
 <script src="js/plotly.min.js" charset="utf-8"></script>
 <script src="js/stats.js"></script>
+<script src="js/families.js"></script>
 <script src="data.js"></script>
 <script src="census.js"></script>
 <script src="js/explorer.js"></script>

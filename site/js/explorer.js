@@ -12,17 +12,27 @@
 (function () {
   "use strict";
 
-  var ALL_YEARS = [2015,2016,2017,2018,2019,2020,2021,2022,2023,2024];
-  var REFS = window.COUNTS.meta.references || {};
+  var META = window.COUNTS.meta;
+  var ALL_YEARS = META.years || [2015,2016,2017,2018,2019,2020,2021,2022,2023,2024];
+  var FIRST_YEAR = ALL_YEARS[0], LATEST = META.latest_year || ALL_YEARS[ALL_YEARS.length - 1];
+  var DEI_FROM = (META.eras.dei || [2021])[0], DEI_TO = (META.eras.dei || [2024]).slice(-1)[0];
+  var REFS = META.references || {};
 
-  // Sentinel "characteristic" for the master forest (all groups, one pooled
-  // correction). It lives in the Compare to reference view's dropdown, not as a
-  // real characteristic, so it is only valid there.
-  var ALL_GROUPS = "__ALL_GROUPS__";
+  // Sentinel "characteristics" for the two overview forests. They live in the
+  // Compare groups view's dropdown only.
+  //   ALL_GROUPS: the full forest (every group vs its own reference, one correction;
+  //               the method of the published May 2026 chart, families.js).
+  //   ALL_CONTEXT: every contextual-admissions question, 'Yes' vs 'No'.
+  var ALL_GROUPS = "__ALL_GROUPS__", ALL_CONTEXT = "__ALL_CONTEXT__";
   function isAllGroups() { return state.characteristic === ALL_GROUPS; }
+  function isAllContext() { return state.characteristic === ALL_CONTEXT; }
+  function isOverview() { return isAllGroups() || isAllContext(); }
+  function isContext(ch) { return /^CONTEXT: /.test(ch || state.characteristic); }
 
   var CHAR_LABELS = {
-    "__ALL_GROUPS__":"All groups",
+    "__ALL_GROUPS__":"All groups (full forest)",
+    "__ALL_CONTEXT__":"All contextual questions",
+    "OVERALL":"All applicants (overall)",
     "ETHNICITY":"Ethnicity (detailed)", "ETHNIC GROUP (BROAD)":"Ethnic group (broad)",
     "AGE":"Age", "DEPENDANTS":"Dependants", "DISABILITY":"Disability",
     "GENDER":"Gender", "MARITAL STATUS":"Marital status",
@@ -60,18 +70,33 @@
     "DISABILITY": { type:"bh", ref:"No disability", members:[
       "Dyslexia","Mental health difficulties",
       "Unseen disability eg diabetes, epilepsy, asthma","Two or more disabilities",
-      "Other disability","Personal care support","Wheelchair user/mobility difficulties",
-      "Deaf/hearing impairment","Blind/partially sighted"] },
+      "Other disability","Personal care support",
+      // Wheelchair, Deaf and Blind are pooled with each other in the source, so
+      // only their combined rate is knowable (built in R; RULES.md C8).
+      "Wheelchair, deaf or blind (combined)"] },
     "RESIDENT": { type:"bh", ref:"UK", members:["Other EU/EEA","Other residence"] },
     "DEPENDANTS": { type:"bh", ref:"No dependants", members:["Has dependants"] }
   };
+  // Contextual-admissions questions (2023 entry onwards): each is a single
+  // pre-specified 'Yes' vs 'No' comparison; the overview corrects across all ten.
+  (META.context_questions || []).forEach(function (q) {
+    CHAR_LABELS[q] = q.replace(/^CONTEXT: /, "");
+    FORESTS[q] = { type:"single", ref:"No", members:["Yes"] };
+  });
+  // The three source rows behind the combined disability group stay in the data
+  // table but are hidden from the trend list (their rows are pooled artefacts).
+  var POOLED_DISABILITY = ["Wheelchair user/mobility difficulties","Deaf/hearing impairment",
+    "Blind/partially sighted"];
 
   // Colours (house style)
-  var REF_COLOR = "#333333", BG = "#ffffff";
-  var RED = "#990F3D", BLUE = "#2D6CA2", DESC = "#6f6a5d", NOSIG = "#b3a98f";
+  // Blog chart style (R/dclinpsy_style.R): warm beige panel, FT red, blue for
+  // "below reference" in the full forest, faded grey for no clear difference,
+  // grey20 ink for the comparison ticks.
+  var REF_COLOR = "#333333", BG = "#EADDCA", INK = "#333333";
+  var RED = "#990F3D", BLUE = "#2D6CA2", DESC = "#6f6a5d", NOSIG = "#BCB3A4";
   var ACCENTS = ["#990F3D","#2D6CA2","#B07A2D","#4F7942","#7A3B69","#1A6B6B",
     "#A0522D","#41506B"];
-  var AXISLINE = "#d3ccbe", GRID = "#e3ddd0", MUTED = "#6f6757";
+  var AXISLINE = "#c9bca6", GRID = "#d9ccb6", MUTED = "#6f6757";
 
   // index groups by characteristic
   var byChar = {};
@@ -139,20 +164,46 @@
       "Other Black background","Other ethnic background"],
     // The published "Other" broad total exists for representativeness, but stays
     // out of the curated broad trend and the frozen m=3 forest family.
-    "ETHNIC GROUP (BROAD)": ["Other"]
+    "ETHNIC GROUP (BROAD)": ["Other"],
+    "DISABILITY": POOLED_DISABILITY
   };
   function trendHidden(ch) {
     var agg = TREND_AGGREGATES[ch] ? TREND_AGGREGATES[ch].components : [];
     return agg.concat(TREND_HIDE[ch] || []);
   }
 
+  // Compare groups opens on the latest year, with the published 2021-24 figures as
+  // dark comparison ticks (the layout of the blog's 2025 charts).
   var state = { view:"trend", characteristic:"ETHNIC GROUP (BROAD)", selected:{}, showCI:false,
-    trendMode:"rate", trendMeasure:"pp", trendFrom:2015, trendTo:2024, eraMode:"rate",
-    yearFrom:2021, yearTo:2024, measure:"pp",
-    tableYearFrom:2015, tableYearTo:2024, tableSelected:{}, tableMode:"pooled",
-    tableSort:{ col:null, dir:1 }, repYearFrom:2021, repYearTo:2024, repMode:"chart",
+    trendMode:"rate", trendMeasure:"pp", trendFrom:FIRST_YEAR, trendTo:LATEST, eraMode:"rate",
+    yearFrom:LATEST, yearTo:LATEST, measure:"pp",
+    cmpOn:true, cmpFrom:DEI_FROM, cmpTo:DEI_TO,
+    tableYearFrom:FIRST_YEAR, tableYearTo:LATEST, tableSelected:{}, tableMode:"pooled",
+    tableSort:{ col:null, dir:1 }, repYearFrom:DEI_FROM, repYearTo:LATEST, repMode:"chart",
     repSort:{ col:null, dir:1 }, forestMode:"chart", forestSort:{ col:null, dir:1 },
-    eraView:"chart", eraSort:{ col:null, dir:1 }, combine:false };
+    eraView:"chart", eraSort:{ col:null, dir:1 }, combine:false, sub:"" };
+
+  // ---- pooled cells (RULES.md C8): flagged, not changed --------------------------
+  // A row's acceptances may include hidden rows (pooled_with), or its own
+  // acceptances may sit in another row (pooled_into). poolNote() describes any such
+  // cell in the chosen years for a group, for hovers, labels and the footnote.
+  function pooledCells(g, years) {
+    var ys = {}; years.forEach(function (y) { ys[y] = 1; });
+    var out = [];
+    (g ? g.by_year : []).forEach(function (r) {
+      if (!ys[r.year]) return;
+      if (r.pooled_with) out.push({ year:r.year, with:[].concat(r.pooled_with) });
+      if (r.pooled_into) out.push({ year:r.year, into:r.pooled_into });
+    });
+    return out;
+  }
+  function poolNote(cells) {
+    return cells.map(function (c) {
+      return c.year + ": " + (c.with ? "includes the acceptances of " + c.with.join(" + ")
+        : "acceptances counted in the " + c.into + " row");
+    }).join("; ");
+  }
+  var DAGGER = " †";
 
   // ==========================================================================
   // TREND VIEW
@@ -178,8 +229,10 @@
       var acc = r.accepted, app = r.applicants;
       var ci = Stats.wilsonCI(acc, app), rate = ci.rate * 100;
       y.push(rate); eHi.push(ci.hi*100 - rate); eLo.push(rate - ci.lo*100);
+      var pc = pooledCells(group, [yr]);
       text.push(group.group + "<br>" + yr + ": " + rate.toFixed(1) + "% (" +
-        acc + "/" + app + ")<br>95% CI " + (ci.lo*100).toFixed(1) + " to " + (ci.hi*100).toFixed(1));
+        acc + "/" + app + ")<br>95% CI " + (ci.lo*100).toFixed(1) + " to " + (ci.hi*100).toFixed(1) +
+        (pc.length ? "<br>† pooled in source: " + poolNote(pc).replace(/^\d{4}: /, "") : ""));
     });
     return TRACE_STYLE(group, color, x, y, eHi, eLo, text);
   }
@@ -263,7 +316,45 @@
     return TRACE_STYLE({ group: name }, color, x, y, eHi, eLo, text);
   }
 
+  // Numbers mode: applicants (solid) and acceptances (dotted) as counts, per group.
+  function renderNumbers() {
+    var ch = state.characteristic, label = CHAR_LABELS[ch], ai = 0, traces = [];
+    var groups = (byChar[ch] || []).filter(function (g) { return state.selected[g.group]; });
+    groups.forEach(function (g) {
+      var color = ch === "OVERALL" ? RED : ACCENTS[ai++ % ACCENTS.length];
+      var by = {}; g.by_year.forEach(function (r) { by[r.year] = r; });
+      var xs = ALL_YEARS.filter(function (y) { return y >= state.trendFrom && y <= state.trendTo; });
+      function series(key, dash, word) {
+        var name = (groups.length > 1 || ch !== "OVERALL" ? g.group + ": " : "") + word;
+        return { name: name, x: xs, type:"scatter", mode:"lines+markers", connectgaps:false,
+          y: xs.map(function (y) { var r = by[y]; return r ? (key === "applicants" ? r.applicants : r.accepted) : null; }),
+          line:{ color: color, width: 2.4, dash: dash }, marker:{ color: color, size: 7 },
+          hovertemplate: "%{x}: %{y:,} " + word.toLowerCase() + (groups.length > 1 ? "<br>" + g.group : "") + "<extra></extra>" };
+      }
+      traces.push(series("applicants", "solid", "Applicants"));
+      traces.push(series("accepted", "dot", "Accepted"));
+    });
+    var yrs = state.trendFrom + "–" + state.trendTo;
+    setChartHead("Applicants and acceptances by year, " + label + ", " + yrs,
+      "Number of applicants (solid line) and of applicants accepted (dotted line) each year." +
+      (ch === "OVERALL" ? " Everyone who applied, from the Clearing House's published yearly totals." : "") +
+      " A missing dotted point is a suppressed count, never zero.");
+    var layout = {
+      paper_bgcolor:BG, plot_bgcolor:BG, height:480,
+      font:{ family:"Inter, system-ui, sans-serif", color:"#1a1a1a", size:13 },
+      margin:{ t:22, r:24, b:70, l:64 },
+      xaxis:{ dtick: narrowView() ? Math.max(1, Math.ceil((state.trendTo - state.trendFrom + 1) / 4)) : 1,
+        range:[state.trendFrom - 0.5, state.trendTo + 0.5], showgrid:false, zeroline:false,
+        linecolor:AXISLINE, tickcolor:AXISLINE },
+      yaxis:{ title:"Number of people", rangemode:"tozero", tickformat:",", showgrid:true,
+        gridcolor:GRID, zeroline:false, linecolor:AXISLINE, tickcolor:AXISLINE },
+      hovermode:"closest", legend:{ orientation:"h", y:-0.18, bgcolor:"rgba(0,0,0,0)", font:{ size:12 } }
+    };
+    Plotly.react("chart", traces, lockZoom(layout), PLOT_CFG);
+  }
+
   function renderTrend() {
+    if (state.trendMode === "numbers") { renderNumbers(); return; }
     var ch = state.characteristic, ref = refFor(ch), refGroup = getGroup(ch, ref);
     var vs = state.trendMode === "vsref" && !!refGroup;
     var rr = vs && state.trendMeasure === "rr";
@@ -285,9 +376,9 @@
       });
     }
     var label = CHAR_LABELS[ch];
-    var showDEI = state.trendTo >= 2021;   // only shade/label the DEI era if it's in view
-    var shapes = showDEI ? [{ type:"rect", xref:"x", yref:"paper", x0:2020.5, x1:2024.5, y0:0, y1:1,
-      fillcolor:"#efe7d6", opacity:0.4, line:{ width:0 }, layer:"below" }] : [];
+    var showDEI = state.trendTo >= DEI_FROM && !isContext(ch);   // shade the DEI era only if in view
+    var shapes = showDEI ? [{ type:"rect", xref:"x", yref:"paper", x0:DEI_FROM - 0.5, x1:DEI_TO + 0.5, y0:0, y1:1,
+      fillcolor:"#ddcfb8", opacity:0.55, line:{ width:0 }, layer:"below" }] : [];
     if (vs) shapes.push({ type:"line", xref:"paper", x0:0, x1:1, yref:"y", y0:rr?1:0, y1:rr?1:0,
       line:{ color:"#7a6f5a", width:1.4, dash:"dot" } });
     var yaxis = rr
@@ -299,7 +390,10 @@
       : { title:"Acceptance rate (%)", rangemode:"tozero", ticksuffix:"%", showgrid:true,
           gridcolor:GRID, zeroline:false, linecolor:AXISLINE, tickcolor:AXISLINE };
     var combNote = combining ? " The selected groups are pooled into one group (summed counts)." : "";
-    setChartHead(label + (vs ? ": acceptance vs " + ref + " over time" : ": acceptance rate by year"),
+    var yrs = state.trendFrom + "–" + state.trendTo;
+    setChartHead(rr ? "Acceptance-rate ratio vs " + ref + " by year, " + label + ", " + yrs
+        : vs ? "Acceptance-rate gap vs " + ref + " by year, " + label + ", " + yrs + " (percentage points)"
+        : "Acceptance rate by year, " + label + ", " + yrs + " (%)",
       (rr ? "Ratio of each group's acceptance rate to " + ref + " each year (1 = parity), with 95% intervals."
          : vs ? "Difference from " + ref + " each year, in percentage points, with 95% intervals."
          : "Share of applicants accepted each year, with 95% Wilson intervals.") + combNote);
@@ -314,8 +408,8 @@
       legend:{ orientation:"h", y:-0.18, bgcolor:"rgba(0,0,0,0)", font:{ size:12 } },
       shapes:shapes,
       annotations: showDEI ? [
-        { x:Math.min(2024.4, state.trendTo + 0.4), y:0.985, yref:"paper", xanchor:"right", yanchor:"top",
-          showarrow:false, text:"DEI era", font:{ size:11, color:"#8a7d64" } }
+        { x:Math.min(DEI_TO + 0.4, state.trendTo + 0.4), y:0.985, yref:"paper", xanchor:"right", yanchor:"top",
+          showarrow:false, text:"DEI era", font:{ size:11, color:"#7a6c55" } }
       ] : []
     };
     Plotly.react("chart", traces, lockZoom(layout), PLOT_CFG);
@@ -385,39 +479,44 @@
     return false; // descriptive: no significance claim
   }
 
-  // Master forest: every group across the BH significance families vs its own
-  // reference, pooled into ONE BH family (register 8a). 300-applicant threshold
-  // over the window. m is the count clearing the threshold (NOT the on-screen
-  // selection): same fixed-family principle as the per-characteristic forests.
-  var MASTER_FAMS = ["ETHNICITY","RELIGION","SEXUAL ORIENTATION","MARITAL STATUS",
-    "SOCIO-ECONOMIC BACKGROUND"];
-  function computeMaster(years) {
-    var cand = [];
-    MASTER_FAMS.forEach(function (ch) {
-      var cfg = FORESTS[ch], refp = poolMember(ch, cfg.ref, years);
-      if (!refp.app) return;
-      cfg.members.forEach(function (mb) {
-        var pl = poolMember(ch, mb, years);
-        if (pl.app < 300) return;                  // threshold (rule 9)
-        cand.push({ ch:ch, label:memberLabel(mb), pl:pl, refp:refp });
-      });
-    });
-    var rawPs = cand.map(function (c) {
-      return Stats.rawP2x2(c.pl.acc, c.pl.app, c.refp.acc, c.refp.app); });
-    var bh = Stats.bhWiden(rawPs);
-    var rows = cand.map(function (c, k) {
-      var b = bh[k]; if (b.zStar == null) return { group:c.label, computable:false };
-      var z = b.zStar, refRate = c.refp.acc / c.refp.app;
-      var ci = Stats.newcombeCI(c.pl.acc, c.pl.app, c.refp.acc, c.refp.app, z);
-      var rr = Stats.rateRatioCI(c.pl.acc, c.pl.app, c.refp.acc, c.refp.app, z);
-      return { group:c.label, characteristic:c.ch, computable:true,
-        applicants:c.pl.app, accepted:c.pl.acc, rate:100*c.pl.acc/c.pl.app,
-        pp:100*(c.pl.acc/c.pl.app - refRate), pp_lo:ci[0]*100, pp_hi:ci[1]*100,
-        rr:rr.value, rr_lo:rr.lo, rr_hi:rr.hi, raw_p:b.pRaw, p_bh:b.pBh, z_star:z,
-        significant_after_bh:b.sig, bar_excludes_null:!(ci[0] <= 0 && ci[1] >= 0) };
-    });
-    return { kind:"bh", master:true, m:bh.m, rows:rows };
+  // Full forest and contextual overview: computed by families.js, the same code
+  // the node tests check against the R oracle. Rate ratios are added here for the
+  // measure toggle (at each row's own BH-widened z).
+  // The overviews are shown in percentage points only (as published); the measure
+  // toggle is hidden for them (ppOnly()).
+  var GIDX = Families.indexGroups(window.COUNTS);
+  function withRR(res) { return res; }
+  function ppOnly() { return isOverview() || state.view !== "forest"; }
+  function usePP() { return state.measure === "pp" || isOverview(); }
+  function shortGroup(ch, g) {
+    if (/Quintile 5/.test(g)) return "Most advantaged areas (Q5)";
+    if (/Quintile 1/.test(g)) return "Least advantaged areas (Q1)";
+    if (g === "Quintile 4") return "Q4 areas";
+    if (/^Christian - /.test(g)) return g.replace(/^Christian - Roman Catholic$/, "Roman Catholic")
+      .replace(/^Christian - Other$/, "Christian (other)").replace(/^Christian - Protestant$/, "Protestant");
+    if (/^\d+-\d+ years$/.test(g)) return "Aged " + g.replace(" years", "");
+    if (g === "Other EU/EEA") return "EU/EEA resident";
+    if (/^Divorced/.test(g)) return "Divorced/widowed";
+    if (g === "Married/civil partnership/co-habiting") return "Married/co-habiting";
+    if (g === "Other White background") return "Other White";
+    if (g === "Other sexual orientation") return "Other orientation";
+    if (g === "Male") return "Men";
+    return g;
   }
+  function computeMaster(years) {
+    var res = Families.master(window.COUNTS, years, GIDX);
+    res.rows.forEach(function (r) {
+      r.fullGroup = r.group; r.group = shortGroup(r.characteristic, r.group);
+      r.groupObj = getGroup(r.characteristic, r.fullGroup);
+    });
+    return withRR(res);
+  }
+  function computeContextAll(years) {
+    var res = Families.context(window.COUNTS, years, GIDX);
+    res.rows.forEach(function (r) { r.groupObj = getGroup(r.characteristic, "Yes"); });
+    return withRR(res);
+  }
+  function computeOverview(years) { return isAllGroups() ? computeMaster(years) : computeContextAll(years); }
 
   // BH family vs a single reference, via poolMember (handles virtual aggregates
   // like 40+). Mathematically identical to Stats.computeFamily for plain members,
@@ -446,8 +545,14 @@
       ref_applicants: refp.app, ref_accepted: refp.acc, rows: rows };
   }
 
+  function cmpYears() {
+    var ys = []; for (var y = state.cmpFrom; y <= state.cmpTo; y++) ys.push(y); return ys;
+  }
+  function forestFor(years) { return isOverview() ? computeOverview(years) : computeForest(years); }
   function renderForest() {
-    drawForest(isAllGroups() ? computeMaster(windowYears()) : computeForest(windowYears()));
+    var res = forestFor(windowYears());
+    var cmp = state.cmpOn ? forestFor(cmpYears()) : null;
+    drawForest(res, cmp);
   }
 
   // SES pairwise quintile matrix (frozen family, m = 10 over all Q-vs-Q pairs).
@@ -615,107 +720,150 @@
     Plotly.react("chart", [preTrace, deiTrace], lockZoom(layout), PLOT_CFG);
   }
 
-  function drawForest(res) {
+  // Source groups behind a forest row, for the pooled-cell flags.
+  function rowGroups(res, r) {
+    if (r.groupObj) return [r.groupObj];
+    var ch = state.characteristic, cfg = FORESTS[ch]; if (!cfg) return [];
+    var mb = cfg.members.filter(function (m) { return memberLabel(m) === r.group; })[0];
+    if (!mb) return [];
+    var names = typeof mb === "string" ? [mb] : mb.components;
+    return names.map(function (n) { return getGroup(ch, n); }).filter(Boolean);
+  }
+  function rowKey(r) { return (r.characteristic || "") + "|" + r.group; }
+  function rangeLabel(a, b) { return a === b ? "" + a : a + "–" + b; }
+
+  // Forest in the blog style: dot and bar for the chosen years, a dark tick for the
+  // comparison years, the value at the right of every row. Colour: red = significant
+  // (the full forest, as published, uses red above / blue below its reference);
+  // hollow grey = no clear difference. Phones: group name above its row.
+  function drawForest(res, cmp) {
+    var pp = usePP();
     var rows = res.rows.filter(function (r) {
-      return r.computable && (state.measure === "pp"
-        ? r.pp != null : (r.rr != null && r.rr_lo != null));
+      return r.computable && (pp ? r.pp != null : (r.rr != null && r.rr_lo != null));
     });
-    // order by pp (most above reference at top)
-    rows.sort(function (a, b) { return a.pp - b.pp; });
+    rows.sort(function (a, b) { return (pp ? b.pp - a.pp : b.rr - a.rr); });   // largest at top
+    var years = windowYears(), narrow = narrowView();
+    var cmpMap = {};
+    if (cmp) cmp.rows.forEach(function (c) { if (c.computable) cmpMap[rowKey(c)] = c; });
 
-    var pp = state.measure === "pp";
-    var xs = rows.map(function (r) { return pp ? r.pp : r.rr; });
-    var elo = rows.map(function (r) { return pp ? r.pp - r.pp_lo : r.rr - r.rr_lo; });
-    var ehi = rows.map(function (r) { return pp ? r.pp_hi - r.pp : r.rr_hi - r.rr; });
-    var ys = rows.map(function (r) { return r.group; });
-    var ylab = wrapLabels(ys);
-
-    var mColor = [], mLineColor = [], mLineW = [];
-    rows.forEach(function (r) {
-      if (res.kind === "descriptive") { mColor.push(DESC); mLineColor.push(DESC); mLineW.push(0); return; }
-      if (isSig(res, r)) { mColor.push(RED); mLineColor.push(RED); mLineW.push(0); }   // all significant = red
-      else { mColor.push(BG); mLineColor.push(NOSIG); mLineW.push(1.6); }              // not sig = hollow
-    });
-
-    var refWord = res.master ? "own reference" : res.ref;
-    var text = rows.map(function (r) {
-      var eff = pp ? (r.pp >= 0 ? "+" : "") + r.pp.toFixed(1) + " pp"
-                   : r.rr.toFixed(2) + "x";
-      var lo = pp ? r.pp_lo.toFixed(1) : r.rr_lo.toFixed(2);
-      var hi = pp ? r.pp_hi.toFixed(1) : r.rr_hi.toFixed(2);
-      var verdict = res.kind === "descriptive" ? "descriptive (no test)"
-        : (isSig(res, r) ? "significant" : "not significant");
-      var ptxt = res.kind === "bh"
-        ? "<br>raw p " + pHover(r.raw_p) + ", p (BH) " + pHover(r.p_bh)
-        : res.kind === "single" ? "<br>p " + pHover(r.raw_p) : "";
-      var head = res.master
-        ? r.group + " (" + (CHAR_LABELS[r.characteristic] || r.characteristic) + ")"
-        : r.group;
-      return head + "<br>" + eff + " vs " + refWord + "<br>interval " + lo +
-        " to " + hi + "<br>n " + r.accepted + "/" + r.applicants + ptxt + "<br>" + verdict;
+    function val(r) { return pp ? r.pp : r.rr; }
+    function cls(r) {
+      if (res.kind === "descriptive") return "desc";
+      if (!isSig(res, r)) return "ns";
+      return res.master ? (r.pp >= 0 ? "above" : "below") : "sig";
+    }
+    var COL = { sig: RED, above: RED, below: BLUE, ns: NOSIG, desc: DESC };
+    var refWord = res.master ? "its own reference" : res.context ? "'No'" : res.ref;
+    var pooledAny = false;
+    var info = rows.map(function (r, i) {
+      var pc = []; rowGroups(res, r).forEach(function (g) { pc = pc.concat(pooledCells(g, years)); });
+      if (pc.length) pooledAny = true;
+      var c = cmpMap[rowKey(r)];
+      return { r: r, i: i, c: cls(r), pooled: pc, cmp: c ? (pp ? c.pp : c.rr) : null,
+        label: r.group + (r.applicants < 100 ? "*" : "") + (pc.length ? DAGGER : "") };
     });
 
-    var trace = { x:xs, y:ylab, type:"scatter", mode:"markers",
-      marker:{ size:11, color:mColor, line:{ color:mLineColor, width:mLineW } },
-      error_x:{ type:"data", symmetric:false, array:ehi, arrayminus:elo,
-        color:"#8c8270", thickness:1.4, width:0 },
-      hovertemplate:"%{text}<extra></extra>", text:text };
+    function hover(o) {
+      var r = o.r, eff = pp ? (r.pp >= 0 ? "+" : "") + r.pp.toFixed(1) + " pp" : r.rr.toFixed(2) + "x";
+      var lo = pp ? r.pp_lo : r.rr_lo, hi = pp ? r.pp_hi : r.rr_hi;
+      var t = "<b>" + r.group + "</b>" + (res.master ? " (" + (CHAR_LABELS[r.characteristic] || r.characteristic) + ")" : "") +
+        "<br>" + rangeLabel(state.yearFrom, state.yearTo) + ": " + eff + " vs " + refWord +
+        (lo != null ? "<br>interval " + (pp ? lo.toFixed(1) + " to " + hi.toFixed(1) : lo.toFixed(2) + " to " + hi.toFixed(2)) : "") +
+        "<br>n " + r.accepted + "/" + r.applicants +
+        (res.kind === "bh" ? "<br>raw p " + pHover(r.raw_p) + ", p (BH) " + pHover(r.p_bh)
+          : res.kind === "single" ? "<br>p " + pHover(r.raw_p) : "") +
+        "<br>" + (res.kind === "descriptive" ? "descriptive (no test)" : isSig(res, r) ? "significant" : "no clear difference");
+      if (o.cmp != null) t += "<br>" + rangeLabel(state.cmpFrom, state.cmpTo) + ": " +
+        (pp ? (o.cmp >= 0 ? "+" : "") + o.cmp.toFixed(1) + " pp" : o.cmp.toFixed(2) + "x");
+      if (o.pooled.length) t += "<br>† pooled in source: " + poolNote(o.pooled);
+      return t;
+    }
 
-    // n labels down the right margin (hidden on phones, where they would clip;
-    // the hover and the Table view still carry n)
-    var nAnno = narrowView() ? [] : rows.map(function (r) {
-      return { xref:"paper", x:1.005, xanchor:"left", yref:"y", y:r.group,
-        text:r.accepted + "/" + r.applicants, showarrow:false,
-        font:{ size:10, color:"#8c8270" } };
+    var traces = [];
+    // comparison ticks first, so the 2025 dots sit on top
+    var withCmp = info.filter(function (o) { return o.cmp != null; });
+    if (withCmp.length) traces.push({ type:"scatter", mode:"markers", hoverinfo:"skip",
+      x: withCmp.map(function (o) { return o.cmp; }), y: withCmp.map(function (o) { return o.i; }),
+      marker:{ symbol:"line-ns", size: narrow ? 15 : 18, line:{ color:INK, width:2.6 } } });
+    ["ns", "desc", "sig", "above", "below"].forEach(function (k) {
+      var g = info.filter(function (o) { return o.c === k; }); if (!g.length) return;
+      var hollow = k === "ns";
+      traces.push({ type:"scatter", mode:"markers",
+        x: g.map(function (o) { return val(o.r); }), y: g.map(function (o) { return o.i; }),
+        error_x:{ type:"data", symmetric:false, color: COL[k], thickness: 2.4, width: 0,
+          array: g.map(function (o) { return pp ? o.r.pp_hi - o.r.pp : o.r.rr_hi - o.r.rr; }),
+          arrayminus: g.map(function (o) { return pp ? o.r.pp - o.r.pp_lo : o.r.rr - o.r.rr_lo; }) },
+        marker:{ size: hollow ? 11 : 12, color: hollow ? BG : COL[k],
+          line:{ color: hollow ? "#8a8073" : COL[k], width: hollow ? 2 : 0 } },
+        hovertemplate:"%{text}<extra></extra>", text: g.map(hover) });
+    });
+
+    // value at the right of each row; on phones the name sits above the row
+    var annos = info.map(function (o) {
+      var strong = o.c !== "ns" && o.c !== "desc";
+      return { xref:"paper", x:1, xanchor:"right", yref:"y", y:o.i, yshift: narrow ? 15 : 0,
+        showarrow:false, text: (strong ? "<b>" : "") + (pp ? (val(o.r) >= 0 ? "+" : "") + val(o.r).toFixed(1) : val(o.r).toFixed(2) + "x") + (strong ? "</b>" : ""),
+        font:{ size: 12, color: strong ? INK : "#7a6f5f" } };
+    });
+    if (narrow) info.forEach(function (o) {
+      annos.push({ xref:"paper", x:0, xanchor:"left", yref:"y", y:o.i, yshift:15, showarrow:false,
+        text: escAnn(o.label), font:{ size:12, color:INK }, bgcolor: BG });
     });
 
     var nullX = pp ? 0 : 1;
-    var xtitle = pp ? "Acceptance rate vs " + refWord + " (pp)"
-                    : "Rate ratio vs " + refWord;
-    setForestHead(res);
-    var height = Math.max(300, rows.length * 40 + 80);
+    setForestHead(res, cmp, pooledAny);
+    var rowH = narrow ? 50 : 36;
     var layout = {
-      paper_bgcolor:BG, plot_bgcolor:BG, height:height,
+      paper_bgcolor:BG, plot_bgcolor:BG, height: Math.max(260, rows.length * rowH + 70),
       font:{ family:"Inter, system-ui, sans-serif", color:"#1a1a1a", size:13 },
-      margin:{ t:18, r: narrowView() ? 30 : 70, b:54, l: narrowView() ? 96 : 200 },
-      xaxis:{ title:xtitle, showgrid:true, gridcolor:GRID, zeroline:false,
-        linecolor:AXISLINE, tickcolor:AXISLINE, tickformat: pp ? "+," : "",
-        ticksuffix: pp ? " pp" : "" },
-      yaxis:{ automargin:true, showgrid:false, zeroline:false, linecolor:AXISLINE,
-        tickcolor:AXISLINE, categoryorder:"array", categoryarray:ylab, tickfont:tickFont() },
+      margin:{ t: narrow ? 26 : 10, r: 58, b:44, l: narrow ? 8 : 10 },
+      xaxis:{ showgrid:true, gridcolor:GRID, zeroline:false, linecolor:AXISLINE, tickcolor:AXISLINE,
+        tickformat: pp ? "+," : "", ticksuffix: pp ? "" : "x", fixedrange:true },
+      yaxis:{ automargin:true, showgrid:false, zeroline:false, showline:false, autorange:"reversed",
+        tickvals: narrow ? [] : info.map(function (o) { return o.i; }),
+        ticktext: narrow ? [] : info.map(function (o) { return o.label; }),
+        tickfont:{ size:12.5, color:INK }, range:[rows.length - 0.4, -0.7] },
       hovermode:"closest", showlegend:false,
       shapes:[{ type:"line", x0:nullX, x1:nullX, yref:"paper", y0:0, y1:1,
-        line:{ color:"#7a6f5a", width:1.4, dash:"dot" } }],
-      annotations: nAnno
+        line:{ color:"#6d6252", width:1.3, dash:"dash" } }],
+      annotations: annos
     };
-    Plotly.react("chart", [trace], lockZoom(layout), PLOT_CFG);
+    Plotly.react("chart", traces, lockZoom(layout), PLOT_CFG);
   }
 
   // Shared title/subtitle for the forest and master views (chart and table).
-  function setForestHead(res) {
-    var pp = state.measure === "pp";
-    var label = res.master ? "All groups" : CHAR_LABELS[state.characteristic];
-    var refWord = res.master ? "own reference" : res.ref;
-    var winLabel = state.yearFrom === state.yearTo ? ("" + state.yearFrom)
-      : (state.yearFrom + " to " + state.yearTo);
-    var measureWord = pp ? "in percentage points" : "as a rate ratio";
+  // Plain descriptive title (house rule, Nov 2026); everything else is footnote.
+  function setForestHead(res, cmp, pooledAny) {
+    var pp = usePP(), win = rangeLabel(state.yearFrom, state.yearTo);
+    var unit = pp ? " (percentage points)" : " (rate ratio)";
+    var title = res.master ? "Acceptance-rate gap from each group's reference group, " + win + unit
+      : res.context ? "Acceptance-rate gap by contextual admissions question, 'yes' vs 'no', " + win + unit
+      : "Acceptance-rate gap by " + (CHAR_LABELS[state.characteristic] || "").toLowerCase().replace(/^context: /, "") +
+        " vs " + (isContext() ? "'no'" : res.ref) + ", " + win + unit;
+    var key = "Dot and bar: " + win + "." + (cmp ? " Dark tick: " + rangeLabel(state.cmpFrom, state.cmpTo) + "." : "");
     var sub;
     if (res.master)
-      sub = "Every group across the significance families vs its own reference, " + measureWord +
-        ", " + winLabel + ". One Benjamini-Hochberg correction across all (m = " + res.m +
-        "); significant differences are in red. Groups under 300 omitted.";
+      sub = key + " Each group vs the largest group of its characteristic (socio-economic: Q2 and Q3 combined). " +
+        "Red: above its reference; blue: below; grey: no clear difference, after one Benjamini-Hochberg correction " +
+        "across the " + res.m + " groups with data (the " + res.n_members + " groups with 300+ applicants in 2021–24, " +
+        "as in the published chart). Disability not included. A group can differ here and not in its own " +
+        "characteristic's chart, because significance depends on how many groups share the correction.";
+    else if (res.context)
+      sub = key + " Each contextual question, 'yes' vs 'no'. Red: differs after one Benjamini-Hochberg correction " +
+        "across the " + res.m + " questions; grey: no clear difference. Asked from 2023 entry. Not adjusted for other characteristics.";
     else if (res.kind === "bh")
-      sub = "Difference in acceptance rate vs " + res.ref + ", " + measureWord + ", " + winLabel +
-        ". Significant after Benjamini-Hochberg (family m = " + res.m + ") is shown in red.";
+      sub = key + " Reference: " + res.ref + ". Red: differs after Benjamini-Hochberg correction (m = " + res.m +
+        "); grey: no clear difference. Bars are 95% intervals widened to the Benjamini-Hochberg level.";
     else if (res.kind === "single")
-      sub = "Acceptance rate vs " + res.ref + ", " + measureWord + ", " + winLabel +
-        ". Single pre-specified test, plain 95% interval.";
+      sub = key + " Reference: " + res.ref + ". Single pre-specified comparison, plain 95% Newcombe interval.";
     else
-      sub = "Difference vs " + res.ref + ", " + measureWord + ", " + winLabel +
-        ". Descriptive only: no significance test for this characteristic.";
+      sub = key + " Reference: " + res.ref + ". Descriptive only: no significance test for this characteristic.";
+    sub += " * fewer than 100 applicants in " + win + ".";
+    if (pooledAny) sub += " † the source pooled a small hidden count with this group in at least one of these years; " +
+      "hover for detail. Figures follow the source, as in the published posts.";
     if (state.characteristic === "AGE")
-      sub += " Note: age gaps may reflect life stage or confounding, not unfair treatment.";
-    setChartHead(label + ": acceptance vs " + refWord, sub);
+      sub += " Age gaps may reflect life stage or confounding, not unfair treatment.";
+    setChartHead(title, sub);
   }
   // Small sortable-header helper shared by the chart-view tables.
   function sortTh(srt, label, col, left) {
@@ -738,9 +886,9 @@
     });
   }
   function renderForestTable() {
-    var res = isAllGroups() ? computeMaster(windowYears()) : computeForest(windowYears());
+    var res = forestFor(windowYears());
     setForestHead(res);
-    var tbl = document.getElementById("table"), pp = state.measure === "pp", srt = state.forestSort;
+    var tbl = document.getElementById("table"), pp = usePP(), srt = state.forestSort;
     var hasSig = res.kind !== "descriptive", master = !!res.master, isBH = res.kind === "bh";
     var rows = res.rows.filter(function (r) {
       return r.computable && (pp ? r.pp != null : (r.rr != null && r.rr_lo != null));
@@ -1172,10 +1320,11 @@
       FORESTS[state.characteristic] && FORESTS[state.characteristic].type === "pairwise";
   }
   // HTML chart title/subtitle (wraps responsively; Plotly text annotations clip).
+  // Plain title only above the chart (house rule, Nov 2026); the explanatory text
+  // becomes the footnote under the chart (updateNote), as on the blog.
   function setChartHead(title, sub) {
-    document.getElementById("chart-head").innerHTML =
-      '<div class="chart-title">' + title + "</div>" +
-      (sub ? '<div class="chart-sub">' + sub + "</div>" : "");
+    document.getElementById("chart-head").innerHTML = '<div class="chart-title">' + title + "</div>";
+    state.sub = sub || "";
   }
   // Lock the charts: no click-drag zoom, scroll zoom, or double-click reset, but
   // keep hover tooltips. fixedrange on both axes is the bulletproof way.
@@ -1187,7 +1336,7 @@
   var PLOT_CFG = { responsive: true, displayModeBar: false, scrollZoom: false, doubleClick: false };
   // Narrow viewport (phones): used to shrink the big left label margins so the plot
   // area is not crushed. Plotly automargin still keeps labels from being clipped.
-  function narrowView() { return window.innerWidth < 640; }
+  function narrowView() { return state.exporting || window.innerWidth < 640; }
   // Wrap a long category label across lines (<br>) so the left margin (which
   // auto-sizes to the widest label) does not eat the whole plot on a phone.
   function wrapLabel(s, n) {
@@ -1224,46 +1373,63 @@
     return String(s || "chart").toLowerCase().replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "").slice(0, 60) || "chart";
   }
-  function downloadChart() {
+  // PNG in the blog's mobile-first shape: 600 px wide at 2.75x (1,650 px, the
+  // width of the blog charts), plain title, the chart drawn in its phone layout
+  // (names above rows), the footnote, and the source mark.
+  function downloadChart(returnUrl) {
+    if (returnUrl && returnUrl.type) returnUrl = false;   // click event, not the test hook
     var gd = document.getElementById("chart");
     if (!gd || !gd.data || !gd.data.length) return;
     var head = document.getElementById("chart-head");
     var title = (head.querySelector(".chart-title") || {}).textContent || "DClinPsy chart";
-    var sub = (head.querySelector(".chart-sub") || {}).textContent || "";
-    var W = 1120, srcH = (gd._fullLayout && gd._fullLayout.height) || 480, H = srcH + 152;
+    state.exporting = true;
+    try { render(); } finally { state.exporting = false; }
     var data = JSON.parse(JSON.stringify(gd.data));
     var layout = JSON.parse(JSON.stringify(gd.layout));
-    var m = Object.assign({ t: 24, r: 26, b: 60, l: 64 }, layout.margin || {});
-    m.t = 108; m.b = Math.max(m.b, 60) + 50;
+    var sub = state.sub;
+    render();   // restore the on-screen layout
+    // 400 css px drawn at 4.125x = 1,650 px: the proportions of the blog charts
+    // (5.5 in at 300 dpi), so text reads at about 11 px on a 375 px phone.
+    var W = 400, TW = 30, FW = 64;
+    var titleLines = wrapAnn(escAnn(title), TW).split("<br>").length;
+    var footText = wrapAnn(escAnn(sub + " Source: Clearing House for Postgraduate Courses in Clinical Psychology."), FW);
+    var footLines = footText.split("<br>").length;
+    var top = 24 + titleLines * 24 + 14, bottom = 40 + footLines * 14 + 30;
+    var srcH = layout.height || 480, H = srcH + top + bottom;
+    var m = Object.assign({ t: 10, r: 58, b: 44, l: 10 }, layout.margin || {});
+    m.t += top; m.b += bottom;
     layout.margin = m; layout.width = W; layout.height = H;
     layout.paper_bgcolor = BG; layout.plot_bgcolor = BG;
-    var foot = -(m.b - 20);
     layout.annotations = (layout.annotations || []).concat([
-      { xref: "paper", x: 0, yref: "paper", y: 1, yanchor: "bottom", yshift: 72, xanchor: "left",
-        showarrow: false, align: "left", text: "<b>" + escAnn(title) + "</b>",
-        font: { size: 19, color: "#1c1a16", family: "Inter, sans-serif" } },
-      { xref: "paper", x: 0, yref: "paper", y: 1, yanchor: "bottom", yshift: 22, xanchor: "left",
-        showarrow: false, align: "left", text: wrapAnn(escAnn(sub), 118),
-        font: { size: 11.5, color: MUTED, family: "Inter, sans-serif" } },
-      { xref: "paper", x: 0, yref: "paper", y: 0, yanchor: "top", yshift: foot, xanchor: "left",
-        showarrow: false, text: "DClinPsy Equal-Opportunities Explorer · Clearing House 2015-2024",
-        font: { size: 10.5, color: "#a59c89", family: "Inter, sans-serif" } },
-      { xref: "paper", x: 1, yref: "paper", y: 0, yanchor: "top", yshift: foot, xanchor: "right",
-        showarrow: false, text: "noncogito.substack.com",
-        font: { size: 11.5, color: RED, family: "Inter, sans-serif" } }
+      { xref: "paper", x: 0, yref: "paper", y: 1, yanchor: "bottom", yshift: top - 24 - titleLines * 24 + 8,
+        xanchor: "left", xshift: -(m.l - 12), showarrow: false, align: "left",
+        text: "<b>" + wrapAnn(escAnn(title), TW) + "</b>",
+        font: { size: 18, color: "#1c1a16", family: "Inter, sans-serif" } },
+      { xref: "paper", x: 0, yref: "paper", y: 0, yanchor: "top", yshift: -(m.b - bottom + 34),
+        xanchor: "left", xshift: -(m.l - 12), showarrow: false, align: "left", text: footText,
+        font: { size: 10.5, color: "#5f574a", family: "Inter, sans-serif" } },
+      { xref: "paper", x: 1, yref: "paper", y: 0, yanchor: "top", yshift: -(m.b - 20),
+        xanchor: "right", showarrow: false, text: "noncogito.substack.com",
+        font: { size: 11, color: RED, family: "Inter, sans-serif" } }
     ]);
     var tmp = document.createElement("div");
     tmp.style.cssText = "position:fixed;left:-99999px;top:0;width:" + W + "px;height:" + H + "px;";
     document.body.appendChild(tmp);
     function cleanup() { try { Plotly.purge(tmp); } catch (e) {} tmp.remove(); }
-    Plotly.newPlot(tmp, data, layout, { displayModeBar: false, staticPlot: true })
-      .then(function () { return Plotly.toImage(tmp, { format: "png", width: W, height: H, scale: 2 }); })
+    var done = Plotly.newPlot(tmp, data, layout, { displayModeBar: false, staticPlot: true })
+      .then(function () { return Plotly.toImage(tmp, { format: "png", width: W, height: H, scale: 4.125 }); })
       .then(function (url) {
-        var a = document.createElement("a");
-        a.href = url; a.download = "dclinpsy-" + slug(title) + ".png";
-        document.body.appendChild(a); a.click(); a.remove(); cleanup();
-      }).catch(cleanup);
+        if (!returnUrl) {
+          var a = document.createElement("a");
+          a.href = url; a.download = "dclinpsy-" + slug(title) + ".png";
+          document.body.appendChild(a); a.click(); a.remove();
+        }
+        cleanup(); return url;
+      }, function (e) { cleanup(); throw e; });
+    return done;
   }
+  // Test hook: build the PNG without downloading it (used to check the export).
+  function exportPNG() { return downloadChart(true); }
   function render() {
     var about = document.getElementById("about"), wrap = document.getElementById("chartwrap");
     if (state.view === "about") {
@@ -1281,6 +1447,13 @@
     // is itself a table), so the toggle never offers a redundant/empty mode.
     var fvc = document.getElementById("forest-view-ctl");
     if (fvc) fvc.style.display = (state.view === "forest" && isSESPairwise()) ? "none" : "";
+    // extra room on the right of forests so the value labels never sit on the data
+    // overviews are percentage points only; the SES matrix has no comparison ticks
+    var mctl = document.getElementById("measure-ctl");
+    if (mctl) mctl.hidden = isOverview();
+    var cctl = document.getElementById("cmp-ctl");
+    if (cctl) cctl.hidden = isSESPairwise();
+    if (state.view === "forest") buildLegendKey();
     var chart = document.getElementById("chart"), matrix = document.getElementById("matrix"),
         table = document.getElementById("table");
     chart.style.display = "none"; matrix.style.display = "none"; table.style.display = "none";
@@ -1306,10 +1479,18 @@
   function updateNote() {
     var note = document.getElementById("chart-note");
     if (state.view === "table") {
-      note.textContent = "Every selected category and year. A suppressed acceptance is withheld because the count is too small to report safely; it is never zero. Use Download CSV for the full data.";
+      note.textContent = "Every selected category and year. A suppressed acceptance is withheld because the count is too small to report safely; it is never zero. † the source pooled a small hidden count with this row. Use Download CSV for the full data.";
       return;
     }
-    note.textContent = state.view === "trend"
+    if (state.view === "forest" && !isSESPairwise()) {
+      note.textContent = state.sub + (state.forestMode === "table" ? "" : " Hover any row for n, the interval and p-values.") +
+        " Source: Clearing House for Postgraduate Courses in Clinical Psychology.";
+      return;
+    }
+    var lead = state.sub ? state.sub + " " : "";
+    if (state.view === "trend" && state.trendMode === "numbers") {
+      note.textContent = lead + "Source: Clearing House for Postgraduate Courses in Clinical Psychology."; return; }
+    note.textContent = lead + (state.view === "trend"
       ? ((state.trendMode === "vsref"
         ? (state.trendMeasure === "rr"
           ? "Each point is the ratio of the group's acceptance rate to the reference that year (a 95% Katz-log interval). The dotted line is parity (ratio 1): below 1 means accepted less often than the reference, above 1 more often. A year with no dot is a suppressed, missing or zero count; the line bridges it. Grey marks the DEI era."
@@ -1332,30 +1513,27 @@
         })()
       : state.view === "era"
         ? "Each group's pre-DEI and DEI value is the mean of its per-year rates (or gaps), with a 95% t-interval. The change between eras is tested on those per-year values (Welch t-test), corrected across the groups. 2020 is the changeover year, in neither era."
-      : isSESPairwise()
-          ? "Each cell is the acceptance-rate gap between two quintiles (row minus column), with one Benjamini-Hochberg correction across the 10 pairs. Hover a cell for the value and verdict."
-      : isAllGroups()
-          ? "Every group across the significance families, each vs its own reference, pooled under one Benjamini-Hochberg correction. A group can be significant here but not in its own family, because the pooled m differs (e.g. British Welsh). Under-300 groups omitted."
-        : state.forestMode === "table"
-          ? "Each row is the group's effect vs its reference, with its 95% interval and significance. Significant differences are in red. n is the pooled applicant count over the chosen years."
-          : "Each point is the group's effect vs its reference, with its interval. The dotted line is no difference. Hover for detail. n is accepted/total pooled over the chosen years.";
+      : "Each cell is the acceptance-rate gap between two quintiles (row minus column), with one Benjamini-Hochberg correction across the 10 pairs. Hover a cell for the value and verdict.");
   }
 
   function buildCharPicker() {
     var sel = document.getElementById("char-picker");
-    var ovr = document.createElement("optgroup"); ovr.label = "Overview";
-    var oAll = document.createElement("option");
-    oAll.value = ALL_GROUPS; oAll.textContent = "All groups";
-    if (state.characteristic === ALL_GROUPS) oAll.selected = true;
-    ovr.appendChild(oAll); sel.appendChild(ovr);
+    function opt(parent, value, text) {
+      var o = document.createElement("option"); o.value = value; o.textContent = text;
+      if (value === state.characteristic) o.selected = true; parent.appendChild(o);
+    }
+    var ovr = document.createElement("optgroup"); ovr.label = "Overview (Compare groups)";
+    opt(ovr, ALL_GROUPS, CHAR_LABELS[ALL_GROUPS]);
+    if ((META.context_questions || []).length) opt(ovr, ALL_CONTEXT, CHAR_LABELS[ALL_CONTEXT]);
+    sel.appendChild(ovr);
     var grp = document.createElement("optgroup"); grp.label = "Characteristic";
-    CHARS.forEach(function (c) {
-      var o = document.createElement("option");
-      o.value = c; o.textContent = CHAR_LABELS[c];
-      if (c === state.characteristic) o.selected = true;
-      grp.appendChild(o);
-    });
+    CHARS.filter(function (c) { return !isContext(c) && c !== ALL_GROUPS && c !== ALL_CONTEXT; })
+      .forEach(function (c) { opt(grp, c, CHAR_LABELS[c]); });
     sel.appendChild(grp);
+    var ctxg = document.createElement("optgroup");
+    ctxg.label = "Contextual background (" + (META.context_questions.length ? "from 2023" : "") + ")";
+    (META.context_questions || []).forEach(function (c) { opt(ctxg, c, CHAR_LABELS[c]); });
+    if (ctxg.children.length) sel.appendChild(ctxg);
     sel.addEventListener("change", function () {
       state.characteristic = sel.value; state.selected = {};
       defaultSelection(); buildGroupList();
@@ -1366,13 +1544,19 @@
 
   // Per-view dropdown gating: "All groups" only applies to Compare to reference;
   // characteristics with no Census benchmark are disabled on the rep tab.
+  // Overviews only on Compare groups; contextual questions have no pre-DEI years
+  // (era view) and no population benchmark (representation view).
+  function charAllowed(c, view) {
+    if (c === ALL_GROUPS || c === ALL_CONTEXT) return view === "forest";
+    // the overall total has nothing to compare against: trend and table only
+    if (c === "OVERALL") return view === "trend" || view === "table";
+    if (view === "rep") return !!REP[c];
+    if (view === "era") return !isContext(c);
+    return true;
+  }
   function updateCharOptions() {
-    var rep = state.view === "rep", forest = state.view === "forest";
     Array.prototype.forEach.call(document.querySelectorAll("#char-picker option"),
-      function (o) {
-        if (o.value === ALL_GROUPS) o.disabled = !forest;
-        else o.disabled = rep && !REP[o.value];
-      });
+      function (o) { o.disabled = !charAllowed(o.value, state.view); });
   }
 
   // White ethnic groups, excluded from the default ethnicity selection so the
@@ -1589,11 +1773,20 @@
     });
   }
 
+  // Sidebar key for Compare groups; rebuilt on every render (the full forest
+  // colours direction as published: red above, blue below).
   function buildLegendKey() {
-    document.getElementById("legendkey").innerHTML =
-      '<div><span class="swatch" style="background:' + RED + '"></span>Significant (after correction)</div>' +
-      '<div><span class="swatch" style="background:' + BG + ';border:1.6px solid ' + NOSIG + '"></span>Not significant</div>' +
-      '<div style="margin-top:.3rem">Position shows the direction (above or below reference); colour shows significance after Benjamini-Hochberg within each characteristic.</div>';
+    var tick = '<div><span class="swatch" style="border-radius:0;width:3px;height:13px;background:' + INK +
+      ';margin:0 .55rem 0 .25rem"></span>Comparison years (dark tick)</div>';
+    var hollow = '<div><span class="swatch" style="background:#fff;border:1.6px solid #8a8073"></span>No clear difference</div>';
+    var html = isAllGroups()
+      ? '<div><span class="swatch" style="background:' + RED + '"></span>Above its reference group</div>' +
+        '<div><span class="swatch" style="background:' + BLUE + '"></span>Below its reference group</div>' + hollow + tick +
+        '<div style="margin-top:.3rem">One Benjamini-Hochberg correction across every group, as in the published full forest.</div>'
+      : '<div><span class="swatch" style="background:' + RED + '"></span>Significant (after correction)</div>' + hollow + tick +
+        '<div style="margin-top:.3rem">Position shows the direction (above or below the reference); colour shows significance.</div>';
+    html += '<div style="margin-top:.3rem">† the source pooled a small hidden count with this group; hover for detail.</div>';
+    document.getElementById("legendkey").innerHTML = html;
   }
 
   // Switch characteristic and rebuild the dependent selections/lists.
@@ -1617,11 +1810,9 @@
       document.getElementById("rep-controls").hidden = state.view !== "rep";
       document.getElementById("table-controls").hidden = state.view !== "table";
       document.getElementById("char-control").hidden = state.view === "about";
-      // "All groups" is only valid on Compare to reference: fall back elsewhere.
-      if (state.view !== "forest" && isAllGroups()) switchCharacteristic("ETHNICITY");
-      // representativeness only supports characteristics with a Census benchmark
-      if (state.view === "rep" && !REP[state.characteristic])
-        switchCharacteristic("ETHNIC GROUP (BROAD)");
+      // Fall back when the current characteristic does not apply to this view.
+      if (state.view !== "about" && !charAllowed(state.characteristic, state.view))
+        switchCharacteristic(state.view === "rep" ? "ETHNIC GROUP (BROAD)" : "ETHNICITY");
       updateCharOptions();
       render();
     });
@@ -1657,12 +1848,52 @@
     });
   }
 
+  // Comparison ticks: on/off and the comparison years (Compare groups view).
+  function buildCompareControls() {
+    var cb = document.getElementById("cmp-on");
+    cb.checked = state.cmpOn;
+    cb.addEventListener("change", function () {
+      state.cmpOn = cb.checked;
+      document.getElementById("cmp-years").hidden = !state.cmpOn;
+      render();
+    });
+    buildRangeSelect("cmp-year-from", "cmp-year-to", "cmpFrom", "cmpTo");
+  }
+
+  // Phones: the controls move from the side rail into a collapsible "Chart
+  // options" panel directly under the tabs, so they sit above the chart instead
+  // of below it. Desktop keeps the side rail.
+  var rail = document.querySelector(".rail"), railHome = rail.parentNode, railNext = rail.nextSibling;
+  function placeRail() {
+    var narrow = window.innerWidth <= 860, drawer = document.getElementById("options-drawer");
+    if (narrow && rail.parentNode !== drawer) drawer.appendChild(rail);
+    else if (!narrow && rail.parentNode === drawer) railHome.insertBefore(rail, railNext);
+    document.getElementById("options-toggle").hidden = !narrow;
+  }
+  function buildOptionsToggle() {
+    var btn = document.getElementById("options-toggle"), drawer = document.getElementById("options-drawer");
+    btn.addEventListener("click", function () {
+      var open = drawer.classList.toggle("open");
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+      btn.querySelector(".chev").textContent = open ? "▴" : "▾";
+    });
+    placeRail();
+    var t; window.addEventListener("resize", function () {
+      clearTimeout(t); t = setTimeout(function () { placeRail(); render(); }, 150); });
+  }
+
   // ---- Init -----------------------------------------------------------------
+  document.querySelector(".brand .eyebrow").textContent =
+    "Admissions equity · " + FIRST_YEAR + " to " + LATEST;
   buildTabs(); buildCharPicker(); defaultSelection(); buildGroupList();
   buildToggles(); buildTrendModeSeg(); buildEraSeg(); buildRepControls();
-  buildYearControls(); buildMeasureSeg(); buildLegendKey();
-  buildTableCatList(); buildTableControls(); buildViewToggles();
+  buildYearControls(); buildMeasureSeg(); buildLegendKey(); buildCompareControls();
+  buildTableCatList(); buildTableControls(); buildViewToggles(); buildOptionsToggle();
   document.getElementById("dl-png").addEventListener("click", downloadChart);
   updateCharOptions();
   render();
+  // Debug and test hook (read-only): lets the browser check reproduce the R oracle.
+  window.__explorer = { computeMaster: computeMaster, computeContextAll: computeContextAll, exportPNG: exportPNG,
+    computeForest: function (ch, years) { var s = state.characteristic; state.characteristic = ch;
+      try { return forestFor(years); } finally { state.characteristic = s; } } };
 })();
