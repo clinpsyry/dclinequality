@@ -136,6 +136,9 @@
   .chartwrap { position: relative; background: #EADDCA; border: 1px solid #dccdb5;
     border-radius: 16px; padding: 1.4rem 1.5rem 1rem; box-shadow: var(--shadow); }
   .chartwrap .chart-title { color: #1c1a16; max-width: 46ch; }
+  #yrange input { flex: 1; min-width: 0; width: 100%; padding: .55rem .7rem; font: inherit; font-size: .92rem;
+    color: var(--ink); border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
+  #yrange input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
   .chartwrap .note { color: #5f574a; }
   .chartwrap .dl-btn { background: #f3eadc; border-color: #d6c6ac; }
   #table, #matrix { background: var(--card); border-radius: 10px; }
@@ -299,6 +302,17 @@
         <label class="cap">Years shown</label>
         <div class="yearrange">
           <select id="trend-year-from"></select><span>to</span><select id="trend-year-to"></select>
+        </div>
+      </div>
+      <div class="ctl">
+        <label class="cap">Y axis</label>
+        <div class="seg" id="yaxis-seg">
+          <button class="seg-btn active" data-mode="auto">Auto</button>
+          <button class="seg-btn" data-mode="custom">Set range</button>
+        </div>
+        <div class="yearrange" id="yrange" hidden style="margin-top:.45rem">
+          <input type="number" id="y-min" step="any" aria-label="Y axis from"><span>to</span>
+          <input type="number" id="y-max" step="any" aria-label="Y axis to">
         </div>
       </div>
       <div class="ctl">

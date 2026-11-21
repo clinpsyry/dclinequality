@@ -181,7 +181,8 @@
     tableYearFrom:FIRST_YEAR, tableYearTo:LATEST, tableSelected:{}, tableMode:"pooled",
     tableSort:{ col:null, dir:1 }, repYearFrom:DEI_FROM, repYearTo:LATEST, repMode:"chart",
     repSort:{ col:null, dir:1 }, forestMode:"chart", forestSort:{ col:null, dir:1 },
-    eraView:"chart", eraSort:{ col:null, dir:1 }, combine:false, sub:"" };
+    eraView:"chart", eraSort:{ col:null, dir:1 }, combine:false, sub:"",
+    yCustom:false, yMin:"", yMax:"" };
 
   // ---- pooled cells (RULES.md C8): flagged, not changed --------------------------
   // A row's acceptances may include hidden rows (pooled_with), or its own
@@ -316,16 +317,42 @@
     return TRACE_STYLE({ group: name }, color, x, y, eHi, eLo, text);
   }
 
+  // User-set y-axis range (Over time). Applied only when both ends are numbers
+  // and the low end is below the high end; otherwise the chart keeps Auto.
+  function applyY(yaxis) {
+    var lo = parseFloat(state.yMin), hi = parseFloat(state.yMax);
+    if (state.yCustom && isFinite(lo) && isFinite(hi) && lo < hi) {
+      yaxis.range = [lo, hi]; yaxis.autorange = false; delete yaxis.rangemode;
+    }
+    return yaxis;
+  }
+
   // Numbers mode: applicants (solid) and acceptances (dotted) as counts, per group.
+  // Combine Groups sums the ticked groups into one pair of lines; a year where any
+  // ticked group's acceptances are suppressed shows no accepted point (never a
+  // partial sum, which would understate it).
   function renderNumbers() {
     var ch = state.characteristic, label = CHAR_LABELS[ch], ai = 0, traces = [];
     var groups = (byChar[ch] || []).filter(function (g) { return state.selected[g.group]; });
+    var combined = state.combine && groups.length > 1;
+    if (combined) {
+      var maps = groups.map(function (g) { var m = {}; g.by_year.forEach(function (r) { m[r.year] = r; }); return m; });
+      var sumBy = {};
+      ALL_YEARS.forEach(function (y) {
+        var app = 0, acc = 0, accOk = true, any = false;
+        maps.forEach(function (m) { var r = m[y]; if (!r) { accOk = false; return; } any = true;
+          app += r.applicants; if (r.accepted == null) accOk = false; else acc += r.accepted; });
+        if (any) sumBy[y] = { year: y, applicants: app, accepted: accOk ? acc : null };
+      });
+      groups = [{ group: "Combined (" + groups.map(function (g) { return g.group; }).join(" + ") + ")",
+        by_year: Object.keys(sumBy).map(function (k) { return sumBy[k]; }) }];
+    }
     groups.forEach(function (g) {
-      var color = ch === "OVERALL" ? RED : ACCENTS[ai++ % ACCENTS.length];
+      var color = (ch === "OVERALL" || combined) ? RED : ACCENTS[ai++ % ACCENTS.length];
       var by = {}; g.by_year.forEach(function (r) { by[r.year] = r; });
       var xs = ALL_YEARS.filter(function (y) { return y >= state.trendFrom && y <= state.trendTo; });
       function series(key, dash, word) {
-        var name = (groups.length > 1 || ch !== "OVERALL" ? g.group + ": " : "") + word;
+        var name = (groups.length > 1 || (ch !== "OVERALL" && !combined) ? g.group + ": " : "") + word;
         return { name: name, x: xs, type:"scatter", mode:"lines+markers", connectgaps:false,
           y: xs.map(function (y) { var r = by[y]; return r ? (key === "applicants" ? r.applicants : r.accepted) : null; }),
           line:{ color: color, width: 2.4, dash: dash }, marker:{ color: color, size: 7 },
@@ -338,6 +365,8 @@
     setChartHead("Applicants and acceptances by year, " + label + ", " + yrs,
       "Number of applicants (solid line) and of applicants accepted (dotted line) each year." +
       (ch === "OVERALL" ? " Everyone who applied, from the Clearing House's published yearly totals." : "") +
+      (combined ? " " + groups[0].group + ": the ticked groups summed. Applicants who answered 'prefer not to say' " +
+        "are not in any group, so a combined total can sit slightly below All applicants (overall)." : "") +
       " A missing dotted point is a suppressed count, never zero.");
     var layout = {
       paper_bgcolor:BG, plot_bgcolor:BG, height:480,
@@ -346,8 +375,8 @@
       xaxis:{ dtick: narrowView() ? Math.max(1, Math.ceil((state.trendTo - state.trendFrom + 1) / 4)) : 1,
         range:[state.trendFrom - 0.5, state.trendTo + 0.5], showgrid:false, zeroline:false,
         linecolor:AXISLINE, tickcolor:AXISLINE },
-      yaxis:{ title:"Number of people", rangemode:"tozero", tickformat:",", showgrid:true,
-        gridcolor:GRID, zeroline:false, linecolor:AXISLINE, tickcolor:AXISLINE },
+      yaxis: applyY({ title:"Number of people", rangemode:"tozero", tickformat:",", showgrid:true,
+        gridcolor:GRID, zeroline:false, linecolor:AXISLINE, tickcolor:AXISLINE }),
       hovermode:"closest", legend:{ orientation:"h", y:-0.18, bgcolor:"rgba(0,0,0,0)", font:{ size:12 } }
     };
     Plotly.react("chart", traces, lockZoom(layout), PLOT_CFG);
@@ -362,12 +391,13 @@
     if (mc) mc.hidden = !vs;   // the pp/ratio measure choice only applies vs reference
     var traces = [], ai = 0;
     var selectedGroups = (byChar[ch] || []).filter(function (g) { return state.selected[g.group]; });
-    var combining = state.combine &&
-      selectedGroups.filter(function (g) { return g.group !== ref; }).length > 0;
+    // Combine: vs reference pools the non-reference groups against the reference;
+    // in Rate mode the reference is pooled too, so ticking every group gives the
+    // combined rate for everyone in them.
+    var poolable = selectedGroups.filter(function (g) { return !vs || g.group !== ref; });
+    var combining = state.combine && poolable.length > (vs ? 0 : 1);
     if (combining) {
-      var pool = selectedGroups.filter(function (g) { return g.group !== ref; });
-      traces.push(combinedTrace(pool, refGroup, vs, RED, rr));
-      if (!vs && refGroup) traces.push(traceFor(refGroup, REF_COLOR));   // baseline to compare against
+      traces.push(combinedTrace(poolable, refGroup, vs, RED, rr));
     } else {
       selectedGroups.forEach(function (g) {
         if (vs && g.group === ref) return;   // reference is the flat baseline
@@ -404,7 +434,7 @@
       xaxis:{ dtick: narrowView() ? Math.max(1, Math.ceil((state.trendTo - state.trendFrom + 1) / 4)) : 1,
         range:[state.trendFrom - 0.5, state.trendTo + 0.5], showgrid:false, zeroline:false,
         linecolor:AXISLINE, tickcolor:AXISLINE },
-      yaxis:yaxis, hovermode:"closest",
+      yaxis:applyY(yaxis), hovermode:"closest",
       legend:{ orientation:"h", y:-0.18, bgcolor:"rgba(0,0,0,0)", font:{ size:12 } },
       shapes:shapes,
       annotations: showDEI ? [
@@ -1535,7 +1565,7 @@
     (META.context_questions || []).forEach(function (c) { opt(ctxg, c, CHAR_LABELS[c]); });
     if (ctxg.children.length) sel.appendChild(ctxg);
     sel.addEventListener("change", function () {
-      state.characteristic = sel.value; state.selected = {};
+      state.characteristic = sel.value; state.selected = {}; resetY();
       defaultSelection(); buildGroupList();
       state.tableSelected = {}; buildTableCatList();
       render();
@@ -1647,7 +1677,7 @@
     var seg = document.getElementById("trendmode-seg");
     seg.addEventListener("click", function (e) {
       var b = e.target.closest(".seg-btn"); if (!b) return;
-      state.trendMode = b.getAttribute("data-mode");
+      state.trendMode = b.getAttribute("data-mode"); resetY();
       seg.querySelectorAll(".seg-btn").forEach(function (x) {
         x.classList.toggle("active", x === b); });
       render();
@@ -1655,7 +1685,7 @@
     var ms = document.getElementById("trend-measure-seg");
     if (ms) ms.addEventListener("click", function (e) {
       var b = e.target.closest(".seg-btn"); if (!b) return;
-      state.trendMeasure = b.getAttribute("data-measure");
+      state.trendMeasure = b.getAttribute("data-measure"); resetY();
       ms.querySelectorAll(".seg-btn").forEach(function (x) {
         x.classList.toggle("active", x === b); });
       render();
@@ -1848,6 +1878,39 @@
     });
   }
 
+  // Y-axis range for Over time. "Set range" starts from the range currently on
+  // screen; the range goes back to Auto when the characteristic or mode changes,
+  // since the units change (%, pp, ratio, counts).
+  function setYMode(custom) {
+    state.yCustom = custom;
+    var seg = document.getElementById("yaxis-seg");
+    seg.querySelectorAll(".seg-btn").forEach(function (x) {
+      x.classList.toggle("active", (x.getAttribute("data-mode") === "custom") === custom); });
+    document.getElementById("yrange").hidden = !custom;
+    if (custom) {
+      var gd = document.getElementById("chart"), r = gd._fullLayout && gd._fullLayout.yaxis && gd._fullLayout.yaxis.range;
+      if (r) {
+        var span = Math.abs(r[1] - r[0]), dp = span >= 100 ? 0 : span >= 10 ? 1 : 2;
+        state.yMin = (+r[0]).toFixed(dp); state.yMax = (+r[1]).toFixed(dp);
+        document.getElementById("y-min").value = state.yMin; document.getElementById("y-max").value = state.yMax;
+      }
+    }
+  }
+  function resetY() { if (state.yCustom) setYMode(false); }
+  function buildYControls() {
+    document.getElementById("yaxis-seg").addEventListener("click", function (e) {
+      var b = e.target.closest(".seg-btn"); if (!b) return;
+      setYMode(b.getAttribute("data-mode") === "custom"); render();
+    });
+    var t;
+    ["y-min", "y-max"].forEach(function (id) {
+      document.getElementById(id).addEventListener("input", function (e) {
+        state[id === "y-min" ? "yMin" : "yMax"] = e.target.value;
+        clearTimeout(t); t = setTimeout(render, 250);
+      });
+    });
+  }
+
   // Comparison ticks: on/off and the comparison years (Compare groups view).
   function buildCompareControls() {
     var cb = document.getElementById("cmp-on");
@@ -1887,7 +1950,7 @@
     "Admissions equity · " + FIRST_YEAR + " to " + LATEST;
   buildTabs(); buildCharPicker(); defaultSelection(); buildGroupList();
   buildToggles(); buildTrendModeSeg(); buildEraSeg(); buildRepControls();
-  buildYearControls(); buildMeasureSeg(); buildLegendKey(); buildCompareControls();
+  buildYearControls(); buildMeasureSeg(); buildLegendKey(); buildCompareControls(); buildYControls();
   buildTableCatList(); buildTableControls(); buildViewToggles(); buildOptionsToggle();
   document.getElementById("dl-png").addEventListener("click", downloadChart);
   updateCharOptions();
