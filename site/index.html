@@ -31,6 +31,8 @@
     --shadow:0 1px 2px rgba(45,35,15,.04), 0 16px 32px -18px rgba(45,35,15,.16);
     --ftred:#990F3D; --ftblue:#2D6CA2; --bg:#ffffff; --panel:#ffffff; }
   * { box-sizing: border-box; }
+  /* [hidden] must win over component display rules (e.g. .yearrange { display:flex }) */
+  [hidden] { display: none !important; }
   html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
   body { font: 15px/1.55 "Inter", system-ui, -apple-system, sans-serif;
     color: var(--ink); margin: 0; background: var(--page); }
@@ -158,7 +160,11 @@
     .chartwrap { padding: 1rem .8rem .8rem; border-radius: 12px; }
     .chartwrap .chart-title { font-size: 1.05rem; }
   }
-  .dl-btn { position: absolute; top: 1.2rem; right: 1.3rem; z-index: 3; font: inherit;
+  .dl-group { position: absolute; top: 1.2rem; right: 1.3rem; z-index: 3; display: flex; gap: .35rem; }
+  .dl-group select { width: auto; font-size: .78rem; padding: .38rem 1.7rem .38rem .55rem; border-radius: 9px;
+    background-color: #f3eadc; border-color: #d6c6ac; }
+  .mobile-support { display: none; }
+  .dl-btn { font: inherit;
     font-size: .8rem; font-weight: 600; color: var(--muted); background: var(--card);
     border: 1px solid var(--line); border-radius: 9px; padding: .42rem .7rem; cursor: pointer;
     display: inline-flex; align-items: center; gap: .4rem; transition: all .15s ease; }
@@ -260,12 +266,35 @@
 
   /* Mobile component overrides (placed last so they win over the base rules) */
   @media (max-width: 860px) {
-    .chartwrap .dl-btn { position: static; margin: 0 0 .8rem; }   /* flow above the title */
+    /* title first; the download buttons move under the chart */
+    .chartwrap { display: flex; flex-direction: column; }
+    .chartwrap .dl-group { position: static; order: 10; margin: .9rem 0 0; }
     #chart-head { padding-right: 0; }
-    a.kofi-float { bottom: .8rem; right: .8rem; padding: .52rem .85rem; font-size: .82rem; }
-    a.kofi-float .kofi-label { display: none; }                   /* hide long label */
-    a.kofi-float .kofi-label-sm { display: inline; }              /* show "Support Me" */
+    /* the floating support button covered charts: it moves under the chart card */
+    a.kofi-float { display: none; }
+    .mobile-support { display: block; text-align: center; margin: 1.1rem 0 .4rem; }
   }
+  /* Phone layout forced On on a larger screen: the chart column takes a phone's
+     width, so what you see is what a phone reader (and the phone PNG) gets. */
+  body.phone-preview .content > .chartwrap { max-width: 430px; margin: 0 auto; display: flex; flex-direction: column; }
+  body.phone-preview .chartwrap .dl-group { position: static; order: 10; margin: .9rem 0 0; }
+  body.phone-preview #chart-head { padding-right: 0; }
+  body.phone-preview .chartwrap .chart-title { font-size: 1.05rem; }
+  /* Phone layout: every data table becomes a list of cards (one per row) */
+  body.phone-charts table.datatable thead { display: none; }
+  body.phone-charts table.datatable, body.phone-charts table.datatable tbody { display: block; width: 100%; }
+  body.phone-charts table.datatable tr { display: block; background: var(--card); border: 1px solid var(--line);
+    border-radius: 10px; padding: .55rem .8rem; margin: 0 0 .6rem; }
+  body.phone-charts table.datatable td { display: flex; justify-content: space-between; gap: 1rem; text-align: right;
+    border: none; padding: .18rem 0; position: static; box-shadow: none; background: transparent; }
+  body.phone-charts table.datatable td::before { content: attr(data-label); color: var(--muted); font-weight: 600;
+    text-align: left; font-size: .8rem; }
+  body.phone-charts table.datatable td:first-child { font-weight: 700; font-size: .95rem; padding-bottom: .35rem; }
+  body.phone-charts table.datatable td:first-child::before { content: none; }
+  body.phone-charts table.datatable tr.allrow { background: var(--accent-soft); }
+  body.phone-charts table.datatable tr.allrow td { border: none; background: transparent; }
+  body.phone-charts #table { overflow-x: visible; background: transparent; padding: 0; }
+  body.phone-charts .table-title, body.phone-charts .table-sub { position: static; max-width: none; }
 </style>
 </head>
 <body>
@@ -276,6 +305,14 @@
   </header>
   <aside class="rail">
     <div class="panel">
+    <div class="ctl" id="phone-ctl" style="margin-top:0;margin-bottom:1rem">
+      <label class="cap">Phone layout</label>
+      <div class="seg" id="phone-seg">
+        <button class="seg-btn active" data-mode="auto" title="Phone layout on phones, normal layout on larger screens">Auto</button>
+        <button class="seg-btn" data-mode="on" title="Show the charts as they look on a phone">On</button>
+        <button class="seg-btn" data-mode="off" title="Always use the normal layout">Off</button>
+      </div>
+    </div>
     <div id="char-control">
       <h2>Characteristic</h2>
       <select id="char-picker"></select>
@@ -468,15 +505,25 @@
     <div class="options-drawer" id="options-drawer"></div>
     <div class="content">
       <div class="chartwrap" id="chartwrap">
-        <button class="dl-btn" id="dl-png" title="Download this chart as a PNG">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
-            stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/>
-            <path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>Download PNG</button>
+        <div class="dl-group" id="dl-group">
+          <button class="dl-btn" id="dl-png" title="Download this chart as a PNG">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/>
+              <path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>Download PNG</button>
+          <select id="png-format" aria-label="PNG shape" title="PNG shape">
+            <option value="phone">Phone (blog)</option>
+            <option value="wide">Wide</option>
+          </select>
+        </div>
         <div id="chart-head"></div>
         <div id="chart"></div>
         <div id="matrix"></div>
         <div id="table"></div>
         <p class="note" id="chart-note"></p>
+      </div>
+      <div class="mobile-support">
+        <a class="kofi-btn" href="https://ko-fi.com/Q5Q51YZ8GK" target="_blank" rel="noopener"
+          title="Please consider supporting this project"><svg viewBox="0 0 24 24" aria-hidden="true"><text x="12" y="19" text-anchor="middle" font-size="22" font-weight="700" font-family="Georgia, 'Times New Roman', serif" fill="currentColor">&#968;</text></svg>Support this project</a>
       </div>
       <div id="about"><article class="about">
         <h2>About this explorer</h2>

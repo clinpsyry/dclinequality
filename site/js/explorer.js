@@ -182,7 +182,7 @@
     tableSort:{ col:null, dir:1 }, repYearFrom:DEI_FROM, repYearTo:LATEST, repMode:"chart",
     repSort:{ col:null, dir:1 }, forestMode:"chart", forestSort:{ col:null, dir:1 },
     eraView:"chart", eraSort:{ col:null, dir:1 }, combine:false, sub:"",
-    yCustom:false, yMin:"", yMax:"", showDEI:true };
+    yCustom:false, yMin:"", yMax:"", showDEI:true, phoneMode:"auto", pngFormat:"phone" };
 
   // ---- pooled cells (RULES.md C8): flagged, not changed --------------------------
   // A row's acceptances may include hidden rows (pooled_with), or its own
@@ -317,6 +317,35 @@
     return TRACE_STYLE({ group: name }, color, x, y, eHi, eLo, text);
   }
 
+  // Phone layout for the line charts (Over time): each line is named at its last
+  // point instead of a legend (labels nudged apart so they never overlap), no
+  // rotated axis title (the unit is in the chart title), larger text.
+  function phoneLines(layout, traces) {
+    if (!narrowView()) return layout;
+    var ys = [], labs = [];
+    traces.forEach(function (t) { (t.y || []).forEach(function (v) { if (v != null) ys.push(v); }); });
+    traces.forEach(function (t) {
+      if (!t.name) return;
+      var i = (t.y || []).length - 1; while (i >= 0 && t.y[i] == null) i--;
+      if (i < 0) return;
+      labs.push({ x: t.x[i], y: t.y[i], ly: t.y[i], text: t.name, color: (t.line && t.line.color) || INK });
+    });
+    var yr = layout.yaxis && layout.yaxis.range, lo = yr ? yr[0] : Math.min.apply(null, ys.concat(layout.yaxis && layout.yaxis.rangemode === "tozero" ? [0] : []));
+    var hi = yr ? yr[1] : Math.max.apply(null, ys), gap = ((hi - lo) || 1) * 0.085;
+    labs.sort(function (a, b) { return b.y - a.y; });
+    for (var k = 1; k < labs.length; k++) if (labs[k - 1].ly - labs[k].ly < gap) labs[k].ly = labs[k - 1].ly - gap;
+    layout.annotations = (layout.annotations || []).concat(labs.map(function (l) {
+      return { x: l.x, y: l.ly, xref: "x", yref: "y", xanchor: "left", yanchor: "middle", xshift: 7, showarrow: false,
+        align: "left", text: "<b>" + wrapLabel(escAnn(l.text), 13) + "</b>", font: { size: 12, color: l.color } };
+    }));
+    layout.showlegend = false;
+    if (layout.yaxis) { delete layout.yaxis.title; layout.yaxis.tickfont = { size: 12 }; }
+    layout.xaxis.tickfont = { size: 12 };
+    layout.margin = { t: 16, r: 104, b: 36, l: 44 };
+    layout.height = 440;
+    return layout;
+  }
+
   // User-set y-axis range (Over time). Applied only when both ends are numbers
   // and the low end is below the high end; otherwise the chart keeps Auto.
   function applyY(yaxis) {
@@ -362,7 +391,7 @@
       traces.push(series("accepted", "dot", "Accepted"));
     });
     var yrs = state.trendFrom + "–" + state.trendTo;
-    setChartHead("Applicants and acceptances by year, " + label + ", " + yrs,
+    setChartHead("Applicants and acceptances by year, " + label.toLowerCase() + ", " + yrs,
       "Number of applicants (solid line) and of applicants accepted (dotted line) each year." +
       (ch === "OVERALL" ? " Everyone who applied, from the Clearing House's published yearly totals." : "") +
       (combined ? " " + groups[0].group + ": the ticked groups summed. Applicants who answered 'prefer not to say' " +
@@ -379,7 +408,7 @@
         gridcolor:GRID, zeroline:false, linecolor:AXISLINE, tickcolor:AXISLINE }),
       hovermode:"closest", legend:{ orientation:"h", y:-0.18, bgcolor:"rgba(0,0,0,0)", font:{ size:12 } }
     };
-    Plotly.react("chart", traces, lockZoom(layout), PLOT_CFG);
+    Plotly.react("chart", traces, lockZoom(phoneLines(layout, traces)), PLOT_CFG);
   }
 
   function renderTrend() {
@@ -422,9 +451,9 @@
           gridcolor:GRID, zeroline:false, linecolor:AXISLINE, tickcolor:AXISLINE };
     var combNote = combining ? " The selected groups are pooled into one group (summed counts)." : "";
     var yrs = state.trendFrom + "–" + state.trendTo;
-    setChartHead(rr ? "Acceptance-rate ratio vs " + ref + " by year, " + label + ", " + yrs
-        : vs ? "Acceptance-rate gap vs " + ref + " by year, " + label + ", " + yrs + " (percentage points)"
-        : "Acceptance rate by year, " + label + ", " + yrs + " (%)",
+    setChartHead(rr ? "Acceptance-rate ratio vs " + ref + " by year, " + label.toLowerCase() + ", " + yrs
+        : vs ? "Acceptance-rate gap vs " + ref + " by year, " + label.toLowerCase() + ", " + yrs + " (percentage points)"
+        : "Acceptance rate by year, " + label.toLowerCase() + ", " + yrs + " (%)",
       (rr ? "Ratio of each group's acceptance rate to " + ref + " each year (1 = parity), with 95% intervals."
          : vs ? "Difference from " + ref + " each year, in percentage points, with 95% intervals."
          : "Share of applicants accepted each year, with 95% Wilson intervals.") + combNote);
@@ -443,7 +472,7 @@
           showarrow:false, text:"DEI era", font:{ size:11, color:"#7a6c55" } }
       ] : []
     };
-    Plotly.react("chart", traces, lockZoom(layout), PLOT_CFG);
+    Plotly.react("chart", traces, lockZoom(phoneLines(layout, traces)), PLOT_CFG);
     var gd = document.getElementById("chart"); gd._lastHi = null; bindTrendHover(gd);
   }
 
@@ -736,17 +765,30 @@
     if (pp) shapes.push({ type: "line", xref: "x", x0: 0, x1: 0, yref: "paper", y0: 0, y1: 1,
       line: { color: "#7a6f5a", width: 1.4, dash: "dot" } });
     setEraHead(res);
-    var height = Math.max(300, rows.length * 40 + 80);
+    var narrow = narrowView();
+    // value text "pre → DEI" at the right of every row (bold when the change is significant)
+    var vals = rows.map(function (r, i) {
+      var sig = r.testable && r.sig, f = function (v) { return (pp && v >= 0 ? "+" : "") + v.toFixed(1); };
+      return { xref: "paper", x: 1, xanchor: "right", yref: "y", y: i, yshift: narrow ? 15 : 0, showarrow: false,
+        text: (sig ? "<b>" : "") + f(r.pre.mean) + " → " + f(r.dei.mean) + (sig ? "</b>" : ""),
+        font: { size: 12, color: sig ? INK : "#7a6f5f" } };
+    });
+    var names = narrow ? rows.map(function (r, i) {
+      return { xref: "paper", x: 0, xanchor: "left", yref: "y", y: i, yshift: 15, showarrow: false,
+        text: escAnn(r.group), font: { size: 12, color: INK }, bgcolor: BG };
+    }) : [];
     var layout = {
-      paper_bgcolor: BG, plot_bgcolor: BG, height: height,
+      paper_bgcolor: BG, plot_bgcolor: BG, height: Math.max(260, rows.length * (narrow ? 52 : 40) + 70),
       font: { family: "Inter, system-ui, sans-serif", color: "#1a1a1a", size: 13 },
-      margin: { t: 18, r: 30, b: 54, l: narrowView() ? 96 : 200 },
-      xaxis: applyX("era", { title: xtitle, showgrid: true, gridcolor: GRID, zeroline: false,
-        linecolor: AXISLINE, tickcolor: AXISLINE, ticksuffix: pp ? " pp" : "%" }),
-      yaxis: { tickvals: idx, ticktext: wrapLabels(ys), autorange: "reversed", showgrid: false,
-        zeroline: false, linecolor: AXISLINE, tickcolor: AXISLINE, automargin: true, tickfont: tickFont() },
+      margin: narrow ? { t: 26, r: 96, b: 40, l: 10 } : { t: 18, r: 120, b: 54, l: 200 },
+      xaxis: applyX("era", { title: narrow ? undefined : xtitle, showgrid: true, gridcolor: GRID, zeroline: false,
+        linecolor: AXISLINE, tickcolor: AXISLINE, ticksuffix: pp ? "" : "%", tickformat: pp ? "+," : "",
+        tickfont: { size: 12 } }),
+      yaxis: { tickvals: narrow ? [] : idx, ticktext: narrow ? [] : ys, autorange: "reversed", showgrid: false,
+        zeroline: false, showline: false, automargin: true, tickfont: { size: 12.5, color: INK },
+        range: [rows.length - 0.4, -0.7] },
       hovermode: "closest", showlegend: false, shapes: shapes,
-      annotations: arrows
+      annotations: arrows.concat(vals, names)
     };
     Plotly.react("chart", [preTrace, deiTrace], lockZoom(layout), PLOT_CFG);
   }
@@ -955,11 +997,14 @@
   // Shared title/subtitle for the era view (chart and table).
   function setEraHead(res) {
     var pp = res.mode === "vsref", label = CHAR_LABELS[state.characteristic];
-    var sub = (pp ? "Per-year gap from " + res.ref : "Per-year acceptance rate") +
+    var pre = PRE_DEI[0] + "–" + PRE_DEI[PRE_DEI.length - 1], dei = DEI_Y[0] + "–" + DEI_Y[DEI_Y.length - 1];
+    var sub = "Dot: pre-DEI (" + pre + "). Arrow head: DEI era (" + dei + "). Values: pre-DEI → DEI. " +
+      (pp ? "Per-year gap from " + res.ref : "Per-year acceptance rate") +
       ", averaged within each era, with the change tested on the per-year values (Welch t-test) " +
-      "and Benjamini-Hochberg corrected (m = " + res.m + "); significant changes are in red. " +
+      "and Benjamini-Hochberg corrected (m = " + res.m + "); red: significant change; grey: no clear change. " +
       "2020 is the changeover year, in neither era.";
-    setChartHead(label + ": pre-DEI vs DEI", sub);
+    setChartHead((pp ? "Acceptance-rate gap vs " + res.ref : "Acceptance rate") + " by " +
+      label.toLowerCase() + ", pre-DEI vs DEI era" + (pp ? " (percentage points)" : " (%)"), sub);
   }
   function renderEraTable() {
     var res = computeEra(), pp = res.mode === "vsref", unit = pp ? " pp" : "%";
@@ -1074,21 +1119,22 @@
   // Benchmark labels per characteristic, shared by the chart and the table.
   function repBench(ch) {
     if (ch === "DISABILITY") return {
-      benchLabel: "age-adjusted population share (England &amp; Wales, Census 2021)",
+      benchLabel: "age-adjusted population share (England and Wales, Census 2021)",
       annoLabel: "Age-adjusted population (Census 2021)", popWord: "age-adjusted population",
       colHdr: "Age-adj. pop. %" };
     if (ch === "SOCIO-ECONOMIC BACKGROUND") return {
       benchLabel: "equal-fifths benchmark of 20% per quintile",
       annoLabel: "Equal fifths (20%)", popWord: "equal share", colHdr: "Equal share %" };
     return {
-      benchLabel: "population share (England &amp; Wales, Census 2021)",
+      benchLabel: "population share (England and Wales, Census 2021)",
       annoLabel: "Population (Census 2021)", popWord: "population", colHdr: "Population %" };
   }
   function setRepHead() {
     var ch = state.characteristic, label = CHAR_LABELS[ch].replace(" (detailed)", "");
-    setChartHead(label + ": over- and under-representation",
-      "Applicant and accepted shares as the difference from the " + repBench(ch).benchLabel + ", " +
-      state.repYearFrom + " to " + state.repYearTo + ".");
+    setChartHead("Share of applicants and of acceptances vs the " +
+      (ch === "SOCIO-ECONOMIC BACKGROUND" ? "equal-fifths benchmark" : ch === "DISABILITY" ? "age-adjusted population" : "population") +
+      ", " + label.toLowerCase() + ", " + rangeLabel(state.repYearFrom, state.repYearTo) + " (percentage points)",
+      "Blue: applicants. Red: accepted. Each bar is the group's share minus its " + repBench(ch).benchLabel + ".");
   }
   function repNoBench() {
     setChartHead(CHAR_LABELS[state.characteristic] + ": no benchmark",
@@ -1155,22 +1201,40 @@
         hovertemplate: "%{text}<extra></extra>", text: tx("Accepted", accShare, "popAcc") }
     ];
     setRepHead();
-    var height = Math.max(300, ys.length * 64 + 60);
+    var narrow = narrowView();
+    if (narrow) {
+      // phones: numeric rows so the name can sit above its two bars, full width
+      var idx = ys.map(function (_, i) { return i; });
+      traces[0].y = idx.map(function (i) { return i - 0.1; }); traces[0].width = 0.26;
+      traces[1].y = idx.map(function (i) { return i + 0.2; }); traces[1].width = 0.26;
+    }
+    var fmt = function (v) { return (v >= 0 ? "+" : "") + v.toFixed(1); };
+    var annos = [{ x: 0, xref: "x", y: 1.0, yref: "paper", yanchor: "bottom", xanchor: "center", text: annoLabel,
+      showarrow: false, font: { size: 10.5, color: "#7a6c55" } }];
+    if (narrow) ys.forEach(function (c, i) {
+      annos.push({ xref: "paper", x: 0, xanchor: "left", yref: "y", y: i - 0.3, yanchor: "bottom", showarrow: false,
+        text: escAnn(c), font: { size: 12, color: INK }, bgcolor: BG });
+      annos.push({ xref: "paper", x: 1, xanchor: "right", yref: "y", y: i - 0.3, yanchor: "bottom", showarrow: false,
+        text: '<span style="color:' + BLUE + '">' + fmt(appDev[i]) + '</span>  <span style="color:' + RED + '">' + fmt(accDev[i]) + "</span>",
+        font: { size: 12 } });
+    });
     var layout = {
-      paper_bgcolor: BG, plot_bgcolor: BG, height: height,
+      paper_bgcolor: BG, plot_bgcolor: BG, height: Math.max(280, ys.length * (narrow ? 76 : 64) + 70),
       font: { family: "Inter, system-ui, sans-serif", color: "#1a1a1a", size: 13 },
-      margin: { t: 26, r: 26, b: 56, l: narrowView() ? 90 : 168 }, barmode: "group", bargap: 0.4, bargroupgap: 0.12,
-      xaxis: applyX("rep", { ticksuffix: " pp", tickformat: "+,", showgrid: true, gridcolor: GRID,
-        zeroline: false, linecolor: AXISLINE, tickcolor: AXISLINE }),
-      yaxis: { automargin: true, autorange: "reversed", showgrid: false, zeroline: false,
-        linecolor: AXISLINE, tickcolor: AXISLINE, tickfont: tickFont() },
+      margin: narrow ? { t: 30, r: 12, b: 40, l: 10 } : { t: 26, r: 26, b: 56, l: 168 },
+      barmode: narrow ? "overlay" : "group", bargap: 0.4, bargroupgap: 0.12,
+      xaxis: applyX("rep", { ticksuffix: narrow ? "" : " pp", tickformat: "+,", showgrid: true, gridcolor: GRID,
+        zeroline: false, linecolor: AXISLINE, tickcolor: AXISLINE, tickfont: { size: 12 } }),
+      yaxis: narrow ? { tickvals: [], autorange: "reversed", showgrid: false, zeroline: false, showline: false,
+          range: [ys.length - 0.45, -0.75] }
+        : { automargin: true, autorange: "reversed", showgrid: false, zeroline: false,
+          linecolor: AXISLINE, tickcolor: AXISLINE, tickfont: { size: 12.5, color: INK } },
+      showlegend: !narrow,
       legend: { orientation: "h", y: -0.18, bgcolor: "rgba(0,0,0,0)", font: { size: 12 } },
       hovermode: "closest",
       shapes: [{ type: "line", x0: 0, x1: 0, yref: "paper", y0: 0, y1: 1,
         line: { color: "#7a6f5a", width: 1.4, dash: "dot" } }],
-      annotations: [{ x: 0, xref: "x", y: 1.0, yref: "paper", yanchor: "bottom",
-        xanchor: "center", text: annoLabel,
-        showarrow: false, font: { size: 10, color: "#8a7d64" } }]
+      annotations: annos
     };
     Plotly.react("chart", traces, lockZoom(layout), PLOT_CFG);
   }
@@ -1367,7 +1431,14 @@
   var PLOT_CFG = { responsive: true, displayModeBar: false, scrollZoom: false, doubleClick: false };
   // Narrow viewport (phones): used to shrink the big left label margins so the plot
   // area is not crushed. Plotly automargin still keeps labels from being clipped.
-  function narrowView() { return state.exporting || window.innerWidth < 640; }
+  // Phone chart layout: the PNG being made decides while exporting; otherwise the
+  // "Phone layout" switch (On / Off), or on Auto the screen width.
+  function narrowView() {
+    if (state.exporting) return state.exporting === "phone";
+    if (state.phoneMode === "on") return true;
+    if (state.phoneMode === "off") return false;
+    return window.innerWidth < 640;
+  }
   // Wrap a long category label across lines (<br>) so the left margin (which
   // auto-sizes to the widest label) does not eat the whole plot on a phone.
   function wrapLabel(s, n) {
@@ -1404,7 +1475,7 @@
     return String(s || "chart").toLowerCase().replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "").slice(0, 60) || "chart";
   }
-  // PNG in the blog's mobile-first shape: 600 px wide at 2.75x (1,650 px, the
+  // PNG in the blog's mobile-first shape: 400 px wide at 4.125x (1,650 px, the
   // width of the blog charts), plain title, the chart drawn in its phone layout
   // (names above rows), the footnote, and the source mark.
   function downloadChart(returnUrl) {
@@ -1413,15 +1484,19 @@
     if (!gd || !gd.data || !gd.data.length) return;
     var head = document.getElementById("chart-head");
     var title = (head.querySelector(".chart-title") || {}).textContent || "DClinPsy chart";
-    state.exporting = true;
+    var fmt = state.pngFormat === "wide" ? "wide" : "phone";
+    state.exporting = fmt;
     try { render(); } finally { state.exporting = false; }
     var data = JSON.parse(JSON.stringify(gd.data));
     var layout = JSON.parse(JSON.stringify(gd.layout));
     var sub = state.sub;
     render();   // restore the on-screen layout
-    // 400 css px drawn at 4.125x = 1,650 px: the proportions of the blog charts
-    // (5.5 in at 300 dpi), so text reads at about 11 px on a 375 px phone.
-    var W = 400, TW = 30, FW = 64;
+    // Phone (blog): 400 css px drawn at 4.125x = 1,650 px, the proportions of the
+    // blog charts (5.5 in at 300 dpi), so text reads at about 11 px on a 375 px
+    // phone; the chart is drawn in its phone layout. Wide: 900 px at 2x, the
+    // desktop layout, for slides or wide pages.
+    var wide = fmt === "wide";
+    var W = wide ? 900 : 400, TW = wide ? 70 : 30, FW = wide ? 150 : 64, SCALE = wide ? 2 : 4.125;
     var titleLines = wrapAnn(escAnn(title), TW).split("<br>").length;
     var footText = wrapAnn(escAnn(sub + " Source: Clearing House for Postgraduate Courses in Clinical Psychology."), FW);
     var footLines = footText.split("<br>").length;
@@ -1448,7 +1523,7 @@
     document.body.appendChild(tmp);
     function cleanup() { try { Plotly.purge(tmp); } catch (e) {} tmp.remove(); }
     var done = Plotly.newPlot(tmp, data, layout, { displayModeBar: false, staticPlot: true })
-      .then(function () { return Plotly.toImage(tmp, { format: "png", width: W, height: H, scale: 4.125 }); })
+      .then(function () { return Plotly.toImage(tmp, { format: "png", width: W, height: H, scale: SCALE }); })
       .then(function (url) {
         if (!returnUrl) {
           var a = document.createElement("a");
@@ -1462,6 +1537,7 @@
   // Test hook: build the PNG without downloading it (used to check the export).
   function exportPNG() { return downloadChart(true); }
   function render() {
+    if (!state.exporting) applyPhoneClasses();
     var about = document.getElementById("about"), wrap = document.getElementById("chartwrap");
     if (state.view === "about") {
       wrap.style.display = "none"; about.style.display = "block"; return;
@@ -1504,6 +1580,7 @@
       else if (state.view === "rep") renderRep();
       else renderForest();
     }
+    labelTableCells();
     updateNote();
   }
 
@@ -1544,7 +1621,7 @@
           return lead + " each group's applicant and accepted share sits above (+) or below (-) its population share. " + (isTbl ? "The benchmark is the population (Census 2021). " : "The dotted line is the population (Census 2021). ") + tail;
         })()
       : state.view === "era"
-        ? "Each group's pre-DEI and DEI value is the mean of its per-year rates (or gaps), with a 95% t-interval. The change between eras is tested on those per-year values (Welch t-test), corrected across the groups. 2020 is the changeover year, in neither era."
+        ? "Each value is the mean of the group's per-year figures in that era, with a 95% t-interval. Source: Clearing House for Postgraduate Courses in Clinical Psychology."
       : "Each cell is the acceptance-rate gap between two quintiles (row minus column), with one Benjamini-Hochberg correction across the 10 pairs. Hover a cell for the value and verdict.");
   }
 
@@ -1988,13 +2065,49 @@
       clearTimeout(t); t = setTimeout(function () { placeRail(); render(); }, 150); });
   }
 
+  // Phone layout switch and PNG shape. Both are remembered in this browser (a
+  // convenience only; the page works the same without storage).
+  function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
+  function applyPhoneClasses() {
+    document.body.classList.toggle("phone-charts", narrowView());
+    document.body.classList.toggle("phone-preview", state.phoneMode === "on" && window.innerWidth > 860);
+  }
+  function buildPhoneControls() {
+    var seg = document.getElementById("phone-seg"), saved = store("dclin.phoneMode");
+    if (saved === "on" || saved === "off" || saved === "auto") state.phoneMode = saved;
+    function sync() {
+      seg.querySelectorAll(".seg-btn").forEach(function (x) {
+        x.classList.toggle("active", x.getAttribute("data-mode") === state.phoneMode); });
+    }
+    seg.addEventListener("click", function (e) {
+      var b = e.target.closest(".seg-btn"); if (!b) return;
+      state.phoneMode = b.getAttribute("data-mode"); store("dclin.phoneMode", state.phoneMode);
+      sync(); render();
+    });
+    sync();
+    var pf = document.getElementById("png-format"), savedF = store("dclin.pngFormat");
+    if (savedF === "wide" || savedF === "phone") state.pngFormat = savedF;
+    pf.value = state.pngFormat;
+    pf.addEventListener("change", function () { state.pngFormat = pf.value; store("dclin.pngFormat", pf.value); });
+  }
+  // Card layout for tables on phones: label every cell with its column heading.
+  function labelTableCells() {
+    document.querySelectorAll("#table table.datatable").forEach(function (t) {
+      var heads = Array.prototype.map.call(t.querySelectorAll("thead th"), function (th) {
+        return th.textContent.replace(/[▲▼↕]/g, "").trim(); });
+      t.querySelectorAll("tbody tr").forEach(function (tr) {
+        Array.prototype.forEach.call(tr.children, function (td, i) { td.setAttribute("data-label", heads[i] || ""); });
+      });
+    });
+  }
+
   // ---- Init -----------------------------------------------------------------
   document.querySelector(".brand .eyebrow").textContent =
     "Admissions equity · " + FIRST_YEAR + " to " + LATEST;
   buildTabs(); buildCharPicker(); defaultSelection(); buildGroupList();
   buildToggles(); buildTrendModeSeg(); buildEraSeg(); buildRepControls();
   buildYearControls(); buildMeasureSeg(); buildLegendKey(); buildCompareControls(); buildYControls(); buildXControls();
-  buildTableCatList(); buildTableControls(); buildViewToggles(); buildOptionsToggle();
+  buildTableCatList(); buildTableControls(); buildViewToggles(); buildPhoneControls(); buildOptionsToggle();
   document.getElementById("dl-png").addEventListener("click", downloadChart);
   updateCharOptions();
   render();
