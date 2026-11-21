@@ -182,7 +182,7 @@
     tableSort:{ col:null, dir:1 }, repYearFrom:DEI_FROM, repYearTo:LATEST, repMode:"chart",
     repSort:{ col:null, dir:1 }, forestMode:"chart", forestSort:{ col:null, dir:1 },
     eraView:"chart", eraSort:{ col:null, dir:1 }, combine:false, sub:"",
-    yCustom:false, yMin:"", yMax:"" };
+    yCustom:false, yMin:"", yMax:"", showDEI:true };
 
   // ---- pooled cells (RULES.md C8): flagged, not changed --------------------------
   // A row's acceptances may include hidden rows (pooled_with), or its own
@@ -406,7 +406,8 @@
       });
     }
     var label = CHAR_LABELS[ch];
-    var showDEI = state.trendTo >= DEI_FROM && !isContext(ch);   // shade the DEI era only if in view
+    // shade the DEI era only if switched on (DEI era chip) and in view
+    var showDEI = state.showDEI && state.trendTo >= DEI_FROM && !isContext(ch);
     var shapes = showDEI ? [{ type:"rect", xref:"x", yref:"paper", x0:DEI_FROM - 0.5, x1:DEI_TO + 0.5, y0:0, y1:1,
       fillcolor:"#ddcfb8", opacity:0.55, line:{ width:0 }, layer:"below" }] : [];
     if (vs) shapes.push({ type:"line", xref:"paper", x0:0, x1:1, yref:"y", y0:rr?1:0, y1:rr?1:0,
@@ -1520,12 +1521,13 @@
     var lead = state.sub ? state.sub + " " : "";
     if (state.view === "trend" && state.trendMode === "numbers") {
       note.textContent = lead + "Source: Clearing House for Postgraduate Courses in Clinical Psychology."; return; }
+    var deiTxt = (state.showDEI && !isContext()) ? " The shaded band marks the DEI era (" + DEI_FROM + " to " + DEI_TO + ")." : "";
     note.textContent = lead + (state.view === "trend"
       ? ((state.trendMode === "vsref"
         ? (state.trendMeasure === "rr"
-          ? "Each point is the ratio of the group's acceptance rate to the reference that year (a 95% Katz-log interval). The dotted line is parity (ratio 1): below 1 means accepted less often than the reference, above 1 more often. A year with no dot is a suppressed, missing or zero count; the line bridges it. Grey marks the DEI era."
-          : "Each point is the group's gap from the reference that year, in pp, with a 95% interval. The dotted line is the reference (no gap). A year with no dot is a suppressed or missing count; the line bridges it rather than treating it as zero. Grey marks the DEI era.")
-        : "Each point is that group's acceptance rate for the year. Hover for n and the interval. A year with no dot is a suppressed or missing count, never a zero; the line bridges it. Grey marks the DEI era, from 2021."))
+          ? "Each point is the ratio of the group's acceptance rate to the reference that year (a 95% Katz-log interval). The dotted line is parity (ratio 1): below 1 means accepted less often than the reference, above 1 more often. A year with no dot is a suppressed, missing or zero count; the line bridges it." + deiTxt
+          : "Each point is the group's gap from the reference that year, in pp, with a 95% interval. The dotted line is the reference (no gap). A year with no dot is a suppressed or missing count; the line bridges it rather than treating it as zero." + deiTxt)
+        : "Each point is that group's acceptance rate for the year. Hover for n and the interval. A year with no dot is a suppressed or missing count, never a zero; the line bridges it." + deiTxt))
       : state.view === "rep"
         ? (function () {
           var isTbl = state.repMode === "table";
@@ -1862,6 +1864,7 @@
     }
     bindChip("toggle-ci", "showCI");
     bindChip("toggle-combine", "combine");
+    bindChip("toggle-dei", "showDEI");
   }
 
   // Chart/Table toggles for the forest+master views and the era view.
