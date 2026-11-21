@@ -740,8 +740,8 @@
       paper_bgcolor: BG, plot_bgcolor: BG, height: height,
       font: { family: "Inter, system-ui, sans-serif", color: "#1a1a1a", size: 13 },
       margin: { t: 18, r: 30, b: 54, l: narrowView() ? 96 : 200 },
-      xaxis: { title: xtitle, showgrid: true, gridcolor: GRID, zeroline: false,
-        linecolor: AXISLINE, tickcolor: AXISLINE, ticksuffix: pp ? " pp" : "%" },
+      xaxis: applyX("era", { title: xtitle, showgrid: true, gridcolor: GRID, zeroline: false,
+        linecolor: AXISLINE, tickcolor: AXISLINE, ticksuffix: pp ? " pp" : "%" }),
       yaxis: { tickvals: idx, ticktext: wrapLabels(ys), autorange: "reversed", showgrid: false,
         zeroline: false, linecolor: AXISLINE, tickcolor: AXISLINE, automargin: true, tickfont: tickFont() },
       hovermode: "closest", showlegend: false, shapes: shapes,
@@ -847,8 +847,8 @@
       paper_bgcolor:BG, plot_bgcolor:BG, height: Math.max(260, rows.length * rowH + 70),
       font:{ family:"Inter, system-ui, sans-serif", color:"#1a1a1a", size:13 },
       margin:{ t: narrow ? 26 : 10, r: 58, b:44, l: narrow ? 8 : 10 },
-      xaxis:{ showgrid:true, gridcolor:GRID, zeroline:false, linecolor:AXISLINE, tickcolor:AXISLINE,
-        tickformat: pp ? "+," : "", ticksuffix: pp ? "" : "x", fixedrange:true },
+      xaxis: applyX("forest", { showgrid:true, gridcolor:GRID, zeroline:false, linecolor:AXISLINE, tickcolor:AXISLINE,
+        tickformat: pp ? "+," : "", ticksuffix: pp ? "" : "x", fixedrange:true }),
       yaxis:{ automargin:true, showgrid:false, zeroline:false, showline:false, autorange:"reversed",
         tickvals: narrow ? [] : info.map(function (o) { return o.i; }),
         ticktext: narrow ? [] : info.map(function (o) { return o.label; }),
@@ -1159,8 +1159,8 @@
       paper_bgcolor: BG, plot_bgcolor: BG, height: height,
       font: { family: "Inter, system-ui, sans-serif", color: "#1a1a1a", size: 13 },
       margin: { t: 26, r: 26, b: 56, l: narrowView() ? 90 : 168 }, barmode: "group", bargap: 0.4, bargroupgap: 0.12,
-      xaxis: { ticksuffix: " pp", tickformat: "+,", showgrid: true, gridcolor: GRID,
-        zeroline: false, linecolor: AXISLINE, tickcolor: AXISLINE },
+      xaxis: applyX("rep", { ticksuffix: " pp", tickformat: "+,", showgrid: true, gridcolor: GRID,
+        zeroline: false, linecolor: AXISLINE, tickcolor: AXISLINE }),
       yaxis: { automargin: true, autorange: "reversed", showgrid: false, zeroline: false,
         linecolor: AXISLINE, tickcolor: AXISLINE, tickfont: tickFont() },
       legend: { orientation: "h", y: -0.18, bgcolor: "rgba(0,0,0,0)", font: { size: 12 } },
@@ -1779,7 +1779,7 @@
     var seg = document.getElementById("eramode-seg");
     seg.addEventListener("click", function (e) {
       var b = e.target.closest(".seg-btn"); if (!b) return;
-      state.eraMode = b.getAttribute("data-mode");
+      state.eraMode = b.getAttribute("data-mode"); resetX();
       seg.querySelectorAll(".seg-btn").forEach(function (x) {
         x.classList.toggle("active", x === b); });
       render();
@@ -1796,7 +1796,7 @@
     var seg = document.getElementById("measure-seg");
     seg.addEventListener("click", function (e) {
       var b = e.target.closest(".seg-btn"); if (!b) return;
-      state.measure = b.getAttribute("data-measure");
+      state.measure = b.getAttribute("data-measure"); resetX();
       seg.querySelectorAll(".seg-btn").forEach(function (x) {
         x.classList.toggle("active", x === b); });
       render();
@@ -1896,7 +1896,47 @@
       }
     }
   }
-  function resetY() { if (state.yCustom) setYMode(false); }
+  function resetY() { if (state.yCustom) setYMode(false); resetX(); }
+
+  // X-axis range for the horizontal gap charts: Compare groups ("forest"),
+  // Before vs after DEI ("era") and Representation ("rep"). Same behaviour as
+  // the y-axis control; each view keeps its own range.
+  var XR = { forest:{ custom:false, min:"", max:"" }, era:{ custom:false, min:"", max:"" },
+    rep:{ custom:false, min:"", max:"" } };
+  function applyX(view, xaxis) {
+    var s = XR[view], lo = parseFloat(s.min), hi = parseFloat(s.max);
+    if (s.custom && isFinite(lo) && isFinite(hi) && lo < hi) { xaxis.range = [lo, hi]; xaxis.autorange = false; }
+    return xaxis;
+  }
+  function setXMode(view, custom) {
+    var s = XR[view]; s.custom = custom;
+    document.querySelectorAll("#" + view + "-xaxis-seg .seg-btn").forEach(function (x) {
+      x.classList.toggle("active", (x.getAttribute("data-mode") === "custom") === custom); });
+    document.getElementById(view + "-xrange").hidden = !custom;
+    if (custom) {
+      var gd = document.getElementById("chart"), r = gd._fullLayout && gd._fullLayout.xaxis && gd._fullLayout.xaxis.range;
+      if (r) {
+        var span = Math.abs(r[1] - r[0]), dp = span >= 100 ? 0 : span >= 10 ? 1 : 2;
+        s.min = (+r[0]).toFixed(dp); s.max = (+r[1]).toFixed(dp);
+        document.getElementById(view + "-xmin").value = s.min; document.getElementById(view + "-xmax").value = s.max;
+      }
+    }
+  }
+  function resetX() { Object.keys(XR).forEach(function (v) { if (XR[v].custom) setXMode(v, false); }); }
+  function buildXControls() {
+    Object.keys(XR).forEach(function (view) {
+      document.getElementById(view + "-xaxis-seg").addEventListener("click", function (e) {
+        var b = e.target.closest(".seg-btn"); if (!b) return;
+        setXMode(view, b.getAttribute("data-mode") === "custom"); render();
+      });
+      var t;
+      ["min", "max"].forEach(function (k) {
+        document.getElementById(view + "-x" + k).addEventListener("input", function (e) {
+          XR[view][k] = e.target.value; clearTimeout(t); t = setTimeout(render, 250);
+        });
+      });
+    });
+  }
   function buildYControls() {
     document.getElementById("yaxis-seg").addEventListener("click", function (e) {
       var b = e.target.closest(".seg-btn"); if (!b) return;
@@ -1950,7 +1990,7 @@
     "Admissions equity · " + FIRST_YEAR + " to " + LATEST;
   buildTabs(); buildCharPicker(); defaultSelection(); buildGroupList();
   buildToggles(); buildTrendModeSeg(); buildEraSeg(); buildRepControls();
-  buildYearControls(); buildMeasureSeg(); buildLegendKey(); buildCompareControls(); buildYControls();
+  buildYearControls(); buildMeasureSeg(); buildLegendKey(); buildCompareControls(); buildYControls(); buildXControls();
   buildTableCatList(); buildTableControls(); buildViewToggles(); buildOptionsToggle();
   document.getElementById("dl-png").addEventListener("click", downloadChart);
   updateCharOptions();
