@@ -95,7 +95,7 @@ references <- c(REFERENCE_GROUP, list("ETHNIC GROUP (BROAD)" = "White"),
 
 # ---- full ("master") forest: frozen membership, as in the published May chart -------------
 # Nine characteristics (no disability); coherent categories; groups with 300+
-# applicants pooled over 2021-24; reference = largest group of the characteristic,
+# applicants pooled over the DEI era (ERA_DEI); reference = largest group of the characteristic,
 # socio-economic = Quintiles 2 and 3 combined. One BH correction across all.
 MASTER_SECS <- c("AGE", "ETHNICITY", "GENDER", "SOCIO-ECONOMIC BACKGROUND", "SEXUAL ORIENTATION",
                  "RELIGION", "MARITAL STATUS", "DEPENDANTS", "RESIDENT")
@@ -162,7 +162,7 @@ export <- list(
   groups = groups)
 
 # ---- reference.json: ethnicity DEI family (gold standard) -------------------
-dei <- c(2021, 2022, 2023, 2024)
+dei <- ERA_DEI
 pool <- function(section, category, years) {
   r <- d[d$Section == section & d$Category == category &
          d$Year %in% years & !is.na(d$accepted_n), ]
@@ -228,7 +228,7 @@ cat("British Welsh: p_bh", bw$p_bh, "sig", bw$significant_after_bh, "\n")
 cat("Mixed (all) DEI: n", mx$accepted, "/", mx$applicants,
     "| p_bh", mx$p_bh, "sig", mx$significant_after_bh, "\n\n")
 sig_names <- function(tab) unlist(lapply(Filter(function(r) isTRUE(r$significant_after_bh), tab), `[[`, "group"))
-cat("Full forest: ", length(master), " frozen members; 2021-24 significant: ", length(sig_names(master_dei)),
+cat("Full forest: ", length(master), " frozen members; DEI era (", min(ERA_DEI), "-", max(ERA_DEI), ") significant: ", length(sig_names(master_dei)),
     "; ", max(years_all), " significant: ", length(sig_names(master_latest)), "\n", sep = "")
 cat("Contextual ", max(years_all), " significant: ",
     paste(unlist(lapply(Filter(function(r) isTRUE(r$significant_after_bh), context_latest), `[[`, "characteristic")), collapse = ", "), "\n", sep = "")

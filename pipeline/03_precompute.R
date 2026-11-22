@@ -19,7 +19,7 @@ source("pipeline/01_load_clean.R")       # load_raw, classify, build_aggregate, 
 source("pipeline/02_stats_functions.R")  # wilson_ci, newcombe_ci, raw_p_2x2, bh_widen, rate_ratio_ci
 suppressPackageStartupMessages(library(jsonlite))
 
-USABLE_YEARS <- c(2015:2019, 2021:2024)   # 2020 excluded (rule 3)
+USABLE_YEARS <- c(ERA_PRE_DEI, ERA_DEI)   # 2020 excluded (rule 3)
 
 # ---- Windows: all contiguous ranges over the 9 usable years ----------------
 make_windows <- function(years = USABLE_YEARS) {
@@ -211,7 +211,7 @@ build <- function() {
       ff <- family_forest(d, fam, windows[[wid]]$years)
       if (!ff$assert_ok) all_assert_ok <- FALSE
       per_window[[wid]] <- list(m = ff$m, rows = ff$rows)
-      if (wid == "2021-2024") m_checks[[fid]] <- list(got = ff$m, want = fam$m_dei)
+      if (wid == paste0(min(ERA_DEI), "-", max(ERA_DEI))) m_checks[[fid]] <- list(got = ff$m, want = fam$m_dei)
     }
     family_out[[fid]] <- list(label = fam$label, reference = fam$reference,
       type = fam$type, m_dei = fam$m_dei, windows = per_window)
@@ -265,7 +265,7 @@ main <- function() {
   cat("== Verification table ==\n")
   ok <- TRUE
 
-  cat("\n-- Family m at DEI cross-section (2021-2024) vs register 8a --\n")
+  cat("\n-- Family m at DEI cross-section (", min(ERA_DEI), "-", max(ERA_DEI), ") vs register 8a --\n", sep = "")
   for (fid in names(attr(obj, "m_checks"))) {
     mc <- attr(obj, "m_checks")[[fid]]
     pass <- isTRUE(mc$got == mc$want)

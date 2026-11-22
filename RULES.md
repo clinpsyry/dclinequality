@@ -21,7 +21,7 @@ On a purely statistical point `STATS_RULES.md` wins (the governance doc says so)
 - From 2023 the socio-economic (POLAR) quintiles come from the Clearing House **Contextual admissions** page, not the equal-opportunities workbook.
 
 ### Eras
-- DEI era = 2021 to 2024. Pre-DEI = 2015 to 2019.
+- DEI era = 2021 to 2025 (2025 joined on 22 Nov 2026, C5; the posts before that used 2021 to 2024). Pre-DEI = 2015 to 2019.
 - **2020 excluded** from both eras and never drawn as a connected line segment.
 - Present-day figures use the DEI era unless the chart is about change.
 - Write "DEI", never "EDI".
@@ -127,7 +127,7 @@ Clean and minimal, FT / John Burn-Murdoch style: generous whitespace, no chart j
 - **Axis labels:** signed around a zero line where it helps (`+5`, `-10`).
 - **n on or near each row** (ideally accepted / total).
 - *(Superseded)* Subtitle: lead with the hard number, then explain the colours.
-- **Caption:** source line, method note (interval type and BH), caveat. Standard source: `Source: DClinPsy Clearing House, DEI era 2021–24`. Standard caveat: "not adjusted for confounding between characteristics."
+- **Caption:** source line, method note (interval type and BH), caveat. Standard source: `Source: DClinPsy Clearing House, DEI era 2021–25`. Standard caveat: "not adjusted for confounding between characteristics."
 - Units in pp, labelled as such.
 - No em dashes; use colons. "pp" for percentage points.
 
@@ -150,7 +150,7 @@ Clean and minimal, FT / John Burn-Murdoch style: generous whitespace, no chart j
 - C7. **Two versions of the theme.** `chart_style_guide_visual.md` (31 May, generic) differs from `dclinpsy_style.R` (25 May, the DClin one): title `base_size * 1.5` (19.5) vs 15, caption `grey35` vs `grey45`, no fixed margins, and an extra faded grey `#BCB3A4`. The published DClin charts use `dclinpsy_style.R`, so keep that for consistency. Use `#BCB3A4` only if you need a faded tier (for example the explorer's "descriptive only" rows).
 
 **Open (your call):**
-- C5. **2025 is reported on its own** (decided 21 Nov 2026). The DEI era stays 2021 to 2024 as published; the 2025 post reports 2025 as a single year and compares it with the published 2021 to 2024 figures and trends.
+- C5. **2025 is in the DEI era** (decided 22 Nov 2026, replacing the 21 Nov decision to keep 2021 to 2024). The DEI era is now 2021 to 2025 everywhere: the explorer, the R pipeline (`ERA_DEI` in `pipeline/01_load_clean.R`) and new charts. DEI-era figures therefore differ from the posts published before 2025's data; for example the full forest has 36 members and 26 significant groups (the published May chart, 2021 to 2024: 31 and 22). The draft 2025 post in `posts/next/` still sets 2025 against the published 2021 to 2024 figures; settle that when writing it.
 - C6. **SES for 2023 onwards** comes from the Clearing House Contextual admissions files, saved in `data/raw/contextual_admissions/` (2023 to 2025 downloaded 21 Nov 2026). Settled.
 - C8. **Pooled cells (open: how to handle in the 2025 post).** When the source hides a small acceptance count it adds it to the row above. That row's success rate covers all the pooled rows, but its applicants column shows only its own, so summing reported rows overstates its rate (example: 2024 White & Black African reads 15 of 30, 50%; the source's own success rate is 15 of 93, 16.1%). Pools can span up to five rows (2021: Blind + Deaf + Wheelchair). `pipeline/00_merge_raw.R` finds all 108 (2015 to 2025) from the arithmetic and records a decision for each in `data/raw/pooled_cells.csv`: 29 hand-corrected PNTS moves, 1 suppress, 1 merge, the rest "keep" (as in the source, which reproduces the published numbers).
   - `FIX_POOLED_UPPER <- TRUE` suppresses every "keep" pool. Measured 21 Nov 2026 on 2021 to 2024: Disability loses both of its significant groups (Wheelchair, Blind: artefacts), Resident loses Other EU/EEA (pooled every year); every other family verdict is unchanged.

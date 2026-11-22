@@ -15,7 +15,7 @@
   var META = window.COUNTS.meta;
   var ALL_YEARS = META.years || [2015,2016,2017,2018,2019,2020,2021,2022,2023,2024];
   var FIRST_YEAR = ALL_YEARS[0], LATEST = META.latest_year || ALL_YEARS[ALL_YEARS.length - 1];
-  var DEI_FROM = (META.eras.dei || [2021])[0], DEI_TO = (META.eras.dei || [2024]).slice(-1)[0];
+  var DEI_FROM = (META.eras.dei || [2021])[0], DEI_TO = (META.eras.dei || [2025]).slice(-1)[0];
   var REFS = META.references || {};
 
   // Sentinel "characteristics" for the two overview forests. They live in the
@@ -1006,13 +1006,13 @@
   }
 
   // ==========================================================================
-  // ERA VIEW: pre-DEI (2015-2019) vs DEI (2021-2024). 2020 is the changeover
+  // ERA VIEW: pre-DEI (2015-2019) vs DEI (2021-2025; RULES.md C5). 2020 is the changeover
   // year, in neither pool. The change is tested on PER-YEAR values with a Welch
   // t-test (rule 12), BH-corrected across the displayed groups. Each era's
   // displayed value is the mean per-year quantity with a 95% t-interval (rule 6b).
   // ==========================================================================
   var PRE_DEI = window.COUNTS.meta.eras.pre_dei || [2015,2016,2017,2018,2019];
-  var DEI_Y   = window.COUNTS.meta.eras.dei || [2021,2022,2023,2024];
+  var DEI_Y   = window.COUNTS.meta.eras.dei || [2021,2022,2023,2024,2025];
 
   // per-year quantity for a member: acceptance rate (%) or gap vs reference (pp)
   function perYearQ(ch, mb, refGroup, year, mode) {
@@ -1289,8 +1289,8 @@
     if (res.master)
       sub = key + " Each group vs the largest group of its characteristic (socio-economic: Q2 and Q3 combined). " +
         "Red: above its reference; blue: below; grey: no clear difference, after one Benjamini-Hochberg correction " +
-        "across the " + res.m + " groups with data (the " + res.n_members + " groups with 300+ applicants in 2021–24, " +
-        "as in the published chart). Disability not included. A group can differ here and not in its own " +
+        "across the " + res.m + " groups with data (the " + res.n_members + " groups with 300+ applicants in " + DEI_FROM + "–" + DEI_TO +
+        ", the DEI era; the published May chart used 2021–24). Disability not included. A group can differ here and not in its own " +
         "characteristic's chart, because significance depends on how many groups share the correction.";
     else if (res.context)
       sub = key + " Each contextual question, 'yes' vs 'no'. Red: differs after one Benjamini-Hochberg correction " +
@@ -2533,7 +2533,7 @@
     });
     document.getElementById("era-legend").innerHTML =
       '<div><span class="swatch" style="background:#c3b69d;border:1px solid #a99e86"></span>pre-DEI start (2015-2019)</div>' +
-      '<div style="margin-top:.4rem">Arrow points to the DEI value (2021-2024):</div>' +
+      '<div style="margin-top:.4rem">Arrow points to the DEI value (' + DEI_FROM + '-' + DEI_TO + '):</div>' +
       '<div><span class="swatch" style="background:' + RED + '"></span>significant change</div>' +
       '<div><span class="swatch" style="background:#bdb29a"></span>no significant change</div>' +
       '<div style="margin-top:.3rem">Tested on per-year values (t-test), BH-corrected across the groups shown.</div>';

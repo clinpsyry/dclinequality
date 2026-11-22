@@ -16,7 +16,7 @@ CSV_PATH <- "data/equalopps_merged.csv"
 
 # ---- Eras (governance rule 3) ----------------------------------------------
 ERA_PRE_DEI  <- c(2015, 2016, 2017, 2018, 2019)
-ERA_DEI      <- c(2021, 2022, 2023, 2024)
+ERA_DEI      <- c(2021, 2022, 2023, 2024, 2025)   # 2025 joined the DEI era on 22 Nov 2026 (RULES.md C5)
 ERA_EXCLUDED <- c(2020)   # transition year: never in an era, never connected
 
 era_of <- function(year) {

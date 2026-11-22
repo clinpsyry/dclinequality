@@ -19,7 +19,7 @@ function findGroup(characteristic, name) {
 const eth12 = ["British Scottish","British Welsh","Irish","Other White background",
   "Indian","Pakistani","Bangladeshi","Chinese","African","Caribbean",
   "Mixed (all)","Middle Eastern/North African"];
-const dei = [2021, 2022, 2023, 2024];
+const dei = counts.meta.eras.dei;   // the DEI era as exported (2021 to 2025 since 22 Nov 2026, RULES.md C5)
 
 const members = eth12.map((n) => findGroup("ETHNICITY", n));
 const reference = findGroup("ETHNICITY", "British English");
@@ -112,13 +112,15 @@ function checkTable(name, got, want, keyOf) {
   if (bad) pass = false;
 }
 const yrs = counts.meta.years, latest = counts.meta.latest_year;
-checkTable("Full forest, 2021-24", Families.master(counts, dei), ref.master_dei, (r) => r.characteristic + "|" + r.group);
+checkTable("Full forest, " + dei[0] + "-" + dei[dei.length - 1], Families.master(counts, dei), ref.master_dei, (r) => r.characteristic + "|" + r.group);
 checkTable("Full forest, " + latest, Families.master(counts, [latest]), ref.master_latest, (r) => r.characteristic + "|" + r.group);
 checkTable("Contextual questions, " + latest, Families.context(counts, [latest]), ref.context_latest, (r) => r.characteristic);
-// published May chart: 22 significant groups in 2021-24
+// Full forest anchor: 26 significant groups over 2021 to 2025 (36 members), after
+// 2025 joined the DEI era on 22 Nov 2026. The published May chart (2021 to 2024,
+// 31 members) had 22; the R export reproduces that with ERA_DEI = 2021:2024.
 const nsig = Families.master(counts, dei).rows.filter((r) => r.significant_after_bh).length;
-console.log("  published full forest (22 significant in 2021-24): " + (nsig === 22 ? "OK" : "FAIL " + nsig));
-if (nsig !== 22) pass = false;
+console.log("  full forest (26 significant in 2021-25): " + (nsig === 26 ? "OK" : "FAIL " + nsig));
+if (nsig !== 26) pass = false;
 
 console.log("\n" + (pass ? "ALL JS-vs-R ORACLE CHECKS PASS" : "ORACLE MISMATCH"));
 process.exit(pass ? 0 : 1);
