@@ -199,7 +199,7 @@
   // Compare groups opens on the latest year. The DEI era band is off until the
   // "DEI era" chip turns it on.
   var state = { view:"trend", characteristic:"ETHNIC GROUP (BROAD)", selected:{}, showCI:false,
-    trendMode:"rate", trendMeasure:"pp", trendFrom:FIRST_YEAR, trendTo:LATEST, eraMode:"rate",
+    trendMode:"rate", trendMeasure:"pp", numShow:"both", numUnit:"count", trendFrom:FIRST_YEAR, trendTo:LATEST, eraMode:"rate",
     yearFrom:LATEST, yearTo:LATEST, measure:"pp",
     tableYearFrom:FIRST_YEAR, tableYearTo:LATEST, tableSelected:{}, tableMode:"pooled",
     tableSort:{ col:null, dir:1 }, repYearFrom:DEI_FROM, repYearTo:LATEST, repMode:"chart",
@@ -406,27 +406,71 @@
       groups = [{ group: "Combined (" + groups.map(function (g) { return g.group; }).join(" + ") + ")",
         by_year: Object.keys(sumBy).map(function (k) { return sumBy[k]; }) }];
     }
+    // Lines: applicants, accepted or both. Unit: count, or share of everyone in
+    // the characteristic who answered the question that year (prefer-not-to-say
+    // is not in the data). The share total sums the raw groups only (built totals
+    // such as Christian (all) would count people twice). A group-year with a
+    // hidden acceptance count adds to neither the total nor its own share
+    // (rule 4: never zero), as in Representation; that year is a gap for it.
+    var share = state.numUnit === "share" && ch !== "OVERALL";
+    var showApp = state.numShow !== "accepted", showAcc = state.numShow !== "applicants";
+    var single = !(showApp && showAcc);
+    var tot = {};
+    if (share) {
+      var all = byChar[ch] || [], raw = all.filter(function (g) { return !g.constructed; });
+      (raw.length ? raw : all).forEach(function (g) {
+        g.by_year.forEach(function (r) {
+          if (r.accepted == null || !r.applicants) return;
+          var t = tot[r.year] || (tot[r.year] = { app: 0, acc: 0 });
+          t.app += r.applicants; t.acc += r.accepted;
+        });
+      });
+    }
     groups.forEach(function (g) {
       var color = (ch === "OVERALL" || combined) ? RED : ACCENTS[ai++ % ACCENTS.length];
       var by = {}; g.by_year.forEach(function (r) { by[r.year] = r; });
       var xs = ALL_YEARS.filter(function (y) { return y >= state.trendFrom && y <= state.trendTo; });
       function series(key, dash, word) {
-        var name = (groups.length > 1 || (ch !== "OVERALL" && !combined) ? g.group + ": " : "") + word;
-        return { name: name, x: xs, type:"scatter", mode:"lines+markers", connectgaps:false,
-          y: xs.map(function (y) { var r = by[y]; return r ? (key === "applicants" ? r.applicants : r.accepted) : null; }),
+        var many = groups.length > 1 || (ch !== "OVERALL" && !combined);
+        var name = single ? (many ? g.group : word) : (many ? g.group + ": " : "") + word;
+        var who = key === "applicants" ? "applicants" : "acceptances";
+        var y = xs.map(function (yr) {
+          var r = by[yr]; if (!r) return null;
+          if (!share) return key === "applicants" ? r.applicants : r.accepted;
+          var t = tot[yr]; if (!t || r.accepted == null) return null;
+          var v = key === "applicants" ? r.applicants / t.app : r.accepted / t.acc;
+          return isFinite(v) ? 100 * v : null;
+        });
+        var text = xs.map(function (yr) {
+          var r = by[yr], t = tot[yr]; if (!share || !r || !t || r.accepted == null) return "";
+          return key === "applicants" ? r.applicants.toLocaleString() + " of " + t.app.toLocaleString()
+            : r.accepted.toLocaleString() + " of " + t.acc.toLocaleString();
+        });
+        return { name: name, x: xs, type:"scatter", mode:"lines+markers", connectgaps:false, y: y, text: text,
           line:{ color: color, width: narrowView() ? PH.line : 2.4, dash: dash }, marker:{ color: color, size: narrowView() ? PH.marker : 7 },
-          hovertemplate: "%{x}: %{y:,} " + word.toLowerCase() + (groups.length > 1 ? "<br>" + g.group : "") + "<extra></extra>" };
+          hovertemplate: (share ? "%{x}: %{y:.1f}% of " + who + " (%{text})" : "%{x}: %{y:,} " + word.toLowerCase()) +
+            (groups.length > 1 ? "<br>" + g.group : "") + "<extra></extra>" };
       }
-      traces.push(series("applicants", "solid", "Applicants"));
-      traces.push(series("accepted", "dot", "Accepted"));
+      if (showApp) traces.push(series("applicants", "solid", "Applicants"));
+      if (showAcc) traces.push(series("accepted", "dot", "Accepted"));
     });
-    var yrs = state.trendFrom + "–" + state.trendTo;
-    setChartHead("Applicants and acceptances by year, " + label.toLowerCase() + ", " + yrs,
-      "Number of applicants (solid line) and of applicants accepted (dotted line) each year." +
-      (ch === "OVERALL" ? " Everyone who applied, from the Clearing House's published yearly totals." : "") +
-      (combined ? " " + groups[0].group + ": the ticked groups summed. Applicants who answered 'prefer not to say' " +
-        "are not in any group, so a combined total can sit slightly below All applicants (overall)." : "") +
-      " A missing dotted point is a suppressed count, never zero.");
+    var yrs = state.trendFrom + "–" + state.trendTo, what = label.toLowerCase() + ", " + yrs;
+    var lines = !single ? " Solid line: applicants; dotted line: accepted." : "";
+    setChartHead(share
+        ? (single ? "Share of " + (showApp ? "applicants" : "acceptances") : "Share of applicants and of acceptances") +
+          " by year, " + what + " (%)"
+        : (single ? (showApp ? "Applicants" : "Acceptances") : "Applicants and acceptances") + " by year, " + what,
+      (share
+        ? "Each group's share of everyone who answered this question that year." + lines +
+          " Prefer-not-to-say is not counted. A year where a group's acceptance count is hidden is a gap " +
+          "for that group and is left out of that year's total (never counted as zero)."
+        : (single ? (showApp ? "Number of applicants each year." : "Number of applicants accepted each year.")
+          : "Number of applicants (solid line) and of applicants accepted (dotted line) each year.") +
+          (ch === "OVERALL" ? " Everyone who applied, from the Clearing House's published yearly totals." : "") +
+          (showAcc ? " A missing " + (single ? "" : "dotted ") + "point is a suppressed count, never zero." : "")) +
+      (combined ? " " + groups[0].group + ": the ticked groups summed." +
+        (share ? "" : " Applicants who answered 'prefer not to say' are not in any group, so a combined total " +
+          "can sit slightly below All applicants (overall).") : ""));
     var layout = {
       paper_bgcolor:BG, plot_bgcolor:BG, height:480,
       font:{ family:"Inter, system-ui, sans-serif", color:"#1a1a1a", size:13 },
@@ -434,16 +478,29 @@
       xaxis:{ dtick: narrowView() ? Math.max(1, Math.ceil((state.trendTo - state.trendFrom + 1) / 4)) : 1,
         range:[state.trendFrom - 0.5, state.trendTo + 0.5], showgrid:false, zeroline:false,
         linecolor:AXISLINE, tickcolor:AXISLINE },
-      yaxis: applyY({ title:"Number of people", rangemode:"tozero", tickformat:",", showgrid:true,
-        gridcolor:GRID, zeroline:false, linecolor:AXISLINE, tickcolor:AXISLINE }),
+      yaxis: applyY(share
+        ? { title: single ? "Share of " + (showApp ? "applicants" : "acceptances") + " (%)" : "Share (%)",
+            rangemode:"tozero", ticksuffix:"%", showgrid:true, gridcolor:GRID, zeroline:false, linecolor:AXISLINE, tickcolor:AXISLINE }
+        : { title: single ? (showApp ? "Number of applicants" : "Number accepted") : "Number of people",
+            rangemode:"tozero", tickformat:",", showgrid:true, gridcolor:GRID, zeroline:false, linecolor:AXISLINE, tickcolor:AXISLINE }),
       hovermode:"closest", legend:{ orientation:"h", y:-0.18, bgcolor:"rgba(0,0,0,0)", font:{ size:12 } }
     };
     var ngd = document.getElementById("chart");
+    // Phones, 3 or more lines: one small panel per line, as in Rate
+    if (narrowView() && traces.length >= 3) {
+      var sm = smallMultiples(traces, { count: !share });
+      ngd._smallMult = true;
+      Plotly.react("chart", sm.data, lockZoom(sm.layout), PLOT_CFG);
+      deskRailDots(traces);
+      return;
+    }
     ngd._smallMult = false;
     var desk = deskPolish();
-    if (desk) deskTrendLayout(layout, traces, false);
-    Plotly.react("chart", traces, lockZoom(phoneLines(layout, traces)), PLOT_CFG);
+    // one line per group: name each line at its end, as in Rate
+    if (desk) deskTrendLayout(layout, traces, single);
+    var drawn = Plotly.react("chart", traces, lockZoom(phoneLines(layout, traces)), PLOT_CFG);
     deskRailDots(traces);
+    if (desk && single) drawn.then(function () { return deskLineLabels(ngd); });
   }
 
   // Phones: x range padded so the value labels beside the marks have room.
@@ -458,6 +515,8 @@
   function sgn1(v) { var t = v.toFixed(1); return t === "0.0" || t === "-0.0" ? "0.0" : (v > 0 ? "+" : "") + t; }   // about 50 px of a 340 px plot: fits "+12.3" at 12 px plus its offset
 
   function renderTrend() {
+    document.getElementById("num-show-ctl").hidden = state.trendMode !== "numbers";
+    document.getElementById("num-unit-ctl").hidden = state.trendMode !== "numbers" || state.characteristic === "OVERALL";
     if (state.trendMode === "numbers") { renderNumbers(); return; }
     var ch = state.characteristic, ref = refFor(ch), refGroup = getGroup(ch, ref);
     var vs = state.trendMode === "vsref" && !!refGroup;
@@ -561,7 +620,7 @@
     var user = applyY({});
     if (user.range) yr = user.range;
     function fmtV(v) {
-      return o.rr ? v.toFixed(2) + "x" : o.vs ? (v >= 0 ? "+" : "") + v.toFixed(1) + " pp" : v.toFixed(1) + "%";
+      return o.count ? Math.round(v).toLocaleString() : o.rr ? v.toFixed(2) + "x" : o.vs ? (v >= 0 ? "+" : "") + v.toFixed(1) + " pp" : v.toFixed(1) + "%";
     }
     // titles: wrapped name plus the latest value, on the name's last line if it fits
     var titles = traces.map(function (t) {
@@ -595,7 +654,7 @@
         ticktext: state.trendFrom === state.trendTo ? [String(state.trendFrom)] : [String(state.trendFrom), String(state.trendTo)] };
       layout["yaxis" + sfx] = { domain: [bot, top], anchor: xa, range: yr.slice(), autorange: false,
         showgrid: true, gridcolor: GRID, zeroline: false, linecolor: AXISLINE, tickcolor: AXISLINE, nticks: 4,
-        showticklabels: c === 0, ticksuffix: o.rr ? "x" : o.vs ? "" : "%" };
+        showticklabels: c === 0, ticksuffix: o.count || o.vs ? "" : o.rr ? "x" : "%", tickformat: o.count ? "," : "" };
       if (o.showDEI) layout.shapes.push({ type: "rect", xref: xa, yref: ya, x0: DEI_FROM - 0.5, x1: Math.min(DEI_TO + 0.5, x1),
         y0: yr[0], y1: yr[1], fillcolor: "#ddcfb8", opacity: 0.55, line: { width: 0 }, layer: "below" });
       if (o.vs) layout.shapes.push({ type: "line", xref: xa, yref: ya, x0: x0, x1: x1, y0: refY, y1: refY,
@@ -1898,6 +1957,10 @@
     if (v === "trend") {
       items.push(qbSeg("trendmode-seg", "Show"));
       if (state.trendMode === "vsref") items.push(qbSeg("trend-measure-seg", "Measure"));
+      if (state.trendMode === "numbers") {
+        items.push(qbSeg("num-show-seg", "Lines"));
+        if (state.characteristic !== "OVERALL") items.push(qbSeg("num-unit-seg", "Unit"));
+      }
       if (state.trendMode !== "numbers") items.push(qbChip("toggle-ci"));
       if (!isContext()) items.push(qbChip("toggle-dei"));
       items.push(qbChip("toggle-combine"));
@@ -2175,6 +2238,16 @@
       seg.querySelectorAll(".seg-btn").forEach(function (x) {
         x.classList.toggle("active", x === b); });
       render();
+    });
+    // Numbers: which lines, and count or share
+    [["num-show-seg", "numShow", "data-show"], ["num-unit-seg", "numUnit", "data-unit"]].forEach(function (c) {
+      var sg = document.getElementById(c[0]); if (!sg) return;
+      sg.addEventListener("click", function (e) {
+        var b = e.target.closest(".seg-btn"); if (!b) return;
+        state[c[1]] = b.getAttribute(c[2]); resetY();
+        sg.querySelectorAll(".seg-btn").forEach(function (x) { x.classList.toggle("active", x === b); });
+        render();
+      });
     });
     var ms = document.getElementById("trend-measure-seg");
     if (ms) ms.addEventListener("click", function (e) {
