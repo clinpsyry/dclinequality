@@ -1,7 +1,7 @@
 "q","yes_acc","yes_app","no_acc","no_app","gap","lo","hi","sig","gap_2023_24"
 "Care-experienced",16,99,1146,5725,-3.86,-10.02,4.91,FALSE,-7.86
 "Contextual (lower-grade) offer",75,340,1081,5453,2.23,-2.28,7.44,FALSE,2.87
-"Family relationship broke down",83,594,1065,5150,-6.71,-10.59,-1.98,TRUE,-3.27
+"Family relationship broke down",83,594,1065,5150,-6.71,-10.3,-2.4,TRUE,-3.27
 "First in family at university",569,3141,595,2691,-4,-6.72,-1.29,TRUE,-2.03
 "Free school meals",285,1485,808,3785,-2.16,-5.04,0.89,FALSE,-2.87
 "Household income support",322,1667,807,3846,-1.67,-4.23,1.01,FALSE,-1.2
