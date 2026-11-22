@@ -75,14 +75,26 @@ ul { padding-left: 20px; margin: 6px 0 10px; }
   <details><summary>How this is worked out</summary><div id="halfWorking" class="small"></div></details>
 
   <!-- 4 -->
-  <h2>4. What the data suggest about the pattern</h2>
+  <h2>4. Scenario: how many people never get a place?</h2>
+  <div class="key scen">
+    <p style="margin:0"><span class="tag scenario">Scenario</span>Section 3 counts <b>applications</b> from people who never got in. To turn that into <b>people</b>, we need to know how many times each of them applied. Nobody records this, so you choose it below. The shaded band and the error bars show how much the answer moves with the years used (2019 alone to 2021 alone).</p>
+  </div>
+  <div class="row">
+    <label for="mSlider">People who never get in apply, on average: <b id="mOut"></b></label>
+    <input type="range" id="mSlider" min="1" max="4" step="0.5" value="2">
+  </div>
+  <div class="key" id="peopleKey"></div>
+  <div id="peopleWaffle"></div>
+  <div id="everChart" style="margin-top:14px"></div>
+
+  <h2>5. What the data suggest about the pattern</h2>
   <p>We tested a standard statistical model, set up before we looked at the result: everyone has their own fixed chance, and some people stop applying. It did not fit the survey. If it were right, about 41% of trainees would have got in first time. The real figure is 31%.</p>
   <p>One thing follows from simple arithmetic, with no model: <b>a second try succeeds more often than a first one, on average.</b> Not everyone who misses applies again, and those who do have already used one try. So for two tries to be almost as common as one among trainees (29% and 31%), the chance on the second try must be higher. This holds as long as the survey answers are typical of all trainees. Possible reasons include more experience by the second try, or people applying early to learn the process. The data cannot tell these apart, so we give no number for it.</p>
 
   <!-- 5 -->
-  <h2>5. Scenario: what a yearly chance adds up to</h2>
+  <h2>6. Scenario: what a yearly chance adds up to</h2>
   <div class="key scen">
-    <p style="margin:0"><span class="tag scenario">Scenario</span>This is not your chance. It shows the arithmetic only: <b>if</b> your chance were the same every year, and you applied every year, how likely would a place be after each try? Section 4 shows that real chances are not the same each try, so read it as a rough guide.</p>
+    <p style="margin:0"><span class="tag scenario">Scenario</span>This is not your chance. It shows the arithmetic only: <b>if</b> your chance were the same every year, and you applied every year, how likely would a place be after each try? Section 5 shows that real chances are not the same each try, so read it as a rough guide.</p>
   </div>
   <div class="row">
     <label for="pSlider">Chance each year: <b id="pOut"></b></label>
@@ -117,6 +129,7 @@ ul { padding-left: 20px; margin: 6px 0 10px; }
   var BPS = { labels: ["1", "2", "3", "4", "5", "6+"], n: [298, 280, 201, 116, 60, 21], courses: 30, dk: 5 };
   var COHORT = [2019, 2020, 2021];   // entry years of the surveyed trainees
 
+  var PEOPLE = null;
   function pct(x, d) { return (100 * x).toFixed(d == null ? 0 : d) + "%"; }
   function fmt(n) { return n.toLocaleString("en-GB"); }
   function css(v, f) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || f; }
@@ -153,9 +166,13 @@ ul { padding-left: 20px; margin: 6px 0 10px; }
     var vals = [1, 2, 3, 4, 5, 6], mean = 0, sq = 0;
     BPS.n.forEach(function (x, i) { mean += vals[i] * x / tot; sq += vals[i] * vals[i] * x / tot; });
     var se = Math.sqrt((sq - mean * mean) / tot), mlo = mean - 1.959964 * se, mhi = mean + 1.959964 * se;
-    var r = A / N, share = 1 - mean * r, shLo = 1 - mhi * r, shHi = 1 - mlo * r;
-    document.getElementById("halfKey").innerHTML = "<b class=\"big\">About " + pct(share) + "</b> (" + pct(shLo) + " to " + pct(shHi) +
-      ") of applications came from people who did not get a place in the end. There were " + (N / A).toFixed(1) +
+    var r = A / N, share = 1 - mean * r;
+    var yr = function (y) { var x = CH.filter(function (c) { return c[0] === y; })[0]; return x[1] / x[2]; };
+    var ratioLo = yr(COHORT[COHORT.length - 1]), ratioHi = yr(COHORT[0]);   // 2021: fewest applications per place; 2019: most
+    var shLo = 1 - mhi / ratioLo, shHi = 1 - mlo / ratioHi;
+    PEOPLE = { mid: 100 * (N / A - mean), lo: 100 * (ratioLo - mhi), hi: 100 * (ratioHi - mlo), ratioLo: ratioLo, ratioHi: ratioHi };
+    document.getElementById("halfKey").innerHTML = "<b class=\"big\">About " + pct(share) + "</b> (somewhere between " + pct(shLo) + " and " + pct(shHi) +
+      ", depending on the years used) of applications came from people who did not get a place in the end. There were " + (N / A).toFixed(1) +
       " applications for each place, but trainees used only " + mean.toFixed(1) + " tries each.";
     drawWaffle(Math.round(100 * N / A), Math.round(100 * mean));
     document.getElementById("halfWorking").innerHTML =
@@ -166,7 +183,15 @@ ul { padding-left: 20px; margin: 6px 0 10px; }
       "<p><b>Step 3.</b> Each place uses about " + mean.toFixed(2) + " applications from the person who gets it. The other " +
       (N / A - mean).toFixed(2) + " of every " + (N / A).toFixed(2) + " come from people who did not get a place. Share = 1 &minus; " +
       mean.toFixed(2) + " / " + (N / A).toFixed(2) + " = " + pct(share, 1) + ".</p>" +
+      "<p><b>Range:</b> places rose fast over these years, so the answer depends on which year is used. With 2021 alone (" + ratioLo.toFixed(2) +
+      " applications per place) it is " + pct(shLo) + "; with 2019 alone (" + ratioHi.toFixed(2) + ") it is " + pct(shHi) +
+      ". The range also includes the survey's sampling error, which is small by comparison.</p>" +
       "<p><b>The assumption:</b> applicant numbers stay about the same from year to year (a \"steady state\"). They have grown, so read this as approximate. Survey answers come only from the 42% of trainees who answered, and from memory. If people who needed many tries answered less often, the share is a little too high.</p>";
+
+    // ---- 4. People scenario --------------------------------------------------------
+    var ms = document.getElementById("mSlider");
+    ms.addEventListener("input", function () { drawPeople(+ms.value); });
+    drawPeople(+ms.value);
 
     // ---- 5. Scenario -------------------------------------------------------------
     var sl = document.getElementById("pSlider");
@@ -180,7 +205,7 @@ ul { padding-left: 20px; margin: 6px 0 10px; }
       "<p><b>Tries:</b> per-course percentages from " + BPS.courses + " BPS Alternative Handbook 2023 course reports, times the number of responses, rounded, then added up. " +
       "Hull was left out: it reports 100% \"once\" (22 of 22), almost certainly an error. " + BPS.dk + " \"I don't know\" answers were dropped. 95% Wilson intervals. " +
       "The intervals treat answers as independent; trainees on one course may be alike, so the real uncertainty is a little larger.</p>" +
-      "<p><b>Model test (section 4):</b> set out in RULES.md C10 before fitting. The model (each person has a fixed chance drawn from a Beta distribution; after a miss, a fixed chance of applying again) failed: deviance 122.3 on 3 degrees of freedom, p &lt; 0.001. A model where the chance changes with each try fitted (p = 0.66) but was chosen after seeing the data, is not unique, and gives implausible later values, so it is not shown as an estimate.</p>" +
+      "<p><b>Model test (section 5):</b> set out in RULES.md C10 before fitting. The model (each person has a fixed chance drawn from a Beta distribution; after a miss, a fixed chance of applying again) failed: deviance 122.3 on 3 degrees of freedom, p &lt; 0.001. A model where the chance changes with each try fitted (p = 0.66) but was chosen after seeing the data, is not unique, and gives implausible later values, so it is not shown as an estimate.</p>" +
       "<p><b>Scenario:</b> have a place by try K = 1 &minus; (1 &minus; p)<sup>K</sup>, for a chosen p. No interval: it is a what-if, not an estimate.</p>" +
       "<div class=\"tablebox\"><table><tr><th>Year</th><th class=\"num\">Applicants</th><th class=\"num\">Places</th><th class=\"num\">Rate</th><th class=\"num\">95% interval</th></tr>" +
       CH.map(function (r) { var w = W(r[2], r[1]); return "<tr><td>" + r[0] + "</td><td class=\"num\">" + fmt(r[1]) + "</td><td class=\"num\">" + fmt(r[2]) +
@@ -276,6 +301,48 @@ ul { padding-left: 20px; margin: 6px 0 10px; }
     s += '<text x="' + ((L + w - R) / 2) + '" y="' + (h - 2) + '" font-size="11" text-anchor="middle">By this many tries</text></svg>';
     document.getElementById("cumChart").innerHTML = '<p class="small" style="margin:0"><b>Share of trainees who were in by each try (cumulative, 2023 survey)</b></p>' + s +
       '<p class="small muted">This is out of people who got in, so it always reaches 100%. It is not the chance for all applicants: people who stopped applying are not in the survey (see section 3).</p>';
+  }
+
+  // Per 100 places: never-placed applications / average tries = never-placed people.
+  function everIn(apps, m) { return 100 / (100 + apps / m); }
+  function drawPeople(m) {
+    var P = PEOPLE, acc = css("--accent", "#990F3D"), faint = css("--faint", "#BCB3A4"), line = css("--line", "#cbbda9"), fg = css("--fg", "#2a2622");
+    document.getElementById("mOut").textContent = m + (m === 1 ? " time" : " times");
+    var never = Math.round(P.mid / m), nLo = Math.round(P.lo / m), nHi = Math.round(P.hi / m);
+    var e = everIn(P.mid, m), eLo = everIn(P.hi, m), eHi = everIn(P.lo, m);
+    document.getElementById("peopleKey").innerHTML = "For every 100 people who get a place, about <b>" + never + "</b> (" + nLo + " to " + nHi +
+      ") never do. So of everyone who starts applying, about <b class=\"big\">" + pct(e) + "</b> (" + pct(eLo) + " to " + pct(eHi) + ") ever get a place.";
+    // waffle of people
+    var total = 100 + never, cols = 25, cell = 19, gap = 3, w = cols * (cell + gap), h = Math.ceil(total / cols) * (cell + gap);
+    var s = '<svg viewBox="0 0 ' + w + " " + h + '" width="100%" role="img" aria-label="' + total + ' people: 100 got a place, ' + never + ' never did">';
+    for (var i = 0; i < total; i++) s += '<circle cx="' + ((i % cols) * (cell + gap) + cell / 2) + '" cy="' + (Math.floor(i / cols) * (cell + gap) + cell / 2) +
+      '" r="' + cell / 2 + '" fill="' + (i < 100 ? acc : faint) + '"/>';
+    s += "</svg>";
+    document.getElementById("peopleWaffle").innerHTML = '<p class="small" style="margin:0 0 6px"><b>Everyone who starts applying, for each 100 places (one dot = one person, middle estimate)</b></p>' + s +
+      '<div class="small" style="display:flex;flex-wrap:wrap;gap:4px 18px;margin-top:8px"><span><span style="display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:-1px;margin-right:6px;background:' + acc + '"></span><b>100</b> got a place</span>' +
+      '<span><span style="display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:-1px;margin-right:6px;background:' + faint + '"></span><b>' + never + '</b> never got a place (' + nLo + " to " + nHi + ")</span></div>";
+    // curve: ever-in share against average tries, with band
+    var W = 640, H = 250, L = 44, R = 14, T = 16, B = 36, x0 = 1, x1 = 4;
+    var x = function (v) { return L + (v - x0) / (x1 - x0) * (W - L - R); };
+    var y = function (v) { return T + (1 - v) * (H - T - B); };
+    var xs = []; for (var v = x0; v <= x1 + 1e-9; v += 0.1) xs.push(v);
+    var c = '<svg viewBox="0 0 ' + W + " " + H + '" width="100%" role="img" aria-label="Share who ever get a place against average tries of people who never get in">';
+    [0, 0.25, 0.5, 0.75, 1].forEach(function (v) {
+      c += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="' + line + '"/>' +
+        '<text x="' + (L - 6) + '" y="' + (y(v) + 4) + '" font-size="11" text-anchor="end">' + pct(v) + "</text>";
+    });
+    var up = xs.map(function (v) { return x(v) + "," + y(everIn(P.lo, v)); }), dn = xs.slice().reverse().map(function (v) { return x(v) + "," + y(everIn(P.hi, v)); });
+    c += '<polygon points="' + up.concat(dn).join(" ") + '" fill="' + acc + '" fill-opacity="0.15"/>';
+    c += '<polyline points="' + xs.map(function (v) { return x(v) + "," + y(everIn(P.mid, v)); }).join(" ") + '" fill="none" stroke="' + acc + '" stroke-width="2.5"/>';
+    [1, 1.5, 2, 2.5, 3, 3.5, 4].forEach(function (v) { c += '<text x="' + x(v) + '" y="' + (H - 18) + '" font-size="11" text-anchor="middle">' + v + "</text>"; });
+    c += '<line x1="' + x(m) + '" x2="' + x(m) + '" y1="' + y(eLo) + '" y2="' + y(eHi) + '" stroke="' + fg + '" stroke-width="2"/>' +
+      '<line x1="' + (x(m) - 6) + '" x2="' + (x(m) + 6) + '" y1="' + y(eLo) + '" y2="' + y(eLo) + '" stroke="' + fg + '" stroke-width="2"/>' +
+      '<line x1="' + (x(m) - 6) + '" x2="' + (x(m) + 6) + '" y1="' + y(eHi) + '" y2="' + y(eHi) + '" stroke="' + fg + '" stroke-width="2"/>' +
+      '<circle cx="' + x(m) + '" cy="' + y(e) + '" r="5.5" fill="' + fg + '"/>' +
+      '<text x="' + (x(m) + 10) + '" y="' + (y(e) - 8) + '" font-size="12">' + pct(e) + "</text>";
+    c += '<text x="' + ((L + W - R) / 2) + '" y="' + (H - 2) + '" font-size="11" text-anchor="middle">Average tries of people who never get in (your choice above)</text></svg>';
+    document.getElementById("everChart").innerHTML = '<p class="small" style="margin:0"><b>Share of everyone who starts applying who ever gets a place</b></p>' + c +
+      '<p class="small muted">Line: middle estimate (2019 to 2021 pooled). Band and error bar: from 2021 alone to 2019 alone. The band does not include the unknown tries: that is the axis, because the data cannot narrow it.</p>';
   }
 
   function drawScen(p, latest, yr) {
