@@ -1,0 +1,21 @@
+{
+  "name": "DClinPsy Equal-Opportunities Explorer",
+  "short_name": "DClinPsy",
+  "description": "UK clinical psychology doctorate admissions, 2015-2025: acceptance rates and disparities by applicant characteristic.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "lang": "en-GB",
+  "dir": "ltr",
+  "background_color": "#EADDCA",
+  "theme_color": "#EADDCA",
+  "categories": ["education"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

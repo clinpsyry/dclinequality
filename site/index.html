@@ -6,15 +6,24 @@
 <meta name="theme-color" content="#EADDCA">
 <title>DClinPsy Equal-Opportunities Explorer</title>
 <meta name="description" content="Interactive explorer of UK Doctorate in Clinical Psychology (DClinPsy) equal-opportunities admissions, 2015-2025: acceptance rates and disparities by applicant characteristic, computed live and verified against an offline statistical reference.">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%23990F3D'/><text x='16' y='24' font-size='23' text-anchor='middle' fill='%23fff' font-family='Georgia,serif'>%CF%88</text></svg>">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="icon" href="icons/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<!-- Installed app (Add to Home Screen): opens without browser bars -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="DClinPsy">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="application-name" content="DClinPsy">
 <meta property="og:title" content="DClinPsy Equal-Opportunities Explorer">
 <meta property="og:description" content="UK clinical psychology doctorate admissions, 2015-2025: acceptance rates and disparities by applicant characteristic, computed live and statistically verified.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dclinequality.pages.dev/">
 <meta property="og:image" content="https://dclinequality.pages.dev/og-preview.png">
-<meta property="og:image:width" content="1918">
-<meta property="og:image:height" content="913">
-<meta property="og:image:alt" content="The DClinPsy Equal-Opportunities Explorer, showing acceptance-rate trends by broad ethnic group, 2015-2025.">
+<meta property="og:image:width" content="2400">
+<meta property="og:image:height" content="1260">
+<meta property="og:image:alt" content="The DClinPsy Equal-Opportunities Explorer on desktop and phone, showing acceptance-rate trends by broad ethnic group, 2015-2025.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://dclinequality.pages.dev/og-preview.png">
 <style>
@@ -887,5 +896,11 @@
 <script src="data.js"></script>
 <script src="census.js"></script>
 <script src="js/explorer.js"></script>
+<script>
+  // Installed app: let it open offline (network first, so new deploys show at once)
+  if ("serviceWorker" in navigator && location.protocol === "https:") {
+    window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js").catch(function () {}); });
+  }
+</script>
 </body>
 </html>
