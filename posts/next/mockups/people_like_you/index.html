@@ -32,7 +32,8 @@ select:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); 
 table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
 th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
 th { font-size: 0.78rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
-td.num, th.num { text-align: right; white-space: nowrap; }
+td.num, th.num { text-align: right; }
+td.num { white-space: nowrap; }
 .you { color: var(--accent); font-weight: 600; }
 .flag { color: var(--warn); font-size: 0.85rem; margin: 6px 0 0; }
 .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 0.85rem; margin-top: 4px; }
@@ -44,11 +45,14 @@ summary { cursor: pointer; font-weight: 600; }
 .working { font-size: 0.85rem; overflow-x: auto; }
 .working p { margin-top: 8px; }
 code { font-size: 0.85em; }
+tr.weak td { opacity: 0.55; }
+.next { margin-top: 12px; }
+.next b.big { font-size: 1.3rem; }
 </style>
 
 <div class="wrap">
   <h1>Chances by try</h1>
-  <p class="muted">Engine mock-up. If you keep applying, what share of people like you would have a place after 1, 2, 3, 4 or 5 tries? Pick one trait, or leave it as everyone.</p>
+  <p class="muted">Engine mock-up. If you keep applying, what share of people like you would have a place after each try? Pick one trait, or leave it as everyone.</p>
 
   <div class="inputs">
     <label for="trait">Trait
@@ -56,6 +60,9 @@ code { font-size: 0.85em; }
     </label>
     <label for="group">Your group
       <select id="group"></select>
+    </label>
+    <label for="ntries" style="flex:0 1 140px">Tries to show
+      <select id="ntries"></select>
     </label>
   </div>
   <p class="small muted" id="exampleNote">Filled in as an example: people with dependants.</p>
@@ -67,8 +74,11 @@ code { font-size: 0.85em; }
     <p style="margin:0"><b>This is a model, not a count.</b> It assumes each year is a fresh try with the same chance, whatever happened before. The data cannot check this. People differ, so those still applying after several tries probably have lower chances. The real numbers are probably lower than these: read them as a best case.</p>
   </div>
 
+  <div class="box next" id="nexttry"></div>
+
   <div id="chart" style="margin-top:16px"></div>
   <div class="tablebox"><table id="tries"></table></div>
+  <p class="small" id="summary100" style="margin-top:8px"></p>
   <div id="flags"></div>
   <p class="small muted">Range: 95% interval from the year-to-year spread in the rate (2021 to 2025, each year counted as one data point). It covers how much the rate moves between years. It does not cover the risk that the "fresh try" assumption is wrong.</p>
 
@@ -83,7 +93,7 @@ code { font-size: 0.85em; }
 (function () {
   "use strict";
 
-  var TRIES = 5, MIN_N = 100;
+  var MAX_TRIES = 10, SOLID = 5, MIN_N = 100, TRIES = 5;
   // Traits offered. Groups left out: prefer-not-to-say, totals, merged source rows,
   // and Wheelchair and Blind on their own (pooled-cell artefacts, RULES C8).
   var TRAITS = [
@@ -132,6 +142,10 @@ code { font-size: 0.85em; }
     t.innerHTML = TRAITS.map(function (x, i) { return '<option value="' + i + '">' + esc(x.label) + "</option>"; }).join("");
     t.value = String(TRAITS.map(function (x) { return x.key; }).indexOf("DEPENDANTS"));
     fillGroups("Has dependants");
+    var nt = document.getElementById("ntries"), opts = "";
+    for (var i = 1; i <= MAX_TRIES; i++) opts += "<option" + (i === TRIES ? " selected" : "") + ">" + i + "</option>";
+    nt.innerHTML = opts;
+    nt.addEventListener("change", function () { TRIES = +nt.value; render(); });
     t.addEventListener("change", function () { hideExample(); fillGroups(); render(); });
     document.getElementById("group").addEventListener("change", function () { hideExample(); render(); });
   }
@@ -175,7 +189,7 @@ code { font-size: 0.85em; }
       out.lo = clamp(ti.lo); out.hi = clamp(ti.hi); out.clipped = ti.lo < 0;
     }
     out.tries = [];
-    for (var k = 1; k <= TRIES; k++) {
+    for (var k = 1; k <= MAX_TRIES; k++) {
       var row = { k: k, by: byTry(mean, k), on: onTry(mean, k) };
       if (out.lo != null) {
         row.byLo = byTry(out.lo, k); row.byHi = byTry(out.hi, k);
@@ -183,7 +197,6 @@ code { font-size: 0.85em; }
       }
       out.tries.push(row);
     }
-    out.notBy5 = Math.pow(1 - mean, TRIES);
     return out;
   }
   function byTry(p, k) { return 1 - Math.pow(1 - p, k); }
@@ -208,7 +221,7 @@ code { font-size: 0.85em; }
     var m = document.getElementById("measured");
     if (you.p == null) {
       m.innerHTML = "<b>" + esc(label) + "</b>: the source hid this group's acceptances in every year, so there is nothing to show.";
-      ["chart", "tries", "flags", "working"].forEach(function (id) { document.getElementById(id).innerHTML = ""; });
+      ["nexttry", "chart", "tries", "summary100", "flags", "working"].forEach(function (id) { document.getElementById(id).innerHTML = ""; });
       return;
     }
     var range = you.lo != null ? " (95% range " + pct(you.lo, 1) + " to " + pct(you.hi, 1) + ")" : "";
@@ -217,25 +230,37 @@ code { font-size: 0.85em; }
       fmt(you.pooled.app) + " applications in total." +
       (isAll ? "" : "<br><span class=\"small muted\">Everyone: " + pct(all.p, 1) + " (" + pct(all.lo, 1) + " to " + pct(all.hi, 1) + ").</span>");
 
+    drawNext(you, label);
     drawChart(you, isAll ? null : all, label);
     drawTable(you, isAll ? null : all, label);
     drawFlags(you);
     drawWorking(you, label);
   }
 
+  function drawNext(you, label) {
+    var rng = you.lo != null ? " (95% range " + pct(you.lo, 1) + " to " + pct(you.hi, 1) + ")" : "";
+    document.getElementById("nexttry").innerHTML = "<b>Your chance on your next try:</b> <b class=\"big\">" + pct(you.p, 1) + "</b>" + rng +
+      ".<br><span class=\"small muted\">In this model it stays the same on every try, however many times you have applied. In real life it probably falls a little with each try. This is where the model is most likely to be wrong.</span>";
+  }
+
   function drawTable(you, all, label) {
-    var h = "<tr><th>Try</th><th class=\"num\">Get a place on this try</th><th class=\"num\">Have a place by this try</th>" +
-      (all ? "<th class=\"num\">Everyone, by this try</th>" : "") + "</tr>";
-    you.tries.forEach(function (r, i) {
-      var rng = function (lo, hi) { return lo == null ? "" : ' <span class="muted small">(' + pct(lo) + " to " + pct(hi) + ")</span>"; };
-      h += "<tr><td>" + r.k + "</td><td class=\"num\">" + pct(r.on) + rng(r.onLo, r.onHi) + "</td>" +
+    var rng = function (lo, hi) { return lo == null ? "" : ' <span class="muted small">(' + pct(lo) + " to " + pct(hi) + ")</span>"; };
+    var cols = all ? 5 : 4;
+    var h = "<tr><th>Try</th><th class=\"num\">Chance this try, if not in yet</th><th class=\"num\">Of 100 who start, in on this try</th>" +
+      "<th class=\"num\">In by this try</th>" + (all ? "<th class=\"num\">Everyone, in by this try</th>" : "") + "</tr>";
+    for (var i = 0; i < TRIES; i++) {
+      var r = you.tries[i];
+      if (i === SOLID) h += "<tr><td colspan=\"" + cols + "\" class=\"small flag\">After try " + SOLID + " the model is weaker: its error adds up with every try. Read the faded rows with great care.</td></tr>";
+      h += "<tr" + (r.k > SOLID ? " class=\"weak\"" : "") + "><td>" + r.k + "</td>" +
+        "<td class=\"num\">" + pct(you.p, 1) + "</td>" +
+        "<td class=\"num\">" + Math.round(100 * r.on) + (r.onLo == null ? "" : ' <span class="muted small">(' + Math.round(100 * r.onLo) + " to " + Math.round(100 * r.onHi) + ")</span>") + "</td>" +
         "<td class=\"num you\">" + pct(r.by) + rng(r.byLo, r.byHi) + "</td>" +
         (all ? "<td class=\"num\">" + pct(all.tries[i].by) + rng(all.tries[i].byLo, all.tries[i].byHi) + "</td>" : "") + "</tr>";
-    });
-    h += "<tr><td colspan=\"" + (all ? 4 : 3) + "\" class=\"small muted\">Out of 100 people like you who start applying and keep going: about " +
-      Math.round(100 * you.tries[0].on) + " get a place on the first try, and about " + Math.round(100 * you.notBy5) +
-      " still have no place after " + TRIES + " tries.</td></tr>";
+    }
     document.getElementById("tries").innerHTML = h;
+    document.getElementById("summary100").innerHTML = "Out of 100 people like you who start applying and keep going: about " +
+      Math.round(100 * you.tries[0].on) + " get a place on the first try, and about " + Math.round(100 * Math.pow(1 - you.p, TRIES)) +
+      " still have no place after " + TRIES + " " + (TRIES === 1 ? "try" : "tries") + ".";
   }
 
   function drawFlags(you) {
@@ -250,32 +275,41 @@ code { font-size: 0.85em; }
   }
 
   // "By this try" curve with its range band; everyone as a grey reference.
+  // Tries after SOLID sit on a faded background.
   function drawChart(you, all, label) {
-    var W = 640, H = 300, L = 44, R = 16, T = 16, B = 40;
-    function x(k) { return L + (k - 1) / (TRIES - 1) * (W - L - R); }
+    var W = 640, H = 300, L = 44, R = 16, T = 16, B = 40, N = Math.max(TRIES, 2);
+    function x(k) { return L + (k - 1) / (N - 1) * (W - L - R); }
     function y(v) { return T + (1 - v) * (H - T - B); }
+    var cs = getComputedStyle(document.documentElement);
+    var acc = cs.getPropertyValue("--accent").trim() || "#990F3D", ref = cs.getPropertyValue("--ref").trim() || "#4d4740",
+        line = cs.getPropertyValue("--line").trim() || "#cbbda9";
     var s = '<svg viewBox="0 0 ' + W + " " + H + '" width="100%" role="img" aria-label="Share with a place by each try">';
+    if (TRIES > SOLID) {
+      var x0 = (x(SOLID) + x(SOLID + 1)) / 2;
+      s += '<rect x="' + x0 + '" y="' + T + '" width="' + (W - R - x0) + '" height="' + (H - T - B) + '" fill="' + line + '" fill-opacity="0.35"/>';
+      s += '<text x="' + (x0 + 6) + '" y="' + (T + 14) + '" font-size="11">Weaker model</text>';
+    }
     [0, 0.25, 0.5, 0.75, 1].forEach(function (v) {
       s += '<line class="grid" x1="' + L + '" x2="' + (W - R) + '" y1="' + y(v) + '" y2="' + y(v) + '"/>';
       s += '<text x="' + (L - 6) + '" y="' + (y(v) + 4) + '" font-size="11" text-anchor="end">' + pct(v) + "</text>";
     });
-    for (var k = 1; k <= TRIES; k++) s += '<text x="' + x(k) + '" y="' + (H - B + 18) + '" font-size="11" text-anchor="middle">' + k + "</text>";
+    for (var k = 1; k <= N; k++) s += '<text x="' + x(k) + '" y="' + (H - B + 18) + '" font-size="11" text-anchor="middle">' + k + "</text>";
     s += '<text x="' + ((L + W - R) / 2) + '" y="' + (H - 4) + '" font-size="11" text-anchor="middle">Try</text>';
-    function series(e, cls, color, fillOp) {
-      var out = "";
-      if (e.tries[0].byLo != null) {
-        var up = e.tries.map(function (r) { return x(r.k) + "," + y(r.byHi); });
-        var dn = e.tries.slice().reverse().map(function (r) { return x(r.k) + "," + y(r.byLo); });
+    function series(e, color, fillOp) {
+      var rows = e.tries.slice(0, N), out = "";
+      if (rows[0].byLo != null) {
+        var up = rows.map(function (r) { return x(r.k) + "," + y(r.byHi); });
+        var dn = rows.slice().reverse().map(function (r) { return x(r.k) + "," + y(r.byLo); });
         out += '<polygon points="' + up.concat(dn).join(" ") + '" fill="' + color + '" fill-opacity="' + fillOp + '" stroke="none"/>';
       }
-      out += '<polyline points="' + e.tries.map(function (r) { return x(r.k) + "," + y(r.by); }).join(" ") + '" fill="none" stroke="' + color + '" stroke-width="2.5"/>';
-      e.tries.forEach(function (r) { out += '<circle cx="' + x(r.k) + '" cy="' + y(r.by) + '" r="3.5" fill="' + color + '"/>'; });
+      out += '<polyline points="' + rows.map(function (r) { return x(r.k) + "," + y(r.by); }).join(" ") + '" fill="none" stroke="' + color + '" stroke-width="2.5"/>';
+      rows.forEach(function (r) {
+        out += '<circle cx="' + x(r.k) + '" cy="' + y(r.by) + '" r="3.5" fill="' + color + '"' + (r.k > SOLID ? ' fill-opacity="0.5"' : "") + "/>";
+      });
       return out;
     }
-    var cs = getComputedStyle(document.documentElement);
-    var acc = cs.getPropertyValue("--accent").trim() || "#990F3D", ref = cs.getPropertyValue("--ref").trim() || "#4d4740";
-    if (all) s += series(all, "all", ref, 0.12);
-    s += series(you, "you", acc, 0.18);
+    if (all) s += series(all, ref, 0.12);
+    s += series(you, acc, 0.18);
     s += "</svg>";
     var leg = '<div class="legend"><span><span class="sw" style="background:' + acc + '"></span>' + esc(label) + "</span>" +
       (all ? '<span><span class="sw" style="background:' + ref + '"></span>Everyone</span>' : "") +
@@ -296,7 +330,8 @@ code { font-size: 0.85em; }
         ". 95% range = p &plusmn; t &times; SD / &radic;" + you.n + " = " + pct(you.lo, 2) + " to " + pct(you.hi, 2) + "." : " Only one year, so no range.") + "</p>" +
       "<p><b>Step 3.</b> Fresh-try model. Have a place by try K = 1 &minus; (1 &minus; p)<sup>K</sup>. Example, try 3: 1 &minus; (1 &minus; " + you.p.toFixed(4) + ")<sup>3</sup> = " + pct(you.tries[2].by, 1) +
       ". The range uses the same formula on the low and high ends of p.</p>" +
-      "<p><b>Step 4.</b> Get a place on exactly try K = (1 &minus; p)<sup>K&minus;1</sup> &times; p. Its range is the lowest and highest value of this across the range of p.</p>";
+      "<p><b>Step 4.</b> Get a place on exactly try K = (1 &minus; p)<sup>K&minus;1</sup> &times; p. Its range is the lowest and highest value of this across the range of p. This is out of everyone who started, so it falls only because fewer people are still applying.</p>" +
+      "<p><b>Step 5.</b> Chance on any one try, if not in yet = p. The model holds this fixed.</p>";
     document.getElementById("working").innerHTML = "<details open><summary>" + esc(label) + "</summary><div class=\"working\">" +
       "<table><tr><th>Year</th><th class=\"num\">Applied</th><th class=\"num\">Accepted</th><th class=\"num\">Rate</th><th>What the engine did</th></tr>" +
       rows + "</table>" + steps + "</div></details>";
