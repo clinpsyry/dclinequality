@@ -72,7 +72,7 @@ newcombe_ci <- function(a1, n1, a2, n2, z = 1.959964) {
 
 - **Title:** an assertive sentence stating the finding (e.g. *"Class still shapes who gets a clinical psychology place"*). Descriptive, never causal.
 - **Subtitle:** lead with the hard number, then explain the encoding/colours — it grounds the editorial headline in a figure.
-- **Caption:** source line + method note + the relevant caveat. Standard source line: `Source: DClinPsy Clearing House, DEI era 2021–24`. Method note names the CI type and BH correction. Caveat where relevant: *"not adjusted for confounding between characteristics."*
+- **Caption:** source line + method note + the relevant caveat. Standard source line: `Source: DClinPsy Clearing House, DEI era 2021–25`. Method note names the CI type and BH correction. Caveat where relevant: *"not adjusted for confounding between characteristics."*
 - **Units:** percentage points (pp), labelled as such — never rate ratios.
 - Say **"DEI"**, never "EDI".
 
@@ -84,7 +84,7 @@ newcombe_ci <- function(a1, n1, a2, n2, z = 1.959964) {
 ## 5. Analysis rules that govern every chart (non-negotiable)
 
 - **Marginal data** — one characteristic at a time; no confounding adjustment is possible. Every cross-characteristic caveat flows from this.
-- **DEI era = 2021–2024** (what the work reports). Pre-DEI = 2015–2019. **2020 is dropped** (transition year).
+- **DEI era = 2021–2025** (2025 added 22 Nov 2026, RULES.md C5; the earlier posts used 2021–2024). Pre-DEI = 2015–2019. **2020 is dropped** (transition year).
 - **Suppressed cells:** when `accepted_n` is `NA`, **drop the whole row** before summing — `filter(!is.na(accepted_n), !is.na(applicants_n))`, then `group_by` + `summarise(sum())`. **Never** use per-column `na.rm = TRUE`; it sums applicants over all years but accepted only over non-NA years, biasing every rate.
 - **Effect measure:** percentage points. **CIs:** Wilson (single proportion), Newcombe (difference between two).
 - **Multiple comparisons:** Benjamini-Hochberg across any family of tests; on charts, widen plotted CIs to the BH critical level (α* = 0.05 × rank/m) so "the interval clears zero" = "BH-significant". Single pre-specified tests (the per-characteristic omnibus chi-square, the one sex comparison) get **no** correction.

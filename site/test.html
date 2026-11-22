@@ -18,7 +18,7 @@
 </head>
 <body>
 <h1>DClinPsy Explorer: browser statistics vs R oracle</h1>
-<p>Recomputes the ethnicity DEI (2021-2024) BH family live in your browser and
+<p>Recomputes the ethnicity DEI-era (2021-2025) BH family live in your browser and
 checks every number against the R-generated <code>reference.json</code>.
 Verdicts must match exactly. This is governance rule 2a in action.</p>
 <div id="banner">Running...</div>
@@ -32,7 +32,7 @@ Verdicts must match exactly. This is governance rule 2a in action.</p>
   var eth12 = ["British Scottish","British Welsh","Irish","Other White background",
     "Indian","Pakistani","Bangladeshi","Chinese","African","Caribbean",
     "Mixed (all)","Middle Eastern/North African"];
-  var dei = [2021, 2022, 2023, 2024];
+  var dei = window.COUNTS.meta.eras.dei;   // the DEI era as exported (RULES.md C5)
 
   function findGroup(ch, name) {
     return window.COUNTS.groups.find(function (x) {

@@ -98,7 +98,7 @@ keeps the suppression handling in one vetted place.
   the known case). "All groups" is only valid here; it is disabled on the other
   tabs, which fall back to a default characteristic.
 - Pre-DEI vs DEI: per-group arrow from the pre-DEI (2015-2019) value to the DEI
-  (2021-2024) value, rate or gap-vs-reference, with the change tested on per-year
+  (2021-2025) value, rate or gap-vs-reference, with the change tested on per-year
   values (Welch t-test) and BH-corrected. 2020 is the changeover year.
 - Chart/Table toggle: Compare to reference, All groups, Pre-DEI vs DEI, and
   Representativeness each offer a "View: Chart | Table" switch. The table is a

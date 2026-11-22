@@ -6,11 +6,12 @@ rule has an exception, the exception is stated explicitly.
 
 ------------------------------------------------------------------
 ## 1. Time periods (eras)
-- DEI era = 2021, 2022, 2023, 2024.
+- DEI era = 2021, 2022, 2023, 2024, 2025 (2025 added 22 Nov 2026, RULES.md C5;
+  the posts before that used 2021 to 2024).
 - Pre-DEI era = 2015, 2016, 2017, 2018, 2019.
 - 2020 is ALWAYS EXCLUDED as a transition year (never in either era, never on a
   trend chart's connected line).
-- Present-day / cross-sectional figures use the DEI era (2021-24) unless a chart
+- Present-day / cross-sectional figures use the DEI era (2021-25) unless a chart
   is explicitly about change over time.
 - Always write "DEI", never "EDI".
 

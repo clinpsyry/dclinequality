@@ -83,7 +83,7 @@ Consequence for windows: year selection is now FREE (any subset, contiguous or
 not, computed live), since there is no precompute to enumerate. 2020 stays
 excluded from any pooled window (rule 3). The contiguous-window precompute of
 rule 8b is therefore obsolete and not built; 8b is retained only for its
-canonical-preset definitions (DEI 2021-2024, pre-DEI 2015-2019, full trend).
+canonical-preset definitions (DEI 2021-2025, pre-DEI 2015-2019, full trend).
 
 ## 3. Time periods (eras)
 
@@ -98,7 +98,7 @@ the explorer. The 2020-exclusion was an editorial choice for the blog.
 
 The following remain authoritative FOR THE BLOG:
 
-- DEI era = 2021, 2022, 2023, 2024.
+- DEI era = 2021, 2022, 2023, 2024, 2025 (2025 added 22 Nov 2026, RULES.md C5).
 - Pre-DEI era = 2015, 2016, 2017, 2018, 2019.
 - 2020 is ALWAYS excluded as a transition year: never in either era, and never
   drawn as a connected segment on a trend line. It may be stored in the JSON but
@@ -293,7 +293,7 @@ live.
   independently, so selecting years is pure display and triggers no computation.
 - Significance forest (BH-coloured group-vs-reference): the window is restricted
   to CONTIGUOUS year ranges. The pipeline precomputes the frozen-family BH result
-  for EVERY contiguous window over the usable years (2015-2019, 2021-2024). The
+  for EVERY contiguous window over the usable years (2015-2019, 2021-2025). The
   front-end looks up the precomputed result for the chosen window and computes
   nothing. Family membership and `m` stay frozen (8a); only the data window moves.
 - 2020 is never a counted year inside any window (rule 3). A window written as
@@ -302,7 +302,7 @@ live.
   meaningful, and free subset selection edges into time-window
   significance-shopping (cf rule 7).
 - The three canonical timepoints remain as labelled presets that match the blog:
-  DEI cross-section (2021-2024), pre-DEI (2015-2019), and full trend. Exploratory
+  DEI cross-section (2021-2025), pre-DEI (2015-2019), and full trend. Exploratory
   windows are visually distinguished, and the forest always shows the active
   window and `m`.
 

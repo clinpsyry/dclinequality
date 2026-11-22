@@ -6,7 +6,7 @@
 // context_latest).
 //
 // Full forest (method of the published May 2026 chart): frozen membership from
-// counts.meta.master (groups with 300+ applicants in 2021-24 across nine
+// counts.meta.master (groups with 300+ applicants in the DEI era, 2021-25, across nine
 // characteristics; each vs the largest group of its characteristic, socio-economic
 // vs Quintiles 2 and 3 combined). One Benjamini-Hochberg correction across every
 // member with data in the chosen years (a member with none is left out of m, as

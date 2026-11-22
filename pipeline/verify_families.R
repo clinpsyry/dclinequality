@@ -7,7 +7,7 @@
 # ============================================================================
 suppressPackageStartupMessages(library(jsonlite))
 counts <- fromJSON("site/data/counts.json", simplifyVector = FALSE)
-DEI <- 2021:2024
+DEI <- unlist(counts$meta$eras$dei)   # the DEI era as exported (RULES.md C5)
 
 idx <- list()
 for (g in counts$groups) idx[[paste(g$characteristic, g$group, sep = "|")]] <- g$by_year

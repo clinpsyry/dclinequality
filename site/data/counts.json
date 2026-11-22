@@ -1,12 +1,12 @@
 {
   "meta": {
     "source_file": "data/equalopps_merged.csv",
-    "generated_at": "2026-11-21T19:20:40",
+    "generated_at": "2026-11-22T12:32:43",
     "years": [2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025],
     "latest_year": 2025,
     "eras": {
       "pre_dei": [2015, 2016, 2017, 2018, 2019],
-      "dei": [2021, 2022, 2023, 2024],
+      "dei": [2021, 2022, 2023, 2024, 2025],
       "excluded": 2020
     },
     "references": {
@@ -88,6 +88,11 @@
       },
       {
         "characteristic": "ETHNICITY",
+        "group": "Middle Eastern/North African",
+        "ref": ["British English"]
+      },
+      {
+        "characteristic": "ETHNICITY",
         "group": "Other British (white)",
         "ref": ["British English"]
       },
@@ -104,6 +109,11 @@
       {
         "characteristic": "ETHNICITY",
         "group": "White & Asian",
+        "ref": ["British English"]
+      },
+      {
+        "characteristic": "ETHNICITY",
+        "group": "Other Asian background",
         "ref": ["British English"]
       },
       {
@@ -147,6 +157,11 @@
         "ref": ["Heterosexual/straight"]
       },
       {
+        "characteristic": "SEXUAL ORIENTATION",
+        "group": "Other sexual orientation",
+        "ref": ["Heterosexual/straight"]
+      },
+      {
         "characteristic": "RELIGION",
         "group": "Christian - Other",
         "ref": ["No religion"]
@@ -163,7 +178,17 @@
       },
       {
         "characteristic": "RELIGION",
+        "group": "Hindu",
+        "ref": ["No religion"]
+      },
+      {
+        "characteristic": "RELIGION",
         "group": "Muslim",
+        "ref": ["No religion"]
+      },
+      {
+        "characteristic": "RELIGION",
+        "group": "Sikh",
         "ref": ["No religion"]
       },
       {

@@ -709,7 +709,7 @@
         <div class="chips">
           <button class="chip" id="toggle-ci" type="button" title="Show 95% confidence intervals">95% CI</button>
           <button class="chip" id="toggle-combine" type="button" title="Combine the selected groups into one, vs the reference">Combine Groups</button>
-          <button class="chip" id="toggle-dei" type="button" title="Shade the DEI era (2021 to 2024)">DEI era</button>
+          <button class="chip" id="toggle-dei" type="button" title="Shade the DEI era (2021 to 2025)">DEI era</button>
         </div>
       </div>
       <div class="rail-sec" id="groups-title">Groups shown</div>
@@ -933,10 +933,12 @@
 
         <h2>What is new in this version</h2>
         <ul>
-          <li><strong>2025 entry</strong> data in every view. 2025 is reported as the latest year; the
-          pre-DEI (2015 to 2019) and DEI (2021 to 2024) eras are unchanged.</li>
+          <li><strong>2025 entry</strong> data in every view, and <strong>2025 now counts in the DEI
+          era</strong>, which runs from 2021 to 2025 (pre-DEI: 2015 to 2019). Every DEI-era figure, including
+          the All groups chart, now pools 2021 to 2025, so it differs from the posts published before
+          2025's data, which used 2021 to 2024.</li>
           <li><strong>All groups (full forest)</strong> now uses the method of the published chart: every
-          group with 300 or more applicants in 2021 to 2024, across nine characteristics, each against
+          group with 300 or more applicants in the DEI era (2021 to 2025), across nine characteristics, each against
           the largest group of its characteristic (socio-economic: Quintiles 2 and 3 combined), with one
           Benjamini-Hochberg correction across all of them. As published, red is above the reference and
           blue below.</li>
@@ -985,13 +987,13 @@
         is the single uncorrected test, and <strong>p (BH)</strong> is that p-value after the
         Benjamini-Hochberg correction across the family. The corrected one is what decides the red/grey
         verdict, so always read it alongside the raw one. A result that only just clears 0.05 (for
-        example Black ethnicity at p (BH) &asymp; 0.046 over 2021 to 2024) is genuine but fragile, and
+        example a p (BH) of 0.046) is genuine but fragile, and
         should be read as "just significant", not as settled fact: the confidence interval, which shows
         how big and how uncertain the gap is, matters more than the p-value alone.</p>
 
         <h2>Eras: pre-DEI versus DEI</h2>
         <p>The "Pre-DEI vs DEI" view compares the pre-DEI years (2015 to 2019) with the DEI years
-        (2021 to 2024). Each era value is the mean of that group's per-year rates or gaps, with a 95%
+        (2021 to 2025). Each era value is the mean of that group's per-year rates or gaps, with a 95%
         interval, and the change is tested on those per-year values. <strong>2020 is treated as the
         changeover year and sits in neither era.</strong> In the other views 2020 is a normal,
         fully-included year; the trend charts simply shade 2021 onward to mark the DEI era visually.</p>
@@ -1052,7 +1054,7 @@
           groups are tested together.</dd>
           <dt>POLAR</dt><dd>Participation Of Local Areas: an area-based measure of how many young
           people enter higher education, in five equal quintiles.</dd>
-          <dt>DEI era</dt><dd>Here, the 2021 to 2024 application cycles. 2020 is the changeover year.</dd>
+          <dt>DEI era</dt><dd>Here, the 2021 to 2025 application cycles (until November 2026 it was 2021 to 2024, as in the earlier posts). 2020 is the changeover year.</dd>
         </dl>
 
         <h2>How this was built</h2>
