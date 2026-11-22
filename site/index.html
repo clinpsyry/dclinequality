@@ -272,6 +272,20 @@
   body.phone-charts .chartwrap .dl-btn { flex: 1; justify-content: center; min-height: 44px; border-radius: 12px; font-size: .88rem; }
   body.phone-charts .chartwrap .dl-group select { min-height: 44px; border-radius: 12px; font-size: .88rem; }
   .note-toggle { display: none; }
+  /* Desktop: a long footnote shows two lines, and opens in full on request */
+  .note-more { display: none; }
+  @media (min-width: 861px) {
+    body:not(.phone-charts) .chartwrap .note.clamp { display: -webkit-box; -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+    body:not(.phone-charts) .note-more { display: inline-flex; align-items: center; gap: .3rem; margin: .3rem 0 0;
+      padding: .15rem 0; font: inherit; font-size: .78rem; font-weight: 600; color: var(--accent);
+      background: none; border: none; cursor: pointer; }
+    body:not(.phone-charts) .note-more[hidden] { display: none; }
+    body:not(.phone-charts) .note-more:hover { text-decoration: underline; }
+    body:not(.phone-charts) .note-more:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; border-radius: 4px; }
+    body:not(.phone-charts) .note-more::after { content: "\25BE"; font-size: .85em; }
+    body:not(.phone-charts) .note-more[aria-expanded="true"]::after { content: "\25B4"; }
+  }
   body.phone-charts .note-toggle { display: flex; align-items: center; gap: .55rem; width: 100%; min-height: 46px;
     font: inherit; font-size: .9rem; font-weight: 600; color: var(--ink); text-align: left;
     background: rgba(255,255,255,.5); border: 1px solid #d6c6ac; border-radius: 12px; padding: .6rem .9rem; cursor: pointer;
@@ -890,6 +904,7 @@
         <div class="chart-actions">
           <button class="note-toggle" id="note-toggle" type="button" aria-expanded="false" aria-controls="chart-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.6" r=".9" fill="currentColor"/></svg>How to read this chart <span class="chev">▾</span></button>
           <p class="note" id="chart-note"></p>
+          <button class="note-more" id="note-more" type="button" aria-expanded="false" aria-controls="chart-note" hidden>Read the full note</button>
         <div class="dl-group" id="dl-group">
           <button class="dl-btn" id="dl-png" title="Download this chart as a PNG">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
