@@ -89,10 +89,9 @@ ul { padding-left: 20px; margin: 6px 0 10px; }
   <div id="peopleWaffle"></div>
   <div id="everChart" style="margin-top:14px"></div>
   <h3>1,000 people, try by try</h3>
-  <p class="small"><span class="tag scenario">Scenario</span>Who gets a place at each try comes from the trainee survey. Who stops is <b>assumed</b>: the same share of people who will never get in stops after each miss, set so that their average matches the slider. Each blue dot is one application at the current try. Move the slider and the animation starts again with the new numbers.</p>
+  <p class="small"><span class="tag scenario">Scenario</span>Who gets a place at each try comes from the trainee survey. Who stops is <b>assumed</b>: the same share of people who will never get in stops after each miss, set so that their average matches the slider. Each blue dot is one person, and each time the crowd crosses a year line, every blue dot sends one application. Some rise to a place, some fall away, the rest carry on. Move the slider and the journey starts again with the new numbers.</p>
   <div class="row" style="margin-bottom:4px">
     <button type="button" id="flowPlay" class="btn">Play</button>
-    <button type="button" id="flowStep" class="btn">Next try</button>
     <button type="button" id="flowReset" class="btn">Start again</button>
   </div>
   <div id="flowStatus" class="small" style="min-height:2.6em"></div>
@@ -358,14 +357,14 @@ ul { padding-left: 20px; margin: 6px 0 10px; }
       '<p class="small muted">Line: middle estimate (2019 to 2021 pooled). Band and error bar: from 2021 alone to 2019 alone. The band does not include the unknown tries: that is the axis, because the data cannot narrow it.</p>';
   }
 
-  // ---- Animated flow: 1,000 starters, one dot per person; each dot in the
-  // "applying" box is one application at that try. -------------------------------
-  var FLOW = { steps: [], dots: [], k: 0, playing: false, anim: null, timer: null };
+  // ---- River of dots: 1,000 starters travel across the years. ---------------------
+  var FLOW = { steps: [], dots: [], T: 0, playing: false, raf: 0, last: 0, fired: 0, seen: false };
+  var SEG = 2.4;            // seconds per year
   function flowCounts(m, E) {
     var tot = BPS.n.reduce(function (a, b) { return a + b; }, 0), f = BPS.n.map(function (x) { return x / tot; });
     var START = 1000, K = 6, q = 1 / m, nv = START * (1 - E), tr = START * E, cumF = 0, left = START, out = [];
     for (var k = 1; k <= K; k++) {
-      var trIn = tr * (1 - cumF), nvIn = nv * Math.pow(1 - q, k - 1);
+      var nvIn = nv * Math.pow(1 - q, k - 1);
       var placed = Math.min(left, Math.round(tr * f[k - 1]));
       var stop = k < K ? Math.min(left - placed, Math.round(nvIn * q)) : left - placed;
       out.push({ k: k, applying: left, placed: placed, stop: stop });
@@ -374,112 +373,148 @@ ul { padding-left: 20px; margin: 6px 0 10px; }
     return out;
   }
   function drawFlow(m, E, ELo, EHi) {
-    FLOW.steps = flowCounts(m, E); FLOW.E = E; FLOW.ELo = ELo; FLOW.EHi = EHi;
-    flowReset();
+    FLOW.steps = flowCounts(m, E);
     var apps = FLOW.steps.reduce(function (a, st) { return a + st.applying; }, 0), placed = Math.round(1000 * E);
+    FLOW.summary = { placed: placed, apps: apps };
     document.getElementById("flow").innerHTML =
       '<p class="small" style="margin-top:8px">Of 1,000 who start: about <b>' + placed + "</b> get a place in the end (" + Math.round(1000 * ELo) + " to " +
-      Math.round(1000 * EHi) + "), and about <b>" + (1000 - placed) + "</b> stop without one. Check: the flow uses " + fmt(apps) +
+      Math.round(1000 * EHi) + "), and about <b>" + (1000 - placed) + "</b> stop without one. Check: the journey uses " + fmt(apps) +
       " applications for " + placed + " places, a success rate of " + pct(placed / apps, 1) + ", close to the Clearing House rate for these years.</p>" +
-      '<p class="small muted">Range shown only for the end totals (years used, 2021 alone to 2019 alone). The try-by-try numbers use the middle estimate. Try 6 includes every later try; anyone still applying then is counted as stopping. Which dot does what is random: only the counts matter.</p>';
+      '<p class="small muted">Range shown only for the end totals (years used, 2021 alone to 2019 alone). The year-by-year numbers use the middle estimate. Year 6 includes every later try; anyone still applying then is counted as stopping. Which dot does what is random: only the counts matter.</p>';
+    flowReset(FLOW.seen);
   }
   function flowGeom() {
-    var cv = document.getElementById("flowCanvas"), W = cv.clientWidth || 640;
-    var sp = Math.max(4.2, Math.min(10, W / 70)), r = sp * 0.36;
-    var leftW = Math.floor(W * 0.56), cols = Math.max(10, Math.floor(leftW / sp));
-    var rCols = Math.max(8, Math.floor((W - leftW - sp * 2) / sp));
-    var headH = 22, applyRows = Math.ceil(1000 / cols), placedRows = Math.ceil(700 / rCols), stopRows = Math.ceil(800 / rCols);
-    var H = Math.max(headH + applyRows * sp, headH + placedRows * sp + headH + 8 + stopRows * sp) + 8;
-    return { W: W, H: H, sp: sp, r: r, cols: cols, rCols: rCols, rx: leftW + sp * 2, headH: headH, placedRows: placedRows };
+    var cv = document.getElementById("flowCanvas"), W = cv.clientWidth || 640, K = 6;
+    var sp = Math.max(3.2, Math.min(5.5, W / 150)), r = sp * 0.42;
+    var L = Math.max(46, W * 0.09), R = 10, colW = (W - L - R) / K;
+    var cols = Math.max(6, Math.floor(colW * 0.86 / sp));
+    var maxP = Math.max.apply(null, FLOW.steps.map(function (s) { return s.placed; }));
+    var maxS = Math.max.apply(null, FLOW.steps.map(function (s) { return s.stop; }));
+    var topH = 18 + Math.ceil(maxP / cols) * sp + 10;
+    var bandH = Math.max(90, Math.min(150, W * 0.18));
+    var botH = 14 + Math.ceil(maxS / cols) * sp + 34;
+    var g = { W: W, H: topH + bandH + botH, sp: sp, r: r, L: L, colW: colW, cols: cols, topH: topH, bandH: bandH,
+              bandMid: topH + bandH / 2, botY: topH + bandH + 14 };
+    g.line = function (k) { return L + k * colW; };           // year k line at the right edge of column k
+    g.cx = function (t) { return t <= 0 ? L * 0.5 : g.line(Math.min(t, K)) - colW * 0.5 + (t >= K ? colW * 0.5 : 0); };
+    return g;
   }
-  function slot(g, box, i) {
-    if (box === "apply") return { x: (i % g.cols) * g.sp + g.sp / 2, y: g.headH + Math.floor(i / g.cols) * g.sp + g.sp / 2 };
-    var y0 = box === "placed" ? g.headH : g.headH + g.placedRows * g.sp + g.headH + 8;
-    return { x: g.rx + (i % g.rCols) * g.sp + g.sp / 2, y: y0 + Math.floor(i / g.rCols) * g.sp + g.sp / 2 };
+  function crowdCenter(g, t) {           // start left of year 1, then reach each year line at integer t
+    var p0 = g.L * 0.45;
+    if (t <= 1) return p0 + (g.line(1) - p0) * t;
+    return g.line(1) + (t - 1) * g.colW;
   }
-  function layoutTargets(g) {
-    var n = { apply: 0, placed: 0, stopped: 0 };
-    FLOW.dots.forEach(function (d) { var p = slot(g, d.box, n[d.box]++); d.tx = p.x; d.ty = p.y; });
-  }
-  function flowReset() {
-    clearTimeout(FLOW.timer); cancelAnimationFrame(FLOW.anim);
-    FLOW.k = 0; FLOW.playing = false; FLOW.apps = 0;
+  function flowReset(autoplay) {
+    cancelAnimationFrame(FLOW.raf); FLOW.playing = false; FLOW.T = 0; FLOW.fired = 0; FLOW.apps = 0;
     document.getElementById("flowPlay").textContent = "Play";
-    var g = flowGeom(); FLOW.g = g;
-    FLOW.dots = [];
-    for (var i = 0; i < 1000; i++) FLOW.dots.push({ box: "apply", x: 0, y: 0, tx: 0, ty: 0, hl: 0 });
-    layoutTargets(g); FLOW.dots.forEach(function (d) { d.x = d.tx; d.y = d.ty; });
-    setStatus("1,000 people are about to send their first application. Press Play, or step one try at a time.");
-    paint(0);
+    FLOW.g = flowGeom(); FLOW.dots = [];
+    for (var i = 0; i < 1000; i++) {
+      var a = Math.random() * Math.PI * 2, rr = Math.sqrt(Math.random());
+      FLOW.dots.push({ st: "crowd", ox: Math.cos(a) * rr, oy: Math.sin(a) * rr, ph: Math.random() * 6.28, x: 0, y: 0, t0: 0, fx: 0, fy: 0, tx: 0, ty: 0 });
+    }
+    FLOW.placedN = [0, 0, 0, 0, 0, 0]; FLOW.stopN = [0, 0, 0, 0, 0, 0]; FLOW.done = [];
+    setStatus("1,000 people set out. Each time the crowd crosses a year line, everyone still in it sends one application.");
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) { while (FLOW.fired < FLOW.steps.length) fire(FLOW.fired + 1, 1e9); FLOW.T = 1e9; finish(); }
+    frame(performance.now(), true);
+    if (autoplay && !reduce) flowPlay();
   }
   function setStatus(t) { document.getElementById("flowStatus").innerHTML = t; }
-  function paint(flash) {
-    var cv = document.getElementById("flowCanvas"), g = FLOW.g, dpr = window.devicePixelRatio || 1;
+  function slotFor(g, k, i, up) {
+    var colX = g.line(k) - g.colW * 0.5 - (g.cols * g.sp) / 2;
+    var x = colX + (i % g.cols) * g.sp + g.sp / 2, row = Math.floor(i / g.cols);
+    return up ? { x: x, y: g.topH - 8 - row * g.sp - g.sp / 2 } : { x: x, y: g.botY + row * g.sp + g.sp / 2 };
+  }
+  function fire(k, now) {
+    var st = FLOW.steps[k - 1], g = FLOW.g;
+    var crowd = FLOW.dots.filter(function (d) { return d.st === "crowd"; });
+    FLOW.apps += crowd.length;
+    for (var i = crowd.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = crowd[i]; crowd[i] = crowd[j]; crowd[j] = t; }
+    crowd.forEach(function (d, i) {
+      if (i >= st.placed + st.stop) return;
+      var up = i < st.placed, n = up ? FLOW.placedN[k - 1]++ : FLOW.stopN[k - 1]++, s = slotFor(g, k, n, up);
+      d.st = up ? "rising" : "falling"; d.k = k; d.t0 = now + Math.random() * 350; d.fx = d.x; d.fy = d.y; d.tx = s.x; d.ty = s.y;
+    });
+    FLOW.fired = k; FLOW.done.push(k);
+    setStatus("<b>Year " + k + (k === 6 ? " and later" : "") + ":</b> " + st.applying + " applications. <span style=\"color:var(--accent)\"><b>" + st.placed +
+      "</b> get a place</span> (" + pct(st.placed / st.applying) + " success), <b>" + st.stop + "</b> stop applying" +
+      (k < 6 ? ", <b>" + (st.applying - st.placed - st.stop) + "</b> carry on." : ".") + " Applications so far: " + fmt(FLOW.apps) + ".");
+  }
+  function finish() {
+    var s = FLOW.summary;
+    setStatus("<b>Journey over.</b> Of 1,000 who set out, <span style=\"color:var(--accent)\"><b>" + s.placed + "</b> got a place</span> and <b>" +
+      (1000 - s.placed) + "</b> stopped without one, using " + fmt(s.apps) + " applications in total.");
+    FLOW.playing = false; document.getElementById("flowPlay").textContent = "Play again";
+  }
+  function ease(u) { return u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2; }
+  function frame(now, once) {
+    var g = FLOW.g, dt = FLOW.last ? Math.min(0.05, (now - FLOW.last) / 1000) : 0;
+    FLOW.last = now;
+    if (FLOW.playing) FLOW.T += dt;
+    var t = FLOW.T / SEG;
+    while (FLOW.fired < FLOW.steps.length && t >= FLOW.fired + 1) fire(FLOW.fired + 1, now);
+    var cv = document.getElementById("flowCanvas"), dpr = window.devicePixelRatio || 1;
     if (cv.width !== Math.round(g.W * dpr) || cv.height !== Math.round(g.H * dpr)) { cv.width = Math.round(g.W * dpr); cv.height = Math.round(g.H * dpr); cv.style.height = g.H + "px"; }
     var c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, g.W, g.H);
-    var acc = css("--accent", "#990F3D"), faint = css("--faint", "#BCB3A4"), blue = css("--blue", "#2D6CA2"), fg = css("--fg", "#2a2622");
-    var nA = 0, nP = 0, nS = 0; FLOW.dots.forEach(function (d) { if (d.box === "apply") nA++; else if (d.box === "placed") nP++; else nS++; });
-    c.fillStyle = fg; c.font = "600 12px Inter, system-ui, sans-serif"; c.textBaseline = "alphabetic";
-    c.fillText((FLOW.k < FLOW.steps.length ? "Applying" + (FLOW.k ? " at try " + (FLOW.k + 1) : " at try 1") : "Still applying") + ": " + nA, 0, 14);
-    c.fillText("Got a place: " + nP, g.rx, 14);
-    c.fillText("Stopped applying: " + nS, g.rx, g.headH + g.placedRows * g.sp + g.headH - 4);
-    FLOW.dots.forEach(function (d) {
-      c.beginPath(); c.arc(d.x, d.y, g.r * (1 + 0.5 * d.hl * flash), 0, Math.PI * 2);
-      c.fillStyle = d.box === "placed" ? acc : d.box === "stopped" ? faint : blue;
-      c.fill();
-    });
-  }
-  function animateTo(ms, done) {
-    var start = null, from = FLOW.dots.map(function (d) { return [d.x, d.y]; });
-    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) { FLOW.dots.forEach(function (d) { d.x = d.tx; d.y = d.ty; }); paint(0); done(); return; }
-    function frame(t) {
-      if (start === null) start = t;
-      var u = Math.min(1, (t - start) / ms), e = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
-      FLOW.dots.forEach(function (d, i) { d.x = from[i][0] + (d.tx - from[i][0]) * e; d.y = from[i][1] + (d.ty - from[i][1]) * e; });
-      paint(0);
-      if (u < 1) FLOW.anim = requestAnimationFrame(frame); else done();
+    var acc = css("--accent", "#990F3D"), faint = css("--faint", "#BCB3A4"), blue = css("--blue", "#2D6CA2"), fg = css("--fg", "#2a2622"),
+        muted = css("--muted", "#5c554d"), line = css("--line", "#cbbda9");
+    // scenery: river band, year lines, labels
+    c.fillStyle = blue; c.globalAlpha = 0.06; c.fillRect(0, g.topH, g.W, g.bandH); c.globalAlpha = 1;
+    c.font = "600 11px Inter, system-ui, sans-serif"; c.textAlign = "center";
+    for (var k = 1; k <= 6; k++) {
+      var x = g.line(k) - g.colW * 0.5;
+      c.strokeStyle = line; c.setLineDash([3, 4]); c.beginPath(); c.moveTo(x, 12); c.lineTo(x, g.H - 30); c.stroke(); c.setLineDash([]);
+      c.fillStyle = k <= FLOW.fired ? fg : muted; c.fillText("Year " + (k === 6 ? "6+" : k), x, 10);
+      if (k <= FLOW.fired) {
+        var st = FLOW.steps[k - 1];
+        c.font = "11px Inter, system-ui, sans-serif";
+        c.fillStyle = acc; c.fillText("+" + st.placed + " in", x, g.H - 18);
+        c.fillStyle = muted; c.fillText(st.stop + " stop", x, g.H - 5);
+        c.font = "600 11px Inter, system-ui, sans-serif";
+      }
     }
-    FLOW.anim = requestAnimationFrame(frame);
-  }
-  function flowStep(after) {
-    if (FLOW.k >= FLOW.steps.length) { if (after) after(); return; }
-    var st = FLOW.steps[FLOW.k], g = FLOW.g;
-    var active = FLOW.dots.filter(function (d) { return d.box === "apply"; });
-    FLOW.apps += active.length;
-    // pick at random who gets a place and who stops
-    for (var i = active.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = active[i]; active[i] = active[j]; active[j] = t; }
-    active.forEach(function (d, i) { d.next = i < st.placed ? "placed" : i < st.placed + st.stop ? "stopped" : "apply"; });
-    setStatus("<b>Try " + st.k + (st.k === 6 ? " and later" : "") + ":</b> " + st.applying + " applications. <span style=\"color:var(--accent)\"><b>" + st.placed +
-      "</b> get a place</span> (" + pct(st.placed / st.applying) + " success), <b>" + st.stop + "</b> stop applying" +
-      (st.k < 6 ? ", " + (st.applying - st.placed - st.stop) + " try again." : ".") + " Applications so far: " + fmt(FLOW.apps) + ".");
-    FLOW.dots.forEach(function (d) { d.hl = d.box === "apply" ? 1 : 0; });
-    paint(1);
-    FLOW.timer = setTimeout(function () {
-      FLOW.dots.forEach(function (d) { if (d.next) { d.box = d.next; d.next = null; } d.hl = 0; });
-      FLOW.k++;
-      layoutTargets(g);
-      animateTo(1100, function () {
-        if (FLOW.k >= FLOW.steps.length) {
-          var placed = FLOW.dots.filter(function (d) { return d.box === "placed"; }).length;
-          setStatus("<b>Done.</b> Of 1,000 who started, <span style=\"color:var(--accent)\"><b>" + placed + "</b> got a place</span> and <b>" + (1000 - placed) +
-            "</b> stopped without one, using " + fmt(FLOW.apps) + " applications in total.");
-          FLOW.playing = false; document.getElementById("flowPlay").textContent = "Play";
+    c.textAlign = "left"; c.fillStyle = muted; c.font = "11px Inter, system-ui, sans-serif";
+    c.fillText("\u2191 got a place", 4, g.topH + 13);
+    c.fillText("\u2193 stopped", 4, g.topH + g.bandH - 6);
+    // move the crowd: center glides across, the cloud gently ripples
+    var cx = crowdCenter(g, Math.min(t, 6.6)), rx = g.colW * 0.42, ry = g.bandH * 0.42, sec = now / 1000;
+    var anyMoving = false;
+    FLOW.dots.forEach(function (d) {
+      if (d.st === "crowd") {
+        d.x = cx + d.ox * rx + Math.sin(sec * 1.7 + d.ph) * 1.2;
+        d.y = g.bandMid + d.oy * ry + Math.cos(sec * 1.3 + d.ph) * 1.2;
+        c.fillStyle = blue;
+      } else {
+        var u = Math.max(0, Math.min(1, (now - d.t0) / 1000));
+        if (u < 1) anyMoving = true;
+        if (d.st === "rising") {
+          var e = ease(u); d.x = d.fx + (d.tx - d.fx) * e; d.y = d.fy + (d.ty - d.fy) * e;
+          c.fillStyle = u > 0.15 ? acc : blue;
+        } else {
+          var gfall = u * u; d.x = d.fx + (d.tx - d.fx) * ease(u); d.y = d.fy + (d.ty - d.fy) * gfall;
+          c.fillStyle = u > 0.15 ? faint : blue;
         }
-        if (after) after();
-      });
-    }, 650);
+      }
+      c.beginPath(); c.arc(d.x, d.y, g.r, 0, 6.2832); c.fill();
+    });
+    var over = FLOW.fired >= FLOW.steps.length && !anyMoving;
+    if (over && FLOW.playing) finish();
+    if (!once && (FLOW.playing || anyMoving)) FLOW.raf = requestAnimationFrame(function (n) { frame(n); });
   }
   function flowPlay() {
-    if (FLOW.playing) { FLOW.playing = false; clearTimeout(FLOW.timer); document.getElementById("flowPlay").textContent = "Play"; return; }
-    if (FLOW.k >= FLOW.steps.length) flowReset();
-    FLOW.playing = true; document.getElementById("flowPlay").textContent = "Pause";
-    (function loop() { if (!FLOW.playing) return; flowStep(function () { if (FLOW.playing && FLOW.k < FLOW.steps.length) FLOW.timer = setTimeout(loop, 700); }); })();
+    if (FLOW.playing) { FLOW.playing = false; document.getElementById("flowPlay").textContent = "Play"; return; }
+    if (FLOW.fired >= FLOW.steps.length) { flowReset(false); }
+    FLOW.playing = true; FLOW.last = 0; document.getElementById("flowPlay").textContent = "Pause";
+    cancelAnimationFrame(FLOW.raf); FLOW.raf = requestAnimationFrame(function (n) { frame(n); });
   }
   document.getElementById("flowPlay").addEventListener("click", flowPlay);
-  document.getElementById("flowStep").addEventListener("click", function () { if (!FLOW.playing && !FLOW.busy) { FLOW.busy = true; flowStep(function () { FLOW.busy = false; }); } });
-  document.getElementById("flowReset").addEventListener("click", flowReset);
-  window.addEventListener("resize", function () { if (!FLOW.steps.length) return; FLOW.g = flowGeom(); layoutTargets(FLOW.g); FLOW.dots.forEach(function (d) { d.x = d.tx; d.y = d.ty; }); paint(0); });
+  document.getElementById("flowReset").addEventListener("click", function () { flowReset(false); });
+  window.addEventListener("resize", function () { if (FLOW.steps.length) flowReset(false); });
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting && !FLOW.seen) { FLOW.seen = true; if (!FLOW.playing && FLOW.fired === 0) flowPlay(); } });
+    }, { threshold: 0.4 }).observe(document.getElementById("flowCanvas"));
+  }
 
   function drawScen(p, latest, yr) {
     document.getElementById("pOut").textContent = pct(p);
