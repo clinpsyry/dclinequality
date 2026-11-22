@@ -421,6 +421,104 @@
       font: { size: narrowView() ? 30 : 52, color: "#d8c8ad" } }]);
   }
 
+  // Share totals per year for a characteristic: everyone who answered the
+  // question (prefer-not-to-say is not in the data), summed over the raw groups
+  // only, so built totals never count anyone twice. A group-year with a hidden
+  // acceptance count adds nothing (rule 4: never zero).
+  function shareTotals(ch) {
+    var tot = {}, all = byChar[ch] || [], raw = all.filter(function (g) { return !g.constructed; });
+    (raw.length ? raw : all).forEach(function (g) {
+      g.by_year.forEach(function (r) {
+        if (r.accepted == null || !r.applicants) return;
+        var t = tot[r.year] || (tot[r.year] = { app: 0, acc: 0 });
+        t.app += r.applicants; t.acc += r.accepted;
+      });
+    });
+    return tot;
+  }
+
+  // Mix (Over time): each ticked group's share of applicants and of acceptances
+  // for one year, as bars that move when the year changes (Play or the slider).
+  // The same shares as Numbers > Share. The ticks mark each group's share in the
+  // first year shown, so you can see how far it has moved.
+  var MIX_MS = (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) ? 0 : 450;
+  function renderMix() {
+    var ch = state.characteristic, label = CHAR_LABELS[ch], narrow = narrowView();
+    var groups = (byChar[ch] || []).filter(function (g) { return state.selected[g.group]; });
+    var tot = shareTotals(ch), y0 = state.trendFrom, y1 = state.trendTo;
+    var yr = state.playYear == null ? y1 : state.playYear;
+    var showApp = state.numShow !== "accepted", showAcc = state.numShow !== "applicants";
+    function share(g, y, app) {
+      var r = null; g.by_year.forEach(function (x) { if (x.year === y) r = x; });
+      var t = tot[y]; if (!r || r.accepted == null || !t) return null;
+      var v = app ? r.applicants / t.app : r.accepted / t.acc;
+      return isFinite(v) ? 100 * v : null;
+    }
+    // fixed order: the largest applicant share in the last year shown at the top
+    groups = groups.slice().sort(function (a, b) { return (share(b, y1, true) || -1) - (share(a, y1, true) || -1); });
+    var cats = groups.map(function (g) { return wrapLabel(g.group, narrow ? 16 : 30); });
+    var xmax = 1;
+    groups.forEach(function (g) { for (var y = y0; y <= y1; y++) xmax = Math.max(xmax, share(g, y, true) || 0, share(g, y, false) || 0); });
+    function bars(app, name, color) {
+      var xs = groups.map(function (g) { return share(g, yr, app); });
+      return { type: "bar", orientation: "h", name: name, y: cats, x: xs, marker: { color: color },
+        text: xs.map(function (v) { return v == null ? "" : v.toFixed(1) + "%"; }), textposition: "outside", cliponaxis: false,
+        textfont: { size: narrow ? 11.5 : 12, color: INK }, customdata: groups.map(function (g) { return g.group; }),
+        hovertemplate: "%{customdata}<br>" + yr + ": %{x:.1f}% of " + (app ? "applicants" : "acceptances") + "<extra></extra>" };
+    }
+    var traces = [];
+    if (showApp) traces.push(bars(true, "Applicants", BLUE));
+    if (showAcc) traces.push(bars(false, "Accepted", RED));
+    var tickApp = showApp, ticks = groups.map(function (g) { return share(g, y0, tickApp); });
+    traces.push({ type: "scatter", mode: "markers", name: (tickApp ? "Applicants" : "Accepted") + " in " + y0, y: cats, x: ticks,
+      marker: { symbol: "line-ns", size: showApp && showAcc ? 24 : 16, line: { color: INK, width: 2 } },
+      customdata: groups.map(function (g) { return g.group; }),
+      hovertemplate: "%{customdata}<br>" + y0 + ": %{x:.1f}%<extra></extra>" });
+    var ann = [{ xref: "paper", yref: "paper", x: 1, y: 0.01, xanchor: "right", yanchor: "bottom", showarrow: false,
+      text: String(yr), font: { size: narrow ? 30 : 52, color: "#d8c8ad" } }];
+    groups.forEach(function (g, i) {
+      var gone = (!showApp || share(g, yr, true) == null) && (!showAcc || share(g, yr, false) == null);
+      var row = null; g.by_year.forEach(function (x) { if (x.year === yr) row = x; });
+      // a withheld count is "hidden"; a group the source did not report that year is "no data".
+      // One label slot per group, empty when not needed: the year-to-year animation
+      // replaces annotations slot by slot and would leave a stale extra one behind.
+      ann.push({ x: 0, y: cats[i], xanchor: "left", xshift: 22, showarrow: false,
+        text: !gone ? "" : row && row.accepted == null ? "hidden this year" : "no data this year", font: { size: 12, color: MUTED } });
+    });
+    setChartHead((showApp && showAcc ? "Share of applicants and of acceptances" : showApp ? "Share of applicants" : "Share of acceptances") +
+      ", " + label.toLowerCase() + ", " + yr + " (%)",
+      "Each group's share of everyone who answered this question in " + yr + "; across all the groups of this characteristic " +
+      "each colour adds up to 100%. Prefer-not-to-say is not counted. Black ticks: the " + (tickApp ? "applicant" : "acceptance") +
+      " share in " + y0 + ". Press Play or move the slider to change the year. A group whose acceptance count is hidden that " +
+      "year shows 'hidden this year' (never counted as zero) and is left out of that year's total; 'no data' means the " +
+      "source did not report that group that year.");
+    var per = showApp && showAcc ? (narrow ? 50 : 54) : (narrow ? 34 : 36);
+    var layout = { paper_bgcolor: BG, plot_bgcolor: BG, height: Math.max(260, groups.length * per + 90),
+      font: { family: "Inter, system-ui, sans-serif", color: "#1a1a1a", size: 13 },
+      margin: { t: 30, r: narrow ? 46 : 64, b: 40, l: 10 }, barmode: "group", bargap: 0.3, bargroupgap: 0.06,
+      hovermode: "closest", showlegend: true,
+      legend: { orientation: "h", x: 0, y: 1, yanchor: "bottom", bgcolor: "rgba(0,0,0,0)", font: { size: 12 } },
+      xaxis: { range: [0, xmax * 1.16], ticksuffix: "%", showgrid: true, gridcolor: GRID, zeroline: false,
+        linecolor: AXISLINE, tickcolor: AXISLINE, fixedrange: true },
+      yaxis: { autorange: "reversed", automargin: true, showgrid: false, zeroline: false, fixedrange: true,
+        tickfont: { size: narrow ? 12 : 13, color: INK }, ticklabelstandoff: 6 },
+      annotations: ann };
+    var gd = document.getElementById("chart");
+    gd._smallMult = false;
+    gd._fitMax = Math.round(layout.height * 1.5);
+    document.querySelectorAll("#group-list .c-dot").forEach(function (d) { d.remove(); });
+    var key = [ch, cats.join("|"), y0, y1, state.numShow, narrow, deskPolish(), Math.floor(gd.getBoundingClientRect().width)].join("~");
+    if (state._mixAnim && MIX_MS && !state.exporting && gd._fullLayout && gd._mixKey === key) {
+      state._mixAnim = false;
+      Plotly.animate(gd, { data: traces, layout: { annotations: ann } },
+        { transition: { duration: MIX_MS, easing: "cubic-in-out" }, frame: { duration: MIX_MS, redraw: false } });
+      return;
+    }
+    state._mixAnim = false;
+    Plotly.react("chart", traces, lockZoom(layout), PLOT_CFG);
+    if (!state.exporting) gd._mixKey = key;
+  }
+
   // Numbers mode: applicants (solid) and acceptances (dotted) as counts, per group.
   // Combine Groups sums the ticked groups into one pair of lines; a year where any
   // ticked group's acceptances are suppressed shows no accepted point (never a
@@ -450,17 +548,7 @@
     var share = state.numUnit === "share" && ch !== "OVERALL";
     var showApp = state.numShow !== "accepted", showAcc = state.numShow !== "applicants";
     var single = !(showApp && showAcc);
-    var tot = {};
-    if (share) {
-      var all = byChar[ch] || [], raw = all.filter(function (g) { return !g.constructed; });
-      (raw.length ? raw : all).forEach(function (g) {
-        g.by_year.forEach(function (r) {
-          if (r.accepted == null || !r.applicants) return;
-          var t = tot[r.year] || (tot[r.year] = { app: 0, acc: 0 });
-          t.app += r.applicants; t.acc += r.accepted;
-        });
-      });
-    }
+    var tot = share ? shareTotals(ch) : {};
     groups.forEach(function (g) {
       var color = (ch === "OVERALL" || combined) ? RED : ACCENTS[ai++ % ACCENTS.length];
       var by = {}; g.by_year.forEach(function (r) { by[r.year] = r; });
@@ -552,8 +640,16 @@
 
   function renderTrend() {
     if (state.playYear != null && (state.playYear < state.trendFrom || state.playYear >= state.trendTo)) state.playYear = null;
-    document.getElementById("num-show-ctl").hidden = state.trendMode !== "numbers";
+    document.getElementById("num-show-ctl").hidden = state.trendMode !== "numbers" && state.trendMode !== "mix";
     document.getElementById("num-unit-ctl").hidden = state.trendMode !== "numbers" || state.characteristic === "OVERALL";
+    var mixBtn = document.querySelector('#trendmode-seg .seg-btn[data-mode="mix"]');
+    if (mixBtn) mixBtn.hidden = state.characteristic === "OVERALL";
+    if (state.trendMode === "mix" && state.characteristic === "OVERALL") {
+      state.trendMode = "rate";
+      document.querySelectorAll("#trendmode-seg .seg-btn").forEach(function (x) {
+        x.classList.toggle("active", x.getAttribute("data-mode") === "rate"); });
+    }
+    if (state.trendMode === "mix") { renderMix(); return; }
     if (state.trendMode === "numbers") { renderNumbers(); return; }
     var ch = state.characteristic, ref = refFor(ch), refGroup = getGroup(ch, ref);
     var vs = state.trendMode === "vsref" && !!refGroup;
@@ -1952,6 +2048,7 @@
     var wrap = document.createElement("div"); wrap.className = "qb-seg"; wrap.setAttribute("role", "group");
     wrap.setAttribute("aria-label", ariaLabel);
     real.querySelectorAll(".seg-btn").forEach(function (rb) {
+      if (rb.hidden) return;
       var b = document.createElement("button"); b.type = "button";
       var t = rb.textContent.trim(); b.textContent = QB_SHORT[t] || t;
       var on = rb.classList.contains("active");
@@ -2001,9 +2098,12 @@
         items.push(qbSeg("num-show-seg", "Lines"));
         if (state.characteristic !== "OVERALL") items.push(qbSeg("num-unit-seg", "Unit"));
       }
-      if (state.trendMode !== "numbers") items.push(qbChip("toggle-ci"));
-      if (!isContext()) items.push(qbChip("toggle-dei"));
-      items.push(qbChip("toggle-combine"));
+      if (state.trendMode === "mix") items.push(qbSeg("num-show-seg", "Bars"));
+      else {
+        if (state.trendMode !== "numbers") items.push(qbChip("toggle-ci"));
+        if (!isContext()) items.push(qbChip("toggle-dei"));
+        items.push(qbChip("toggle-combine"));
+      }
     } else if (v === "forest") {
       items.push(qbYear());
       if (!isSESPairwise()) {
@@ -2104,7 +2204,7 @@
     sl.setAttribute("aria-valuetext", String(y));
     document.getElementById("play-yr").textContent = y;
   }
-  function playTo(y) { state.playYear = y >= state.trendTo ? null : y; render(); }
+  function playTo(y) { state.playYear = y >= state.trendTo ? null : y; state._mixAnim = state.trendMode === "mix"; render(); }
   function buildPlaybar() {
     var btn = document.getElementById("play-btn"), sl = document.getElementById("play-year");
     if (!btn || !sl) return;
@@ -2152,7 +2252,7 @@
       return;
     }
     var lead = state.sub ? state.sub + " " : "";
-    if (state.view === "trend" && state.trendMode === "numbers") {
+    if (state.view === "trend" && (state.trendMode === "numbers" || state.trendMode === "mix")) {
       note.textContent = lead + "Source: Clearing House for Postgraduate Courses in Clinical Psychology."; return; }
     var deiTxt = (state.showDEI && !isContext()) ? " The shaded band marks the DEI era (" + DEI_FROM + " to " + DEI_TO + ")." : "";
     note.textContent = lead + (state.view === "trend"
