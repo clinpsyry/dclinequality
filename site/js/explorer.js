@@ -392,7 +392,7 @@
   // jumping each year. Never in a PNG export.
   function playClip(traces, yaxis, include) {
     state._playRange = null;
-    if (state.playYear == null || state.exporting) return;
+    if (state.playYear == null || (state.exporting && !state._gif)) return;
     if (!applyY({}).range) {
       var lo = include == null ? Infinity : include, hi = include == null ? -Infinity : include;
       traces.forEach(function (t) {
@@ -415,7 +415,7 @@
   }
   // the year being drawn, large and faint behind the lines
   function playMark(layout) {
-    if (state.playYear == null || state.exporting) return;
+    if (state.playYear == null || (state.exporting && !state._gif)) return;
     layout.annotations = (layout.annotations || []).concat([{ xref: "paper", yref: "paper", x: 0.015, y: 0.985,
       xanchor: "left", yanchor: "top", showarrow: false, text: String(state.playYear),
       font: { size: narrowView() ? 30 : 52, color: "#d8c8ad" } }]);
@@ -2001,8 +2001,9 @@
   // PNG in the blog's mobile-first shape: 400 px wide at 4.125x (1,650 px, the
   // width of the blog charts), plain title, the chart drawn in its phone layout
   // (names above rows), the footnote, and the source mark.
-  function downloadChart(returnUrl) {
+  function downloadChart(returnUrl, opts) {
     if (returnUrl && returnUrl.type) returnUrl = false;   // click event, not the test hook
+    opts = opts || {};
     var gd = document.getElementById("chart");
     if (!gd || !gd.data || !gd.data.length) return;
     var head = document.getElementById("chart-head");
@@ -2019,7 +2020,7 @@
     // phone; the chart is drawn in its phone layout. Wide: 900 px at 2x, the
     // desktop layout, for slides or wide pages.
     var wide = fmt === "wide";
-    var W = wide ? 900 : 400, TW = wide ? 70 : 30, FW = wide ? 150 : 64, SCALE = wide ? 2 : 4.125;
+    var W = wide ? 900 : 400, TW = wide ? 70 : 30, FW = wide ? 150 : 64, SCALE = opts.scale || (wide ? 2 : 4.125);
     var titleLines = wrapAnn(escAnn(title), TW).split("<br>").length;
     var footText = wrapAnn(escAnn(sub + " Source: Clearing House for Postgraduate Courses in Clinical Psychology."), FW);
     var footLines = footText.split("<br>").length;
@@ -2277,6 +2278,8 @@
     var bar = document.getElementById("playbar"); if (!bar) return;
     var c = playCfg();
     bar.hidden = !c;
+    var gb = document.getElementById("dl-gif");
+    if (gb) gb.hidden = !c || document.getElementById("dl-group").hidden;
     if (!c) { stopPlay(); return; }
     var sl = document.getElementById("play-year"), ys = c.years;
     var cur = Math.min(Math.max(c.cur, ys[0]), ys[ys.length - 1]);
@@ -2321,7 +2324,7 @@
   // row order over every year, while a single year is shown after Play or the slider.
   var lockCache = {};
   function playLock(view) {
-    if (!state._lockOn || state.exporting || state.view !== view) return null;
+    if (!state._lockOn || (state.exporting && !state._gif) || state.view !== view) return null;
     if (view === "forest" && state.yearFrom !== state.yearTo) return null;
     if (view === "rep" && state.repYearFrom !== state.repYearTo) return null;
     var key = view + "|" + state.characteristic + "|" + state.measure + "|" + narrowView();
@@ -2362,6 +2365,75 @@
     var pad = (hi - lo || 1) * 0.05;
     lock.range = [lo - pad, hi + pad];
     return (lockCache[key] = lock);
+  }
+
+  // GIF: the animation as a file. One frame per year of the play bar, each drawn
+  // exactly like the PNG (the chosen blog or wide shape, at a lighter scale), with
+  // the axes and rows held as when playing; the last year stays up longer. The
+  // encoder (js/gifenc.js, MIT) loads only when a GIF is made.
+  var gifBusy = false;
+  function loadGifenc() {
+    if (window.gifenc) return Promise.resolve(window.gifenc);
+    return new Promise(function (ok, fail) {
+      var sc = document.createElement("script"); sc.src = "js/gifenc.js";
+      sc.onload = function () { window.gifenc ? ok(window.gifenc) : fail(new Error("gifenc did not load")); };
+      sc.onerror = function () { fail(new Error("gifenc did not load")); };
+      document.head.appendChild(sc);
+    });
+  }
+  function setGifLabel(t) { var b = document.getElementById("dl-gif"); if (b) b.querySelector(".gif-word").textContent = t; }
+  function loadImg(url) {
+    return new Promise(function (ok, fail) { var im = new Image(); im.onload = function () { ok(im); }; im.onerror = fail; im.src = url; });
+  }
+  function exportGIF(returnBlob) {
+    if (returnBlob && returnBlob.type) returnBlob = false;   // click event, not the test hook
+    var c = playCfg(); if (!c || gifBusy) return Promise.resolve(null);
+    stopPlay(); gifBusy = true;
+    var btn = document.getElementById("dl-gif"); if (btn) btn.disabled = true;
+    var saved = { playYear: state.playYear, yearFrom: state.yearFrom, yearTo: state.yearTo,
+      repYearFrom: state.repYearFrom, repYearTo: state.repYearTo, lockOn: state._lockOn };
+    var wide = state.pngFormat === "wide", scale = wide ? 1.25 : 2, years = c.years.slice(), urls = [], title = "";
+    state._gif = true; if (state.view !== "trend") state._lockOn = true;
+    var chain = loadGifenc();
+    years.forEach(function (y, i) {
+      chain = chain.then(function () {
+        setGifLabel("GIF " + (i + 1) + "/" + years.length);
+        c.go(y); render();   // redraw first, so the frame's title is this year's
+        return downloadChart(true, { scale: scale });
+      }).then(function (u) { urls.push(u); });
+    });
+    function restore() {
+      state._gif = false;
+      state.playYear = saved.playYear; state.yearFrom = saved.yearFrom; state.yearTo = saved.yearTo;
+      state.repYearFrom = saved.repYearFrom; state.repYearTo = saved.repYearTo; state._lockOn = saved.lockOn;
+      [["year-from", "yearFrom"], ["year-to", "yearTo"], ["rep-year-from", "repYearFrom"], ["rep-year-to", "repYearTo"]].forEach(function (p) {
+        var el = document.getElementById(p[0]); if (el) el.value = state[p[1]]; });
+      gifBusy = false; if (btn) btn.disabled = false; setGifLabel("GIF");
+      render();
+    }
+    return chain.then(function () {
+      title = ((document.querySelector("#chart-head .chart-title") || {}).textContent || "chart").replace(/,? ?\d{4}(–\d{4})?(?= \(|$)/, "");
+      return Promise.all(urls.map(loadImg));
+    }).then(function (imgs) {
+      setGifLabel("Saving GIF");
+      var W = 0, H = 0; imgs.forEach(function (im) { W = Math.max(W, im.naturalWidth); H = Math.max(H, im.naturalHeight); });
+      var cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+      var ctx = cv.getContext("2d", { willReadFrequently: true }), g = window.gifenc, enc = g.GIFEncoder();
+      imgs.forEach(function (im, i) {
+        ctx.fillStyle = BG; ctx.fillRect(0, 0, W, H); ctx.drawImage(im, 0, 0);
+        var px = ctx.getImageData(0, 0, W, H).data, pal = g.quantize(px, 256), idx = g.applyPalette(px, pal);
+        enc.writeFrame(idx, W, H, { palette: pal, delay: i === imgs.length - 1 ? 2600 : 900 });
+      });
+      enc.finish();
+      var blob = new Blob([enc.bytes()], { type: "image/gif" });
+      if (!returnBlob) {
+        var a = document.createElement("a"), href = URL.createObjectURL(blob);
+        a.href = href; a.download = "dclinpsy-" + slug(title) + ".gif";
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(href); }, 4000);
+      }
+      restore(); return blob;
+    }, function (e) { restore(); throw e; });
   }
 
   // Phones: the footnote folds behind a "How to read this chart" button, closed
@@ -2968,6 +3040,9 @@
   buildYearControls(); buildMeasureSeg(); buildLegendKey(); buildYControls(); buildXControls();
   buildTableCatList(); buildTableControls(); buildViewToggles(); buildPhoneControls(); buildOptionsToggle(); buildNoteToggle(); buildPlaybar();
   document.getElementById("dl-png").addEventListener("click", downloadChart);
+  document.getElementById("dl-gif").addEventListener("click", function () {
+    exportGIF().catch(function () { setGifLabel("GIF failed"); setTimeout(function () { setGifLabel("GIF"); }, 2500); });
+  });
   updateCharOptions();
   render();
   // Safety net: if the card changes width for any other reason (a scrollbar, the
@@ -2987,6 +3062,7 @@
   }
   // Debug and test hook (read-only): lets the browser check reproduce the R oracle.
   window.__explorer = { computeMaster: computeMaster, computeContextAll: computeContextAll, exportPNG: exportPNG,
+    exportGIF: function () { return exportGIF(true); },
     computeForest: function (ch, years) { var s = state.characteristic; state.characteristic = ch;
       try { return forestFor(years); } finally { state.characteristic = s; } } };
 })();
