@@ -3,7 +3,7 @@
 // fallback, so the app still opens with no signal.
 var CACHE = "explorer-v1";
 var CORE = ["./", "index.html", "manifest.webmanifest", "js/plotly.min.js", "js/stats.js",
-  "js/families.js", "js/explorer.js", "data.js", "census.js",
+  "js/families.js", "js/explorer.js", "js/gifenc.js", "data.js", "census.js",
   "fonts/inter-400.woff2", "fonts/inter-600.woff2", "fonts/inter-700.woff2",
   "icons/icon.svg", "icons/icon-192.png"];
 
