@@ -42,6 +42,8 @@ td.num { white-space: nowrap; }
 .row label { font-size: 0.9rem; }
 input[type=range] { width: min(320px, 100%); accent-color: var(--accent); }
 input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn { font: inherit; font-size: 0.9rem; padding: 6px 14px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); border-radius: 4px; cursor: pointer; }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 details { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; margin-top: 10px; }
 summary { cursor: pointer; font-weight: 600; }
 ul { padding-left: 20px; margin: 6px 0 10px; }
@@ -86,9 +88,16 @@ ul { padding-left: 20px; margin: 6px 0 10px; }
   <div class="key" id="peopleKey"></div>
   <div id="peopleWaffle"></div>
   <div id="everChart" style="margin-top:14px"></div>
-  <h3>The same 1,000 people, try by try</h3>
-  <p class="small"><span class="tag scenario">Scenario</span>Who gets a place at each try comes from the trainee survey. Who stops is <b>assumed</b>: the same share of people who will never get in stops after each miss, set so that their average matches the slider. Move the slider and the flow changes.</p>
-  <div id="flow" class="tablebox"></div>
+  <h3>1,000 people, try by try</h3>
+  <p class="small"><span class="tag scenario">Scenario</span>Who gets a place at each try comes from the trainee survey. Who stops is <b>assumed</b>: the same share of people who will never get in stops after each miss, set so that their average matches the slider. Each blue dot is one application at the current try. Move the slider and the animation starts again with the new numbers.</p>
+  <div class="row" style="margin-bottom:4px">
+    <button type="button" id="flowPlay" class="btn">Play</button>
+    <button type="button" id="flowStep" class="btn">Next try</button>
+    <button type="button" id="flowReset" class="btn">Start again</button>
+  </div>
+  <div id="flowStatus" class="small" style="min-height:2.6em"></div>
+  <canvas id="flowCanvas" style="width:100%;display:block" aria-label="Animated dots: 1,000 people applying try by try"></canvas>
+  <div id="flow"></div>
 
   <h2>5. What the data suggest about the pattern</h2>
   <p>We tested a standard statistical model, set up before we looked at the result: everyone has their own fixed chance, and some people stop applying. It did not fit the survey. If it were right, about 41% of trainees would have got in first time. The real figure is 31%.</p>
@@ -349,51 +358,128 @@ ul { padding-left: 20px; margin: 6px 0 10px; }
       '<p class="small muted">Line: middle estimate (2019 to 2021 pooled). Band and error bar: from 2021 alone to 2019 alone. The band does not include the unknown tries: that is the axis, because the data cannot narrow it.</p>';
   }
 
-  // Flow of 1,000 starters over tries 1 to 6 (6 = "6 or more").
-  function drawFlow(m, E, ELo, EHi) {
+  // ---- Animated flow: 1,000 starters, one dot per person; each dot in the
+  // "applying" box is one application at that try. -------------------------------
+  var FLOW = { steps: [], dots: [], k: 0, playing: false, anim: null, timer: null };
+  function flowCounts(m, E) {
     var tot = BPS.n.reduce(function (a, b) { return a + b; }, 0), f = BPS.n.map(function (x) { return x / tot; });
-    var START = 1000, K = 6, q = 1 / m, nv = START * (1 - E), tr = START * E, cumF = 0, steps = [];
+    var START = 1000, K = 6, q = 1 / m, nv = START * (1 - E), tr = START * E, cumF = 0, left = START, out = [];
     for (var k = 1; k <= K; k++) {
       var trIn = tr * (1 - cumF), nvIn = nv * Math.pow(1 - q, k - 1);
-      var placed = tr * f[k - 1], stop = k < K ? nvIn * q : nvIn, cont = k < K ? (trIn - placed) + (nvIn - stop) : 0;
-      steps.push({ k: k, applying: trIn + nvIn, placed: placed, stop: stop, cont: cont });
-      cumF += f[k - 1];
+      var placed = Math.min(left, Math.round(tr * f[k - 1]));
+      var stop = k < K ? Math.min(left - placed, Math.round(nvIn * q)) : left - placed;
+      out.push({ k: k, applying: left, placed: placed, stop: stop });
+      left -= placed + stop; cumF += f[k - 1];
     }
-    var blue = css("--blue", "#2D6CA2"), acc = css("--accent", "#990F3D"), faint = css("--faint", "#BCB3A4"), fg = css("--fg", "#2a2622"), muted = css("--muted", "#5c554d");
-    var W = 680, H = 360, L = 20, top = 40, barH = 240, bw = 34, gapX = (W - L - 70 - bw) / (K - 1);
-    var sc = barH / START, xk = function (k) { return L + (k - 1) * gapX; };
-    var s = '<svg viewBox="0 0 ' + W + " " + H + '" width="100%" style="min-width:520px" role="img" aria-label="Flow of 1,000 people over six tries">';
-    steps.forEach(function (st, i) {
-      var x = xk(st.k), y0 = top + (barH - st.applying * sc);     // bars sit on a common floor
-      var hC = st.cont * sc, hP = st.placed * sc, hS = st.stop * sc;
-      // ribbon: continuing part to the next bar
-      if (i < K - 1 && st.cont > 0) {
-        var nx = xk(st.k + 1), ny0 = top + (barH - steps[i + 1].applying * sc);
-        s += '<path d="M' + (x + bw) + "," + y0 + " C" + (x + bw + gapX / 2) + "," + y0 + " " + (nx - gapX / 2) + "," + ny0 + " " + nx + "," + ny0 +
-          " L" + nx + "," + (ny0 + steps[i + 1].applying * sc) + " C" + (nx - gapX / 2) + "," + (ny0 + steps[i + 1].applying * sc) + " " +
-          (x + bw + gapX / 2) + "," + (y0 + hC) + " " + (x + bw) + "," + (y0 + hC) + ' Z" fill="' + blue + '" fill-opacity="0.16"/>';
-      }
-      s += '<rect x="' + x + '" y="' + y0 + '" width="' + bw + '" height="' + hC + '" fill="' + blue + '" fill-opacity="0.6"/>' +
-        '<rect x="' + x + '" y="' + (y0 + hC) + '" width="' + bw + '" height="' + hP + '" fill="' + acc + '"/>' +
-        '<rect x="' + x + '" y="' + (y0 + hC + hP) + '" width="' + bw + '" height="' + hS + '" fill="' + faint + '"/>';
-      s += '<text x="' + (x + bw / 2) + '" y="' + (y0 - 8) + '" font-size="11" text-anchor="middle">' + Math.round(st.applying) + "</text>";
-      s += '<text x="' + (x + bw / 2) + '" y="' + (top + barH + 18) + '" font-size="12" text-anchor="middle" font-weight="600">Try ' + (st.k === K ? "6+" : st.k) + "</text>";
-      s += '<text x="' + (x + bw / 2) + '" y="' + (top + barH + 34) + '" font-size="11" text-anchor="middle" fill="' + acc + '">+' + Math.round(st.placed) + " in</text>";
-      s += '<text x="' + (x + bw / 2) + '" y="' + (top + barH + 49) + '" font-size="11" text-anchor="middle">' + Math.round(st.stop) + " stop</text>";
-      s += '<text x="' + (x + bw / 2) + '" y="' + (top + barH + 64) + '" font-size="10" text-anchor="middle" fill="' + muted + '">' + pct(st.placed / st.applying) + " success</text>";
-    });
-    s += '<text x="' + L + '" y="16" font-size="11" fill="' + muted + '">Number above each bar: people applying at that try</text></svg>';
-    var apps = steps.reduce(function (a, st) { return a + st.applying; }, 0);
-    var sw = function (c, o) { return '<span style="display:inline-block;width:12px;height:12px;vertical-align:-1px;margin-right:6px;background:' + c + ';opacity:' + o + '"></span>'; };
-    document.getElementById("flow").innerHTML = s +
-      '<div class="small" style="display:flex;flex-wrap:wrap;gap:4px 18px;margin-top:6px"><span>' + sw(acc, 1) + "Got a place at this try</span><span>" +
-      sw(faint, 1) + "Stopped applying after this try</span><span>" + sw(blue, 0.6) + "Missed, tries again</span></div>" +
-      '<p class="small" style="margin-top:8px">Of 1,000 who start: about <b>' + Math.round(START * E) + "</b> get a place in the end (" + Math.round(START * ELo) + " to " +
-      Math.round(START * EHi) + "), and about <b>" + Math.round(START * (1 - E)) + "</b> stop without one. Check: this flow uses " + Math.round(apps) +
-      " applications for " + Math.round(START * E) + " places, a success rate of " + pct(START * E / apps, 1) +
-      ", close to the Clearing House rate for these years. The \"success\" figure under each try is places divided by people applying at that try.</p>" +
-      '<p class="small muted">Range shown only for the end totals (years used, 2021 alone to 2019 alone). The try-by-try numbers use the middle estimate. Try 6+ groups every try from the sixth on; anyone still applying then is counted as stopping.</p>';
+    return out;
   }
+  function drawFlow(m, E, ELo, EHi) {
+    FLOW.steps = flowCounts(m, E); FLOW.E = E; FLOW.ELo = ELo; FLOW.EHi = EHi;
+    flowReset();
+    var apps = FLOW.steps.reduce(function (a, st) { return a + st.applying; }, 0), placed = Math.round(1000 * E);
+    document.getElementById("flow").innerHTML =
+      '<p class="small" style="margin-top:8px">Of 1,000 who start: about <b>' + placed + "</b> get a place in the end (" + Math.round(1000 * ELo) + " to " +
+      Math.round(1000 * EHi) + "), and about <b>" + (1000 - placed) + "</b> stop without one. Check: the flow uses " + fmt(apps) +
+      " applications for " + placed + " places, a success rate of " + pct(placed / apps, 1) + ", close to the Clearing House rate for these years.</p>" +
+      '<p class="small muted">Range shown only for the end totals (years used, 2021 alone to 2019 alone). The try-by-try numbers use the middle estimate. Try 6 includes every later try; anyone still applying then is counted as stopping. Which dot does what is random: only the counts matter.</p>';
+  }
+  function flowGeom() {
+    var cv = document.getElementById("flowCanvas"), W = cv.clientWidth || 640;
+    var sp = Math.max(4.2, Math.min(10, W / 70)), r = sp * 0.36;
+    var leftW = Math.floor(W * 0.56), cols = Math.max(10, Math.floor(leftW / sp));
+    var rCols = Math.max(8, Math.floor((W - leftW - sp * 2) / sp));
+    var headH = 22, applyRows = Math.ceil(1000 / cols), placedRows = Math.ceil(560 / rCols), stopRows = Math.ceil(800 / rCols);
+    var H = Math.max(headH + applyRows * sp, headH + placedRows * sp + headH + 8 + stopRows * sp) + 8;
+    return { W: W, H: H, sp: sp, r: r, cols: cols, rCols: rCols, rx: leftW + sp * 2, headH: headH, placedRows: placedRows };
+  }
+  function slot(g, box, i) {
+    if (box === "apply") return { x: (i % g.cols) * g.sp + g.sp / 2, y: g.headH + Math.floor(i / g.cols) * g.sp + g.sp / 2 };
+    var y0 = box === "placed" ? g.headH : g.headH + g.placedRows * g.sp + g.headH + 8;
+    return { x: g.rx + (i % g.rCols) * g.sp + g.sp / 2, y: y0 + Math.floor(i / g.rCols) * g.sp + g.sp / 2 };
+  }
+  function layoutTargets(g) {
+    var n = { apply: 0, placed: 0, stopped: 0 };
+    FLOW.dots.forEach(function (d) { var p = slot(g, d.box, n[d.box]++); d.tx = p.x; d.ty = p.y; });
+  }
+  function flowReset() {
+    clearTimeout(FLOW.timer); cancelAnimationFrame(FLOW.anim);
+    FLOW.k = 0; FLOW.playing = false; FLOW.apps = 0;
+    document.getElementById("flowPlay").textContent = "Play";
+    var g = flowGeom(); FLOW.g = g;
+    FLOW.dots = [];
+    for (var i = 0; i < 1000; i++) FLOW.dots.push({ box: "apply", x: 0, y: 0, tx: 0, ty: 0, hl: 0 });
+    layoutTargets(g); FLOW.dots.forEach(function (d) { d.x = d.tx; d.y = d.ty; });
+    setStatus("1,000 people are about to send their first application. Press Play, or step one try at a time.");
+    paint(0);
+  }
+  function setStatus(t) { document.getElementById("flowStatus").innerHTML = t; }
+  function paint(flash) {
+    var cv = document.getElementById("flowCanvas"), g = FLOW.g, dpr = window.devicePixelRatio || 1;
+    if (cv.width !== Math.round(g.W * dpr) || cv.height !== Math.round(g.H * dpr)) { cv.width = Math.round(g.W * dpr); cv.height = Math.round(g.H * dpr); cv.style.height = g.H + "px"; }
+    var c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, g.W, g.H);
+    var acc = css("--accent", "#990F3D"), faint = css("--faint", "#BCB3A4"), blue = css("--blue", "#2D6CA2"), fg = css("--fg", "#2a2622");
+    var nA = 0, nP = 0, nS = 0; FLOW.dots.forEach(function (d) { if (d.box === "apply") nA++; else if (d.box === "placed") nP++; else nS++; });
+    c.fillStyle = fg; c.font = "600 12px Inter, system-ui, sans-serif"; c.textBaseline = "alphabetic";
+    c.fillText((FLOW.k < FLOW.steps.length ? "Applying" + (FLOW.k ? " at try " + (FLOW.k + 1) : " at try 1") : "Still applying") + ": " + nA, 0, 14);
+    c.fillText("Got a place: " + nP, g.rx, 14);
+    c.fillText("Stopped applying: " + nS, g.rx, g.headH + g.placedRows * g.sp + g.headH - 4);
+    FLOW.dots.forEach(function (d) {
+      c.beginPath(); c.arc(d.x, d.y, g.r * (1 + 0.5 * d.hl * flash), 0, Math.PI * 2);
+      c.fillStyle = d.box === "placed" ? acc : d.box === "stopped" ? faint : blue;
+      c.fill();
+    });
+  }
+  function animateTo(ms, done) {
+    var start = null, from = FLOW.dots.map(function (d) { return [d.x, d.y]; });
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) { FLOW.dots.forEach(function (d) { d.x = d.tx; d.y = d.ty; }); paint(0); done(); return; }
+    function frame(t) {
+      if (start === null) start = t;
+      var u = Math.min(1, (t - start) / ms), e = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+      FLOW.dots.forEach(function (d, i) { d.x = from[i][0] + (d.tx - from[i][0]) * e; d.y = from[i][1] + (d.ty - from[i][1]) * e; });
+      paint(0);
+      if (u < 1) FLOW.anim = requestAnimationFrame(frame); else done();
+    }
+    FLOW.anim = requestAnimationFrame(frame);
+  }
+  function flowStep(after) {
+    if (FLOW.k >= FLOW.steps.length) { if (after) after(); return; }
+    var st = FLOW.steps[FLOW.k], g = FLOW.g;
+    var active = FLOW.dots.filter(function (d) { return d.box === "apply"; });
+    FLOW.apps += active.length;
+    // pick at random who gets a place and who stops
+    for (var i = active.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = active[i]; active[i] = active[j]; active[j] = t; }
+    active.forEach(function (d, i) { d.next = i < st.placed ? "placed" : i < st.placed + st.stop ? "stopped" : "apply"; });
+    setStatus("<b>Try " + st.k + (st.k === 6 ? " and later" : "") + ":</b> " + st.applying + " applications. <span style=\"color:var(--accent)\"><b>" + st.placed +
+      "</b> get a place</span> (" + pct(st.placed / st.applying) + " success), <b>" + st.stop + "</b> stop applying" +
+      (st.k < 6 ? ", " + (st.applying - st.placed - st.stop) + " try again." : ".") + " Applications so far: " + fmt(FLOW.apps) + ".");
+    FLOW.dots.forEach(function (d) { d.hl = d.box === "apply" ? 1 : 0; });
+    paint(1);
+    FLOW.timer = setTimeout(function () {
+      FLOW.dots.forEach(function (d) { if (d.next) { d.box = d.next; d.next = null; } d.hl = 0; });
+      FLOW.k++;
+      layoutTargets(g);
+      animateTo(1100, function () {
+        if (FLOW.k >= FLOW.steps.length) {
+          var placed = FLOW.dots.filter(function (d) { return d.box === "placed"; }).length;
+          setStatus("<b>Done.</b> Of 1,000 who started, <span style=\"color:var(--accent)\"><b>" + placed + "</b> got a place</span> and <b>" + (1000 - placed) +
+            "</b> stopped without one, using " + fmt(FLOW.apps) + " applications in total.");
+          FLOW.playing = false; document.getElementById("flowPlay").textContent = "Play";
+        }
+        if (after) after();
+      });
+    }, 650);
+  }
+  function flowPlay() {
+    if (FLOW.playing) { FLOW.playing = false; clearTimeout(FLOW.timer); document.getElementById("flowPlay").textContent = "Play"; return; }
+    if (FLOW.k >= FLOW.steps.length) flowReset();
+    FLOW.playing = true; document.getElementById("flowPlay").textContent = "Pause";
+    (function loop() { if (!FLOW.playing) return; flowStep(function () { if (FLOW.playing && FLOW.k < FLOW.steps.length) FLOW.timer = setTimeout(loop, 700); }); })();
+  }
+  document.getElementById("flowPlay").addEventListener("click", flowPlay);
+  document.getElementById("flowStep").addEventListener("click", function () { if (!FLOW.playing && !FLOW.busy) { FLOW.busy = true; flowStep(function () { FLOW.busy = false; }); } });
+  document.getElementById("flowReset").addEventListener("click", flowReset);
+  window.addEventListener("resize", function () { if (!FLOW.steps.length) return; FLOW.g = flowGeom(); layoutTargets(FLOW.g); FLOW.dots.forEach(function (d) { d.x = d.tx; d.y = d.ty; }); paint(0); });
 
   function drawScen(p, latest, yr) {
     document.getElementById("pOut").textContent = pct(p);
