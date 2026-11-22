@@ -351,9 +351,9 @@
     .tab.active { color: var(--accent); font-weight: 600; }
     .tab.active .tab-ico { background: var(--accent-soft); }
     /* options sheet */
-    .options-drawer { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; max-height: 80vh;
+    .options-drawer { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; max-height: 46vh;
       overflow-y: auto; overscroll-behavior: contain; background: var(--card); border-radius: 18px 18px 0 0;
-      box-shadow: 0 -12px 40px rgba(30,20,5,.22); padding-bottom: env(safe-area-inset-bottom);
+      box-shadow: 0 -4px 18px rgba(30,20,5,.14); padding-bottom: env(safe-area-inset-bottom);
       transform: translateY(105%); visibility: hidden;
       transition: transform .3s cubic-bezier(.2,.8,.2,1), visibility 0s linear .3s; }
     .options-drawer.open { transform: none; visibility: visible; transition: transform .3s cubic-bezier(.2,.8,.2,1); }
@@ -373,10 +373,10 @@
     .options-drawer label.grp { padding: .45rem .25rem; font-size: .92rem; }
     .options-drawer input[type="checkbox"] { width: 18px; height: 18px; }
     .options-drawer .group-list { max-height: none; }
-    .sheet-backdrop { display: block; position: fixed; inset: 0; z-index: 55; background: rgba(28,22,12,.38);
-      opacity: 0; transition: opacity .25s ease; }
-    .sheet-backdrop.show { opacity: 1; }
-    body.sheet-open { overflow: hidden; }
+    /* Half-height sheet: no dark backdrop and no scroll lock, so the chart stays
+       in view (and can be scrolled) above it while the settings change. */
+    .sheet-backdrop { display: none; }
+    body.sheet-open { padding-bottom: calc(46vh + 1rem); }
     /* about page and support link */
     #about { padding: 1rem 1.1rem 0; }
     .about h2 { font-size: 1.22rem; }
@@ -386,6 +386,29 @@
       border: 1px solid rgba(153,15,61,.28); font-size: .84rem; }
     .mobile-support a.kofi-btn:hover { background: rgba(255,255,255,.5); box-shadow: none; }
     body.phone-charts .chart-actions .dl-word { display: none; }
+  }
+  /* Quick controls: the most-used settings for the current view, in one
+     sideways-scrolling row between the picker and the chart (phones only). */
+  .quickbar { display: none; }
+  @media (max-width: 860px) {
+    .quickbar { display: flex; gap: .45rem; align-items: center; overflow-x: auto; scrollbar-width: none;
+      -webkit-overflow-scrolling: touch; padding: .55rem .8rem .15rem;
+      -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent);
+      mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); }
+    .quickbar::-webkit-scrollbar { display: none; }
+    .quickbar[hidden], .quickbar:empty { display: none; }
+    .qb-seg { flex: 0 0 auto; display: inline-flex; padding: 3px; gap: 2px; border-radius: 999px;
+      background: rgba(255,255,255,.5); border: 1px solid #d6c6ac; }
+    .qb-seg button, .qb-chip { font: inherit; font-size: .84rem; font-weight: 600; white-space: nowrap; cursor: pointer;
+      min-height: 34px; padding: 0 .85rem; border-radius: 999px; border: none; background: transparent; color: #5f574a;
+      transition: background .15s ease, color .15s ease; }
+    .qb-seg button.on { background: var(--accent); color: #fff; }
+    .qb-chip { flex: 0 0 auto; min-height: 40px; border: 1px solid #d6c6ac; background: rgba(255,255,255,.5); }
+    .qb-chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .qb-chip .tick { display: inline-block; width: 1.05em; }
+    .qb-select { flex: 0 0 auto; width: auto; min-height: 40px; border-radius: 999px; font-size: .84rem; font-weight: 600;
+      padding: 0 2rem 0 .9rem; background-color: rgba(255,255,255,.5); border-color: #d6c6ac; color: #5f574a; }
+    .qb-gap { flex: 0 0 4px; }
   }
   @media (max-width: 860px) and (prefers-reduced-motion: reduce) {
     .options-drawer, .options-drawer.open, .sheet-backdrop, .tab-ico { transition: none; }
@@ -610,6 +633,7 @@
         <button class="options-toggle" id="options-toggle" type="button" aria-expanded="false" aria-controls="options-drawer" hidden>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></svg>Options</button>
       </div>
+      <div class="quickbar" id="quickbar" role="toolbar" aria-label="Quick chart controls"></div>
       <div class="chartwrap" id="chartwrap">
         <div id="chart-head"></div>
         <div id="chart"></div>
