@@ -499,6 +499,20 @@
     #chart-head { margin-bottom: .2rem; }
   }
 
+  /* Play bar (Over time): Play button and year slider, inside the chart card */
+  .playbar { display: flex; align-items: center; gap: .75rem; margin: 0 0 .55rem; }
+  .play-btn { flex: none; display: inline-flex; align-items: center; gap: .45rem; font: inherit; font-size: .84rem;
+    font-weight: 600; color: #fff; background: var(--accent); border: none; border-radius: 999px; cursor: pointer;
+    min-height: 34px; padding: 0 1rem 0 .8rem; box-shadow: 0 1px 2px rgba(153,15,61,.3); }
+  .play-btn:hover { background: #82092f; }
+  .play-btn:focus-visible, #play-year:focus-visible { outline: 3px solid var(--accent-2); outline-offset: 2px; }
+  .play-btn svg { width: 13px; height: 13px; fill: currentColor; }
+  #play-year { flex: 1 1 auto; min-width: 0; max-width: 520px; accent-color: var(--accent); cursor: pointer; }
+  .play-yr { flex: none; font-weight: 700; font-variant-numeric: tabular-nums; min-width: 3ch; }
+  @media (max-width: 860px) { .chartwrap .playbar { margin: 0 .8rem .5rem; } .play-btn { min-height: 40px; } }
+  body.phone-preview .chartwrap .playbar { margin-left: .8rem; margin-right: .8rem; }
+  @media (min-width: 861px) { body:not(.phone-preview) .playbar { flex: none; } }
+
   /* ===== App shell on phones and small tablets =====
      One warm beige surface (the chart colour) between a slim top bar and a
      bottom tab bar, the characteristic picker and an Options button above the
@@ -851,6 +865,11 @@
       <div class="quickbar" id="quickbar" role="toolbar" aria-label="Quick chart controls"></div>
       <div class="chartwrap" id="chartwrap">
         <div id="chart-head"></div>
+        <div class="playbar" id="playbar" hidden>
+          <button class="play-btn" id="play-btn" type="button" aria-pressed="false" aria-controls="chart"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5l9 5.5-9 5.5z"/></svg><span class="play-word">Play</span></button>
+          <input type="range" id="play-year" min="2015" max="2025" step="1" value="2025" aria-label="Year shown">
+          <span class="play-yr" id="play-yr" aria-hidden="true">2025</span>
+        </div>
         <div id="chart"></div>
         <div id="matrix"></div>
         <div id="table"></div>
