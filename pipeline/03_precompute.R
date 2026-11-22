@@ -1,4 +1,18 @@
 # ============================================================================
+# SUPERSEDED (22 Nov 2026): replaced by pipeline/04_export.R, which writes the
+# files the explorer loads (site/data/counts.json, reference.json, data.js,
+# reference.js); the browser computes the families live. Nothing reads the
+# site/explorer_data.json this script writes, and README.md does not list it as
+# a check. Kept for reference only: do not run it as a check.
+#
+# Why it stops ("[FAIL] at least one row disagrees."): one row, SES pairwise,
+# window 2016-2017, Quintile 3 vs Quintile 5 (162/1057 vs 376/1933, -4.1 pp).
+# Its chi-square raw p is 0.0049961, just under its BH level 0.05 * 1/10 = 0.005,
+# so p_bh = 0.04996 (significant). Its Newcombe interval at z* = 2.807 is
+# -8.018 to +0.009 pp, so it touches zero. The verdict (chi-square p) and the
+# bar (Newcombe interval) are two different methods; they agree except at the
+# edge. Pre-DEI window, so the ERA_DEI change did not cause it.
+# ============================================================================
 # Phase 2b: Precompute. Wires Phase 1 (clean data) through Phase 2a (stats)
 # to produce per-year series and per-window frozen-family forests, then emits
 # explorer_data.json and prints the verification table. Fails loudly if any
@@ -277,7 +291,7 @@ main <- function() {
   cat("\n-- bar_excludes_null == significant_after_bh on every family row,",
       "every window (rule 6a) --\n")
   if (isTRUE(attr(obj, "all_assert_ok"))) {
-    cat("  [OK] all family rows across all 45 windows agree.\n")
+    cat("  [OK] all family rows across all", length(obj$meta$windows), "windows agree.\n")
   } else { cat("  [FAIL] at least one row disagrees.\n"); ok <- FALSE }
 
   cat("\n-- Coverage --\n")

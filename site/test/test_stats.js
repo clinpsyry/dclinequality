@@ -122,5 +122,70 @@ const nsig = Families.master(counts, dei).rows.filter((r) => r.significant_after
 console.log("  full forest (26 significant in 2021-25): " + (nsig === 26 ? "OK" : "FAIL " + nsig));
 if (nsig !== 26) pass = false;
 
+// ---- BH level vs verdict, every family, every window (RULES.md C9) ----------
+// A significant row must have raw p <= its alpha_star, a non-significant row
+// raw p > its alpha_star. This is exact. A bar can still miss its verdict by a
+// hair (chi-square verdict, Newcombe bar): those are listed, not failed.
+console.log("\nBH level vs verdict, every family, every window (C9):");
+const excl = [].concat(counts.meta.eras.excluded), usable = yrs.filter((y) => excl.indexOf(y) < 0);
+const windows = [];
+for (let i = 0; i < usable.length; i++) for (let j = i; j < usable.length; j++) windows.push(usable.slice(i, j + 1));
+const byKey = {}; counts.groups.forEach((g) => { byKey[g.characteristic + "|" + g.group] = g; });
+const G = (ch, n) => byKey[ch + "|" + n];
+const merged = (ch, names) => ({ group: names.join(" + "),
+  by_year: [].concat.apply([], names.map((n) => (G(ch, n) || { by_year: [] }).by_year)) });
+const VS_REF = {
+  "ETHNICITY": ["British English", eth12],
+  "ETHNIC GROUP (BROAD)": ["White", ["Asian", "Black", "Mixed"]],
+  "RELIGION": ["No religion", ["Jewish", "Buddhist", "Hindu", "Christian (all)", "Sikh", "Muslim"]],
+  "SEXUAL ORIENTATION": ["Heterosexual/straight", ["Gay woman/lesbian", "Gay man", "Bisexual", "Other sexual orientation"]],
+  "MARITAL STATUS": ["Single", ["Married/civil partnership/co-habiting", "Divorced/Separated, Widowed"]],
+  "DISABILITY": ["No disability", ["Dyslexia", "Mental health difficulties",
+    "Unseen disability eg diabetes, epilepsy, asthma", "Two or more disabilities", "Other disability",
+    "Personal care support", "Wheelchair, deaf or blind (combined)"]],
+  "RESIDENT": ["UK", ["Other EU/EEA", "Other residence"]],
+  "DEPENDANTS": ["No dependants", ["Has dependants"]]
+};
+const AGE40 = ["40-44 years", "45-49 years", "50-54 years", "55 and over", "50-54 years, 55 and over"];
+const SESQ = ["Quintile 1 (lowest participation rate in HE)", "Quintile 2", "Quintile 3", "Quintile 4",
+  "Quintile 5 (highest participation rate in HE)"];
+let nRows = 0, levelBad = 0; const edge = [];
+function checkRows(label, Y, rows) {
+  rows.forEach((r) => {
+    if (!r.computable || r.z_star == null) return; nRows++;
+    const aStar = 2 * (1 - Stats.pnorm(r.z_star));
+    const ok = r.significant_after_bh ? r.raw_p <= aStar * (1 + 1e-9) : r.raw_p > aStar * (1 - 1e-9);
+    const win = Y[0] + "-" + Y[Y.length - 1];
+    if (!ok) { levelBad++; console.log(`  [FAIL] ${label} ${win} ${r.group}: raw p ${r.raw_p} alpha* ${aStar} sig ${r.significant_after_bh}`); }
+    else if (r.bar_excludes_null !== r.significant_after_bh)
+      edge.push(`${label} ${win} ${r.group}: bar ${r.pp_lo.toFixed(4)} to ${r.pp_hi.toFixed(4)} pp, p_bh ${r.p_bh.toFixed(5)}`);
+  });
+}
+windows.forEach((Y) => {
+  Object.keys(VS_REF).forEach((ch) => {
+    const [ref0, mem] = VS_REF[ch];
+    checkRows(ch, Y, Stats.computeFamily(mem.map((n) => G(ch, n) || { group: n, by_year: [] }), G(ch, ref0), Y).rows);
+  });
+  const age = ["20-24 years", "30-34 years", "35-39 years"].map((n) => G("AGE", n)).concat([merged("AGE", AGE40)]);
+  checkRows("AGE", Y, Stats.computeFamily(age, G("AGE", "25-29 years"), Y).rows);
+  // SES pairwise, as the explorer matrix
+  const pools = SESQ.map((q) => Stats.poolGroup(G("SOCIO-ECONOMIC BACKGROUND", q), Y)), pairs = [];
+  for (let i = 0; i < 5; i++) for (let j = i + 1; j < 5; j++) pairs.push([i, j]);
+  const bh = Stats.bhWiden(pairs.map(([i, j]) => (pools[i].app && pools[j].app)
+    ? Stats.rawP2x2(pools[i].acc, pools[i].app, pools[j].acc, pools[j].app) : null));
+  checkRows("SES", Y, pairs.map(([i, j], k) => { const a = pools[i], b = pools[j], z = bh[k].zStar;
+    if (z == null) return { computable: false };
+    const ci = Stats.newcombeCI(a.acc, a.app, b.acc, b.app, z);
+    return { group: "Q" + (i + 1) + " vs Q" + (j + 1), computable: true, z_star: z, raw_p: bh[k].pRaw,
+      p_bh: bh[k].pBh, significant_after_bh: bh[k].sig, pp_lo: ci[0] * 100, pp_hi: ci[1] * 100,
+      bar_excludes_null: !(ci[0] <= 0 && ci[1] >= 0) }; }));
+  checkRows("Full forest", Y, Families.master(counts, Y).rows);
+  checkRows("Contextual", Y, Families.context(counts, Y).rows);
+});
+console.log(`  ${windows.length} windows, ${nRows} rows: level ${levelBad ? "FAIL (" + levelBad + ")" : "matches verdict on every row"}`);
+console.log(`  bar touches zero at the edge (chi-square vs Newcombe, C9), ${edge.length}:`);
+edge.forEach((e) => console.log("    " + e));
+if (levelBad) pass = false;
+
 console.log("\n" + (pass ? "ALL JS-vs-R ORACLE CHECKS PASS" : "ORACLE MISMATCH"));
 process.exit(pass ? 0 : 1);

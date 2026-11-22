@@ -49,4 +49,4 @@ source("pipeline/04_export.R")          # rebuild the explorer data, prints its 
 node site/test/test_stats.js
 ```
 
-All three must report a pass before any number is quoted. Explorer details: `docs/EXPLORER.md`.
+All three must report a pass before any number is quoted. `pipeline/03_precompute.R` is superseded by `04_export.R` and is not a check (see its header). Explorer details: `docs/EXPLORER.md`.

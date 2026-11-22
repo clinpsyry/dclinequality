@@ -72,7 +72,7 @@ vendored). Either:
   correct, reconciliation): `Rscript pipeline/verify_all.R`
 - Every significance family's R verdicts (the oracle for the browser):
   `Rscript pipeline/verify_families.R`
-- Statistics engine vs R oracle: `node site/test/test_stats.js`
+- Statistics engine vs R oracle, plus BH level vs verdict on every family row in all 55 windows (RULES.md C9): `node site/test/test_stats.js`
 - In the browser: open `site/test.html` (green banner = browser reproduces R).
 - R statistics self-tests: `Rscript pipeline/02_stats_functions.R`
 

@@ -57,7 +57,7 @@ On a purely statistical point `STATS_RULES.md` wins (the governance doc says so)
 
 ### Multiple comparisons
 - **Benjamini-Hochberg** within each frozen family. Plotted intervals are widened to the BH critical level so that "interval clears zero" means "BH-significant":
-  1. raw p per comparison; 2. `p_bh = p.adjust(p_raw, "BH")`; 3. `rank = rank(p_raw)`; 4. `alpha_star = 0.05 * rank / m`; 5. `z_star = qnorm(1 - alpha_star/2)`; 6. Newcombe interval at that `z_star`.
+  1. raw p per comparison; 2. `p_bh = p.adjust(p_raw, "BH")`; 3. `rank = rank(p_raw)`; 4. `alpha_star = 0.05 * k / m` for a significant comparison (k = the number of significant comparisons in the family), `0.05 * rank / m` for a non-significant one (C9); 5. `z_star = qnorm(1 - alpha_star/2)`; 6. Newcombe interval at that `z_star`.
 - Assert `bar_excludes_null == significant_after_bh` on every row.
 
 Frozen families (locked):
@@ -147,6 +147,7 @@ Clean and minimal, FT / John Burn-Murdoch style: generous whitespace, no chart j
 
 - C2. **SES reference.** The chart style guide said "middle quintiles (Q2 to Q3)". `STATS_RULES.md` and the governance doc both say Q3, with the full pairwise family (m = 10). Q3 it is.
 - C4. **Divorced/Separated, Widowed.** The chart style guide's filter drops any category containing a comma, which removes this row. `STATS_RULES.md` says report it as provided, and the governance doc keeps it in the marital family (m = 2). Kept; the comma filter should exclude only the Baha'i/Jain rows by name.
+- C9. **BH bar level for step-up passes (decided 22 Nov 2026).** BH is step-up: a comparison can be significant only because one ranked after it passes. At its own-rank level (`0.05 * rank / m`) its bar then crosses zero although it is significant (found: explorer, Disability 2021 to 2025, Mental health difficulties). Now every significant comparison uses `0.05 * k / m`, k = the number of significant comparisons; non-significant ones keep `0.05 * rank / m`. No verdict changes; some significant bars get shorter. Code: `bh_widen()` in `pipeline/02_stats_functions.R` and `Stats.bhWiden()` in `site/js/stats.js`. Still possible, and rare: a bar that touches zero by a hair at the edge, because the verdict is a chi-square test and the bar a Newcombe interval (SES 2016 to 2017 Q3 vs Q5, +0.009 pp; full forest 2015 to 2025 Caribbean, +0.0007 pp).
 - C7. **Two versions of the theme.** `chart_style_guide_visual.md` (31 May, generic) differs from `dclinpsy_style.R` (25 May, the DClin one): title `base_size * 1.5` (19.5) vs 15, caption `grey35` vs `grey45`, no fixed margins, and an extra faded grey `#BCB3A4`. The published DClin charts use `dclinpsy_style.R`, so keep that for consistency. Use `#BCB3A4` only if you need a faded tier (for example the explorer's "descriptive only" rows).
 
 **Open (your call):**

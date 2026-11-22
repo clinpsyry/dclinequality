@@ -149,6 +149,8 @@
   }
 
   // ---- BH widening (rule 6a). pRaw may contain nulls (excluded from m) -------
+  // Level (RULES.md C9): a significant comparison uses alpha * k / m (k = number
+  // significant); a non-significant one uses alpha * rank / m. Mirrors R bh_widen().
   function bhWiden(pRaw, alpha) {
     alpha = alpha || 0.05;
     var okIdx = [];
@@ -161,9 +163,11 @@
     var pOk = okIdx.map(function (i) { return pRaw[i]; });
     var pBh = pAdjustBH(pOk);
     var rnk = rankMax(pOk);
+    var nSig = pBh.filter(function (v) { return v < alpha; }).length;
     okIdx.forEach(function (i, k) {
-      var alphaStar = alpha * rnk[k] / m;
-      out[i] = { pRaw: pRaw[i], pBh: pBh[k], sig: pBh[k] < alpha,
+      var sig = pBh[k] < alpha;
+      var alphaStar = alpha * (sig ? nSig : rnk[k]) / m;
+      out[i] = { pRaw: pRaw[i], pBh: pBh[k], sig: sig,
                  rank: rnk[k], zStar: qnorm(1 - alphaStar / 2) };
     });
     out.m = m;

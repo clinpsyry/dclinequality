@@ -59,6 +59,11 @@ raw_p_2x2 <- function(acc1, n1, acc2, n2) {
 # z_star, and the verdict-coincidence guarantee is enforced by the caller using
 # the returned z_star to build each Newcombe interval. m = family size.
 # NA raw-p comparisons (fully suppressed) are excluded from m and get NA out.
+# Level (RULES.md C9, 22 Nov 2026): a significant comparison uses
+# alpha * k / m, where k = the number of significant comparisons; a
+# non-significant one uses alpha * rank / m. BH is step-up: a row can pass
+# only because a row ranked after it passes, and its own-rank level would then
+# give a bar that crosses zero although the row is significant.
 bh_widen <- function(p_raw, alpha = 0.05) {
   ok <- !is.na(p_raw)
   m  <- sum(ok)
@@ -70,7 +75,8 @@ bh_widen <- function(p_raw, alpha = 0.05) {
   out$sig[ok]   <- out$p_bh[ok] < alpha
   r             <- rank(p_ok, ties.method = "max")
   out$rank[ok]  <- r
-  out$alpha_star[ok] <- alpha * r / m
+  k             <- sum(out$sig[ok])
+  out$alpha_star[ok] <- ifelse(out$sig[ok], alpha * k / m, alpha * r / m)
   out$z_star[ok]     <- qnorm(1 - out$alpha_star[ok] / 2)
   attr(out, "m") <- m
   out
@@ -157,10 +163,21 @@ evalue_rr <- function(rr, lo, hi) {
   cat(sprintf("  [%s] bh m == 4                          got %d\n",
               if (isTRUE(attr(bh, "m") == 4)) "OK" else "FAIL", attr(bh, "m")))
   if (!isTRUE(attr(bh, "m") == 4)) pass <<- FALSE
-  # rank-1 alpha_star = 0.05*1/4 = 0.0125 -> z_star = qnorm(0.99375)
-  chk("bh z_star rank1", bh$z_star[1], qnorm(1 - 0.0125 / 2))
+  # p_bh = 0.004, 0.04, 0.053, 0.9: two significant (k = 2), so rank 1 uses
+  # alpha_star = 0.05*2/4 = 0.025 (RULES.md C9) -> z_star = qnorm(0.9875);
+  # rank 3 (not significant) keeps 0.05*3/4 = 0.0375.
+  chk("bh z_star rank1", bh$z_star[1], qnorm(1 - 0.025 / 2))
+  chk("bh z_star rank3", bh$z_star[3], qnorm(1 - 0.0375 / 2))
   # p.adjust BH agreement
   chk("bh p_bh[1]", bh$p_bh[1], p.adjust(c(0.001,0.02,0.04,0.9),"BH")[1])
+  # Step-up (RULES.md C9): 0.011 fails its own level (0.05*1/6 = 0.0083) but
+  # passes because 0.015 passes at rank 2 (0.0167). Both significant, k = 2,
+  # so both use alpha* = 0.05*2/6; the rest keep their own rank.
+  bs <- bh_widen(c(0.011, 0.015, 0.3, 0.5, 0.6, 0.9))
+  chk("bh step-up sig count", sum(bs$sig), 2)
+  chk("bh step-up alpha* rank1", bs$alpha_star[1], 0.05 * 2 / 6)
+  chk("bh step-up alpha* rank2", bs$alpha_star[2], 0.05 * 2 / 6)
+  chk("bh step-up alpha* rank3", bs$alpha_star[3], 0.05 * 3 / 6)
 
   # Rate ratio: 20/100 vs 10/100 -> RR 2.0.
   rr <- rate_ratio_ci(20, 100, 10, 100)

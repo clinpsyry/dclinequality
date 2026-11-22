@@ -48,7 +48,11 @@ comparison is significant after BH correction". Procedure:
   1. Compute each comparison's raw p (uncorrected, e.g. chi-square).
   2. p_bh = p.adjust(p_raw, "BH"); sig = p_bh < 0.05.
   3. rank = rank(p_raw); m = number of comparisons in the family.
-  4. alpha_star = 0.05 * rank / m.
+  4. alpha_star = 0.05 * k / m for a SIGNIFICANT comparison, where k = the
+     number of significant comparisons in the family; 0.05 * rank / m for a
+     non-significant one. (22 Nov 2026, RULES.md C9: BH is step-up, so a row
+     can pass only because a later-ranked row passes; at its own-rank level
+     its bar would cross zero.)
   5. z_star = qnorm(1 - alpha_star / 2).
   6. Compute each comparison's Newcombe interval AT ITS OWN z_star.
 Every such script prints a bar_excl_0 column that MUST equal the colour
