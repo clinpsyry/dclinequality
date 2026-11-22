@@ -70,6 +70,7 @@ ul { padding-left: 20px; margin: 6px 0 10px; }
   <h2>3. About half of all applications come from people who never get a place</h2>
   <p><span class="tag approx">Approximate</span>This follows from two numbers, with one assumption.</p>
   <div class="key" id="halfKey"></div>
+  <div id="waffle"></div>
   <details><summary>How this is worked out</summary><div id="halfWorking" class="small"></div></details>
 
   <!-- 4 -->
@@ -154,6 +155,7 @@ ul { padding-left: 20px; margin: 6px 0 10px; }
     document.getElementById("halfKey").innerHTML = "<b class=\"big\">About " + pct(share) + "</b> (" + pct(shLo) + " to " + pct(shHi) +
       ") of applications came from people who did not get a place in the end. There were " + (N / A).toFixed(1) +
       " applications for each place, but trainees used only " + mean.toFixed(1) + " tries each.";
+    drawWaffle(Math.round(100 * N / A), Math.round(100 * mean));
     document.getElementById("halfWorking").innerHTML =
       "<p><b>Step 1.</b> Clearing House, " + COHORT[0] + " to " + COHORT[COHORT.length - 1] + " (the years these trainees started): " + fmt(N) +
       " applications, " + fmt(A) + " places. Applications per place = " + (N / A).toFixed(2) + ".</p>" +
@@ -225,6 +227,30 @@ ul { padding-left: 20px; margin: 6px 0 10px; }
     });
     s += '<text x="' + ((L + w - R) / 2) + '" y="' + (h - 2) + '" font-size="11" text-anchor="middle">Number of tries, including the one that worked</text></svg>';
     document.getElementById("triesChart").innerHTML = '<p class="small" style="margin:0"><b>How many tries trainees needed (share of trainees, 2023 survey)</b></p>' + s;
+  }
+
+  // One square per application, for every 100 places.
+  function drawWaffle(total, trainee) {
+    var won = 100, missT = trainee - won, never = total - trainee;
+    var cols = 30, cell = 19, gap = 3, rowsN = Math.ceil(total / cols);
+    var w = cols * (cell + gap), h = rowsN * (cell + gap);
+    var acc = css("--accent", "#990F3D"), faint = css("--faint", "#BCB3A4");
+    var s = '<svg viewBox="0 0 ' + w + " " + h + '" width="100%" role="img" aria-label="' + total + ' applications for 100 places: ' +
+      won + ' got a place, ' + missT + ' were earlier misses by people who later got in, ' + never + ' came from people who never got in">';
+    for (var i = 0; i < total; i++) {
+      var fill = i < won ? acc : (i < trainee ? acc : faint), op = i < won ? 1 : (i < trainee ? 0.35 : 1);
+      s += '<rect x="' + (i % cols) * (cell + gap) + '" y="' + Math.floor(i / cols) * (cell + gap) + '" width="' + cell + '" height="' + cell +
+        '" rx="2" fill="' + fill + '" fill-opacity="' + op + '"/>';
+    }
+    s += "</svg>";
+    var sw = function (c, o) { return '<span style="display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:-1px;margin-right:6px;background:' + c + ';opacity:' + o + '"></span>'; };
+    document.getElementById("waffle").innerHTML =
+      '<p class="small" style="margin:0 0 6px"><b>Every application, for each 100 places (one square = one application)</b></p>' + s +
+      '<div class="small" style="display:flex;flex-wrap:wrap;gap:4px 18px;margin-top:8px">' +
+      "<span>" + sw(acc, 1) + "<b>" + won + "</b> got a place</span>" +
+      "<span>" + sw(acc, 0.35) + "<b>" + missT + "</b> missed, but the person got in on a later try</span>" +
+      "<span>" + sw(faint, 1) + "<b>" + never + "</b> from people who never got a place</span></div>" +
+      '<p class="small muted" style="margin-top:6px">The red squares (' + trainee + ') are all the tries of the 100 people who got in. The grey squares are everyone else. Most applications miss each year, but many of those misses (light red) belong to people who get in later.</p>';
   }
 
   function drawScen(p, latest, yr) {
