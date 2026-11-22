@@ -1169,6 +1169,15 @@
     });
     rows.sort(function (a, b) { return (pp ? b.pp - a.pp : b.rr - a.rr); });   // largest at top
     var years = windowYears(), narrow = narrowView();
+    // Play lock: every year's rows in one fixed order (a row with no data that
+    // year keeps its place, empty), on one fixed axis
+    var lock = playLock("forest"), pos = null;
+    if (lock) {
+      pos = {}; lock.order.forEach(function (k, i) { pos[k] = i; });
+      rows = rows.filter(function (r) { return pos[r.characteristic + "|" + r.group] != null; })
+        .sort(function (a, b) { return pos[a.characteristic + "|" + a.group] - pos[b.characteristic + "|" + b.group]; });
+    }
+    var nRows = lock ? lock.order.length : rows.length;
 
     function val(r) { return pp ? r.pp : r.rr; }
     function cls(r) {
@@ -1182,7 +1191,7 @@
     var info = rows.map(function (r, i) {
       var pc = []; rowGroups(res, r).forEach(function (g) { pc = pc.concat(pooledCells(g, years)); });
       if (pc.length) pooledAny = true;
-      return { r: r, i: i, c: cls(r), pooled: pc,
+      return { r: r, i: pos ? pos[r.characteristic + "|" + r.group] : i, c: cls(r), pooled: pc,
         label: r.group + (r.applicants < 100 ? "*" : "") + (pc.length ? DAGGER : "") };
     });
 
@@ -1226,7 +1235,8 @@
       return { xref:"paper", x:1, xanchor:"right", yref:"y", y:o.i, showarrow:false, text: txt, font: font };
     });
     var forestX = null;
-    if (narrow && info.length) {
+    if (lock) forestX = narrow ? padRange(lock.range[0], lock.range[1], 0.03, LABEL_PAD) : lock.range.slice();
+    else if (narrow && info.length) {
       var ext = [pp ? 0 : 1];
       info.forEach(function (o) { ext.push(pp ? o.r.pp_lo : o.r.rr_lo, hiEnd(o)); });
       forestX = padRange(Math.min.apply(null, ext), Math.max.apply(null, ext), 0.03, LABEL_PAD);
@@ -1235,21 +1245,31 @@
       annos.push({ xref:"paper", x:0, xanchor:"left", yref:"y", y:o.i, yshift:15, showarrow:false,
         text: escAnn(o.label), font:{ size:12, color:INK }, bgcolor: BG });
     });
+    // play lock: rows with no data this year keep their place and say so
+    var tickV = info.map(function (o) { return o.i; }), tickT = info.map(function (o) { return o.label; });
+    if (lock) {
+      var have = {}; info.forEach(function (o) { have[o.i] = o.label; });
+      tickV = lock.order.map(function (k, i) { return i; });
+      tickT = lock.order.map(function (k, i) { return have[i] != null ? have[i] : lock.labels[k] + " (no data)"; });
+      if (narrow) lock.order.forEach(function (k, i) {
+        if (have[i] == null) annos.push({ xref:"paper", x:0, xanchor:"left", yref:"y", y:i, yshift:15, showarrow:false,
+          text: escAnn(lock.labels[k] + " (no data)"), font:{ size:12, color:MUTED }, bgcolor: BG });
+      });
+    }
 
     var nullX = pp ? 0 : 1;
     setForestHead(res, pooledAny);
     var rowH = narrow ? 50 : 36;
     var layout = {
-      paper_bgcolor:BG, plot_bgcolor:BG, height: Math.max(260, rows.length * rowH + 70),
+      paper_bgcolor:BG, plot_bgcolor:BG, height: Math.max(260, nRows * rowH + 70),
       font:{ family:"Inter, system-ui, sans-serif", color:"#1a1a1a", size:13 },
       margin:{ t: narrow ? 26 : 10, r: narrow ? 10 : 58, b:44, l:10 },
       xaxis: applyX("forest", { showgrid:true, gridcolor:GRID, zeroline:false, linecolor:AXISLINE, tickcolor:AXISLINE,
         range: forestX || undefined, autorange: forestX ? false : undefined,
         tickformat: pp ? "+," : "", ticksuffix: pp ? "" : "x", fixedrange:true }),
       yaxis:{ automargin:true, showgrid:false, zeroline:false, showline:false, autorange:"reversed",
-        tickvals: narrow ? [] : info.map(function (o) { return o.i; }),
-        ticktext: narrow ? [] : info.map(function (o) { return o.label; }),
-        tickfont:{ size:12.5, color:INK }, range:[rows.length - 0.4, -0.7] },
+        tickvals: narrow ? [] : tickV, ticktext: narrow ? [] : tickT,
+        tickfont:{ size:12.5, color:INK }, range:[nRows - 0.4, -0.7] },
       hovermode:"closest", showlegend:false,
       shapes:[{ type:"line", x0:nullX, x1:nullX, yref:"paper", y0:0, y1:1,
         line:{ color:"#6d6252", width:1.3, dash:"dash" } }],
@@ -1261,7 +1281,7 @@
       Object.assign(layout.xaxis, { gridcolor: GRID_SOFT, showline: false, ticks: "", ticksuffix: pp ? " pp" : "x",
         tickfont: { size: 12.5, color: MUTED } });
       Object.assign(layout.yaxis, { tickfont: { size: 14, color: INK }, ticklabelstandoff: 14,
-        autorange: false, range: [rows.length - 0.5, -0.5] });
+        autorange: false, range: [nRows - 0.5, -0.5] });
       annos.forEach(function (a) { a.font = Object.assign({}, a.font, { size: 13.5 }); });
       annos.push({ xref: "paper", yref: "paper", x: 1, y: 1, xanchor: "right", yanchor: "bottom", yshift: 10,
         showarrow: false, text: pp ? "Gap (pp)" : "Ratio", font: { size: 12, color: MUTED } });
@@ -1269,10 +1289,11 @@
         if (t.error_x) t.error_x.thickness = 3.2;
         if (t.marker && typeof t.marker.size === "number") t.marker.size += 3;
       });
-      fgd._fitMax = rows.length * 100 + 150;
+      fgd._fitMax = nRows * 100 + 150;
     }
+    if (lock) { layout.yaxis.autorange = false; layout.yaxis.range = [nRows - (narrow ? 0.4 : 0.5), narrow ? -0.7 : -0.5]; }
     var drawn = Plotly.react("chart", traces, lockZoom(phoneAxes(layout)), PLOT_CFG);
-    if (desk) drawn.then(function () { return deskRowBands(fgd, rows.length); });
+    if (desk) drawn.then(function () { return deskRowBands(fgd, nRows); });
   }
 
   // Shared title/subtitle for the forest and master views (chart and table).
@@ -1585,7 +1606,7 @@
       showarrow: false, font: { size: 10.5, color: "#7a6c55" } }];
     // phones: the name above its pair of bars, each value at its own bar's end
     // (outside right for a positive bar, outside left for a negative one)
-    var repX = null;
+    var repX = null, rlock = playLock("rep");
     if (narrow) {
       ys.forEach(function (c, i) {
         annos.push({ xref: "paper", x: 0, xanchor: "left", yref: "y", y: i - 0.3, yanchor: "bottom", showarrow: false,
@@ -1599,6 +1620,8 @@
       var lo = Math.min.apply(null, all), hi = Math.max.apply(null, all);
       repX = padRange(lo, hi, lo < 0 ? LABEL_PAD : 0.03, hi > 0 ? LABEL_PAD : 0.03);
     }
+    // play lock: one axis over every year, so the bars compare by eye
+    if (rlock) repX = narrow ? padRange(rlock.range[0], rlock.range[1], LABEL_PAD, LABEL_PAD) : rlock.range.slice();
     var layout = {
       paper_bgcolor: BG, plot_bgcolor: BG, height: Math.max(280, ys.length * (narrow ? 76 : 64) + 70),
       font: { family: "Inter, system-ui, sans-serif", color: "#1a1a1a", size: 13 },
@@ -2127,6 +2150,7 @@
   function render() {
     if (!state.exporting) applyPhoneClasses();
     if (state.view !== "trend") state.playYear = null;
+    if (state._lockView !== state.view) { state._lockOn = false; state._lockView = state.view; }
     document.getElementById("chart")._fitMax = 0;
     var about = document.getElementById("about"), wrap = document.getElementById("chartwrap");
     var tb = document.getElementById("m-toolbar");
@@ -2184,9 +2208,14 @@
     if (!state.exporting) { buildQuickbar(); syncPlaybar(); }
   }
 
-  // Play bar (Over time): a Play button and a year slider inside the chart card.
-  var playTimer = null;
+  // Play bar: a Play button and a year slider inside the chart card.
+  //  - Over time: the lines draw up to the chosen year (Mix: the bars show it).
+  //  - Compare groups and Representation: one year at a time. While the slider
+  //    or Play drives a single year, the axis range and the row order are held
+  //    fixed across every year (the "play lock"), so the years compare by eye.
+  var playTimer = null, playView = null;
   var PLAY_MS = (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) ? 1200 : 700;
+  var STEP_MS = PLAY_MS === 700 ? 950 : 1300;
   function setPlayIcon(on) {
     var b = document.getElementById("play-btn"); if (!b) return;
     b.querySelector(".play-word").textContent = on ? "Pause" : "Play";
@@ -2194,33 +2223,145 @@
     b.setAttribute("aria-pressed", on ? "true" : "false");
   }
   function stopPlay() { if (playTimer) { clearInterval(playTimer); playTimer = null; } setPlayIcon(false); }
+  // the years a view can step through: those with any data for this characteristic
+  var playYearsCache = {};
+  function playYearsFor(view) {
+    var key = view + "|" + state.characteristic + "|" + state.measure;
+    if (playYearsCache[key]) return playYearsCache[key];
+    var save = view === "forest" ? [state.yearFrom, state.yearTo] : [state.repYearFrom, state.repYearTo], ys = [];
+    try {
+      ALL_YEARS.forEach(function (y) {
+        if (view === "forest") {
+          var res = forestFor([y]);
+          if (res && res.rows.some(function (r) { return r.computable; })) ys.push(y);
+        } else {
+          state.repYearFrom = state.repYearTo = y;
+          var rr = computeRep(); if (rr && rr.appTot > 0 && rr.accTot > 0) ys.push(y);
+        }
+      });
+    } finally {
+      if (view === "rep") { state.repYearFrom = save[0]; state.repYearTo = save[1]; }
+    }
+    return (playYearsCache[key] = ys);
+  }
+  // what the play bar drives in the current view: its years, the year shown, and how to show another
+  function playCfg() {
+    var v = state.view;
+    if (v === "trend") {
+      if (state.trendTo <= state.trendFrom) return null;
+      var tys = []; for (var y = state.trendFrom; y <= state.trendTo; y++) tys.push(y);
+      return { years: tys, cur: state.playYear == null ? state.trendTo : state.playYear,
+        label: null, go: function (y) { state.playYear = y >= state.trendTo ? null : y; state._mixAnim = state.trendMode === "mix"; } };
+    }
+    if (v === "forest" && !isSESPairwise() && state.forestMode !== "table") {
+      var fys = playYearsFor("forest"); if (fys.length < 2) return null;
+      return { years: fys, cur: state.yearTo, label: state.yearFrom === state.yearTo ? null : rangeLabel(state.yearFrom, state.yearTo),
+        go: function (y) {
+          state.yearFrom = state.yearTo = y;
+          var f = document.getElementById("year-from"), t = document.getElementById("year-to");
+          if (f) f.value = y; if (t) t.value = y;
+        } };
+    }
+    if (v === "rep" && REP[state.characteristic] && state.repMode === "chart") {
+      var rys = playYearsFor("rep"); if (rys.length < 2) return null;
+      return { years: rys, cur: state.repYearTo, label: state.repYearFrom === state.repYearTo ? null : rangeLabel(state.repYearFrom, state.repYearTo),
+        go: function (y) {
+          state.repYearFrom = state.repYearTo = y;
+          var f = document.getElementById("rep-year-from"), t = document.getElementById("rep-year-to");
+          if (f) f.value = y; if (t) t.value = y;
+        } };
+    }
+    return null;
+  }
   function syncPlaybar() {
     var bar = document.getElementById("playbar"); if (!bar) return;
-    var on = state.view === "trend" && state.trendTo > state.trendFrom;
-    bar.hidden = !on;
-    if (!on) { stopPlay(); return; }
-    var sl = document.getElementById("play-year"), y = state.playYear == null ? state.trendTo : state.playYear;
-    sl.min = state.trendFrom; sl.max = state.trendTo; sl.value = y;
-    sl.setAttribute("aria-valuetext", String(y));
-    document.getElementById("play-yr").textContent = y;
+    var c = playCfg();
+    bar.hidden = !c;
+    if (!c) { stopPlay(); return; }
+    var sl = document.getElementById("play-year"), ys = c.years;
+    var cur = Math.min(Math.max(c.cur, ys[0]), ys[ys.length - 1]);
+    sl.min = ys[0]; sl.max = ys[ys.length - 1]; sl.value = cur;
+    var txt = c.label || String(cur);
+    sl.setAttribute("aria-valuetext", txt);
+    document.getElementById("play-yr").textContent = txt;
   }
-  function playTo(y) { state.playYear = y >= state.trendTo ? null : y; state._mixAnim = state.trendMode === "mix"; render(); }
+  function playTo(y) {
+    var c = playCfg(); if (!c) return;
+    if (state.view !== "trend") state._lockOn = true;   // hold axes and order while stepping
+    c.go(y); render();
+  }
   function buildPlaybar() {
     var btn = document.getElementById("play-btn"), sl = document.getElementById("play-year");
     if (!btn || !sl) return;
     btn.addEventListener("click", function () {
       if (playTimer) { stopPlay(); return; }
-      var cur = state.playYear == null ? state.trendTo : state.playYear;
+      var c = playCfg(); if (!c) return;
+      var ys = c.years, last = ys[ys.length - 1], at = ys.indexOf(c.label ? -1 : c.cur);
+      playView = state.view;
       setPlayIcon(true);
-      playTo(cur >= state.trendTo ? state.trendFrom : cur + 1);
+      playTo(at < 0 || c.cur >= last ? ys[0] : ys[at + 1]);
       playTimer = setInterval(function () {
-        var c = state.playYear == null ? state.trendTo : state.playYear;
-        if (state.view !== "trend" || c >= state.trendTo) { stopPlay(); return; }
-        playTo(c + 1);
-        if (state.playYear == null) stopPlay();
-      }, PLAY_MS);
+        var k = playCfg();
+        if (!k || state.view !== playView) { stopPlay(); return; }
+        var i = k.years.indexOf(k.cur);
+        if (i < 0 || i >= k.years.length - 1) { stopPlay(); return; }
+        playTo(k.years[i + 1]);
+        if (k.years[i + 1] >= k.years[k.years.length - 1]) stopPlay();
+      }, playView === "trend" ? PLAY_MS : STEP_MS);
     });
-    sl.addEventListener("input", function () { stopPlay(); playTo(+sl.value); });
+    sl.addEventListener("input", function () {
+      stopPlay();
+      var c = playCfg(); if (!c) return;
+      var v = +sl.value, best = c.years[0];
+      c.years.forEach(function (y) { if (Math.abs(y - v) < Math.abs(best - v)) best = y; });
+      playTo(best);
+    });
+  }
+  // The play lock for Compare groups and Representation: one fixed axis range and
+  // row order over every year, while a single year is shown after Play or the slider.
+  var lockCache = {};
+  function playLock(view) {
+    if (!state._lockOn || state.exporting || state.view !== view) return null;
+    if (view === "forest" && state.yearFrom !== state.yearTo) return null;
+    if (view === "rep" && state.repYearFrom !== state.repYearTo) return null;
+    var key = view + "|" + state.characteristic + "|" + state.measure + "|" + narrowView();
+    if (lockCache[key]) return lockCache[key];
+    var ys = playYearsFor(view), lo = Infinity, hi = -Infinity, lock = { order: [], labels: {} };
+    if (view === "forest") {
+      var pp = usePP(), last = null;
+      ys.forEach(function (y) {
+        var res = forestFor([y]);
+        res.rows.forEach(function (r) {
+          if (!r.computable) return;
+          var a = pp ? r.pp_lo : r.rr_lo, b = pp ? r.pp_hi : r.rr_hi, v = pp ? r.pp : r.rr;
+          [a, b, v].forEach(function (x) { if (x != null && isFinite(x)) { lo = Math.min(lo, x); hi = Math.max(hi, x); } });
+          var k = r.characteristic + "|" + r.group;
+          if (lock.labels[k] == null) lock.labels[k] = r.group;
+        });
+        last = res;
+      });
+      // rows in the order of the latest year (largest at top), then any others
+      var latest = last.rows.filter(function (r) { return r.computable && (pp ? r.pp != null : r.rr != null); })
+        .sort(function (a, b) { return pp ? b.pp - a.pp : b.rr - a.rr; })
+        .map(function (r) { return r.characteristic + "|" + r.group; });
+      lock.order = latest.concat(Object.keys(lock.labels).filter(function (k) { return latest.indexOf(k) < 0; }));
+      var nul = pp ? 0 : 1; lo = Math.min(lo, nul); hi = Math.max(hi, nul);
+    } else {
+      var save = [state.repYearFrom, state.repYearTo];
+      try {
+        ys.forEach(function (y) {
+          state.repYearFrom = state.repYearTo = y;
+          var rr = computeRep(); if (!rr) return;
+          rr.rows.forEach(function (r) {
+            [r.appPct - r.popApp, r.accPct - r.popAcc].forEach(function (x) { if (isFinite(x)) { lo = Math.min(lo, x); hi = Math.max(hi, x); } });
+          });
+        });
+      } finally { state.repYearFrom = save[0]; state.repYearTo = save[1]; }
+      lo = Math.min(lo, 0); hi = Math.max(hi, 0);
+    }
+    var pad = (hi - lo || 1) * 0.05;
+    lock.range = [lo - pad, hi + pad];
+    return (lockCache[key] = lock);
   }
 
   // Phones: the footnote folds behind a "How to read this chart" button, closed
