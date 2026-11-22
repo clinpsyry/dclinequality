@@ -2235,6 +2235,7 @@
     tabs.addEventListener("click", function (e) {
       var b = e.target.closest(".tab"); if (!b) return;
       var changed = state.view !== b.getAttribute("data-view");
+      if (changed) closeSheet();
       state.view = b.getAttribute("data-view");
       tabs.querySelectorAll(".tab").forEach(function (x) {
         x.classList.toggle("active", x === b);
@@ -2405,6 +2406,12 @@
     document.body.classList.add("sheet-open");
     document.getElementById("options-toggle").setAttribute("aria-expanded", "true");
     setTimeout(function () { var d = document.getElementById("sheet-done"); if (d) d.focus({ preventScroll: true }); }, 60);
+    // bring the chart up under the top bar, so it shows above the half-height sheet
+    var head = document.getElementById("chart-head"), bar = document.querySelector(".brand");
+    if (head && head.offsetParent) {
+      var top = head.getBoundingClientRect().top + window.pageYOffset - (bar ? bar.offsetHeight : 0) - 8;
+      window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+    }
   }
   function closeSheet() {
     var drawer = document.getElementById("options-drawer"), bd = document.getElementById("sheet-backdrop");

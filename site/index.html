@@ -351,9 +351,9 @@
     .tab.active { color: var(--accent); font-weight: 600; }
     .tab.active .tab-ico { background: var(--accent-soft); }
     /* options sheet */
-    .options-drawer { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; max-height: 80vh;
+    .options-drawer { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; max-height: 46vh;
       overflow-y: auto; overscroll-behavior: contain; background: var(--card); border-radius: 18px 18px 0 0;
-      box-shadow: 0 -12px 40px rgba(30,20,5,.22); padding-bottom: env(safe-area-inset-bottom);
+      box-shadow: 0 -4px 18px rgba(30,20,5,.14); padding-bottom: env(safe-area-inset-bottom);
       transform: translateY(105%); visibility: hidden;
       transition: transform .3s cubic-bezier(.2,.8,.2,1), visibility 0s linear .3s; }
     .options-drawer.open { transform: none; visibility: visible; transition: transform .3s cubic-bezier(.2,.8,.2,1); }
@@ -373,10 +373,10 @@
     .options-drawer label.grp { padding: .45rem .25rem; font-size: .92rem; }
     .options-drawer input[type="checkbox"] { width: 18px; height: 18px; }
     .options-drawer .group-list { max-height: none; }
-    .sheet-backdrop { display: block; position: fixed; inset: 0; z-index: 55; background: rgba(28,22,12,.38);
-      opacity: 0; transition: opacity .25s ease; }
-    .sheet-backdrop.show { opacity: 1; }
-    body.sheet-open { overflow: hidden; }
+    /* Half-height sheet: no dark backdrop and no scroll lock, so the chart stays
+       in view (and can be scrolled) above it while the settings change. */
+    .sheet-backdrop { display: none; }
+    body.sheet-open { padding-bottom: calc(46vh + 1rem); }
     /* about page and support link */
     #about { padding: 1rem 1.1rem 0; }
     .about h2 { font-size: 1.22rem; }
