@@ -388,7 +388,7 @@ ul { padding-left: 20px; margin: 6px 0 10px; }
     var sp = Math.max(4.2, Math.min(10, W / 70)), r = sp * 0.36;
     var leftW = Math.floor(W * 0.56), cols = Math.max(10, Math.floor(leftW / sp));
     var rCols = Math.max(8, Math.floor((W - leftW - sp * 2) / sp));
-    var headH = 22, applyRows = Math.ceil(1000 / cols), placedRows = Math.ceil(560 / rCols), stopRows = Math.ceil(800 / rCols);
+    var headH = 22, applyRows = Math.ceil(1000 / cols), placedRows = Math.ceil(700 / rCols), stopRows = Math.ceil(800 / rCols);
     var H = Math.max(headH + applyRows * sp, headH + placedRows * sp + headH + 8 + stopRows * sp) + 8;
     return { W: W, H: H, sp: sp, r: r, cols: cols, rCols: rCols, rx: leftW + sp * 2, headH: headH, placedRows: placedRows };
   }
