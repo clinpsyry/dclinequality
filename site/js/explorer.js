@@ -441,10 +441,9 @@
     var ngd = document.getElementById("chart");
     ngd._smallMult = false;
     var desk = deskPolish();
-    if (desk) { deskTrendLayout(layout, traces, false); ngd._deskBaseH = layout.height; }
-    var drawn = Plotly.react("chart", traces, lockZoom(phoneLines(layout, traces)), PLOT_CFG);
+    if (desk) deskTrendLayout(layout, traces, false);
+    Plotly.react("chart", traces, lockZoom(phoneLines(layout, traces)), PLOT_CFG);
     deskRailDots(traces);
-    if (desk) drawn.then(function () { return deskFill(ngd, 680); });
   }
 
   // Phones: x range padded so the value labels beside the marks have room.
@@ -529,10 +528,10 @@
       ] : []
     };
     var desk = deskPolish();
-    if (desk) { deskTrendLayout(layout, traces, true); gd._deskBaseH = layout.height; }
+    if (desk) deskTrendLayout(layout, traces, true);
     var drawn = Plotly.react("chart", traces, lockZoom(phoneLines(layout, traces)), PLOT_CFG);
     deskRailDots(traces);
-    if (desk) drawn.then(function () { return deskFill(gd, 680); }).then(function () { return deskLineLabels(gd); });
+    if (desk) drawn.then(function () { return deskLineLabels(gd); });
     gd._lastHi = null; bindTrendHover(gd);
   }
 
@@ -1075,11 +1074,10 @@
         if (t.error_x) t.error_x.thickness = 3.2;
         if (t.marker && typeof t.marker.size === "number") t.marker.size += 3;
       });
-      fgd._deskBaseH = layout.height;
+      fgd._fitMax = rows.length * 100 + 150;
     }
     var drawn = Plotly.react("chart", traces, lockZoom(phoneAxes(layout)), PLOT_CFG);
-    if (desk) drawn.then(function () { return deskFill(fgd, rows.length * 100 + 150); })
-      .then(function () { return deskRowBands(fgd, rows.length); });
+    if (desk) drawn.then(function () { return deskRowBands(fgd, rows.length); });
   }
 
   // Shared title/subtitle for the forest and master views (chart and table).
@@ -1620,6 +1618,17 @@
     var gd = document.getElementById("chart");
     var cw = gd ? Math.floor(gd.getBoundingClientRect().width) : 0;   // floor: never 1 px wider than the card
     if (cw) layout.width = cw;
+    // Desktop: draw to the height the card has left, so the page never scrolls.
+    // The chart may shrink to about half its usual height; past that (a very long
+    // forest on a short screen) it keeps its size and scrolls inside the card.
+    // Off Over time, a few rows never stretch past twice their usual height.
+    if (gd && deskPolish()) {
+      var avail = Math.floor(gd.clientHeight), natural = layout.height || 450;
+      var minH = Math.min(natural, Math.max(220, Math.round(natural * 0.55)));
+      var maxH = gd._fitMax || (state.view === "trend" ? Infinity : natural * 2);
+      if (avail > 0) layout.height = Math.max(minH, Math.min(maxH, avail));
+      gd._fitAvail = avail;
+    }
     ["xaxis", "yaxis"].forEach(function (k) { if (layout[k]) layout[k].fixedrange = true; });
     return layout;
   }
@@ -1654,16 +1663,6 @@
       t.line = Object.assign({}, t.line, { width: 2.6 });
       t.marker = Object.assign({}, t.marker, { size: 7.5, line: { color: BG, width: 1.5 } });
     });
-  }
-  // Grow the chart so its card ends at the foot of the window (never below its
-  // own height, and never past cap).
-  function deskFill(gd, cap) {
-    var card = document.getElementById("chartwrap"), content = card && card.parentNode;
-    if (!gd._fullLayout || !content || gd.style.display === "none") return Promise.resolve();
-    var bottom = card.getBoundingClientRect().bottom + content.scrollTop;
-    var spare = content.getBoundingClientRect().bottom - 24 - bottom;
-    var h = Math.round(Math.max(gd._deskBaseH || 0, Math.min(cap, gd._fullLayout.height + spare)));
-    return Math.abs(h - gd._fullLayout.height) > 2 ? Plotly.relayout(gd, { height: h }) : Promise.resolve();
   }
   // Name each line at its right end, in its colour, nudged apart so no two overlap.
   function deskLineLabels(gd) {
@@ -1924,6 +1923,7 @@
 
   function render() {
     if (!state.exporting) applyPhoneClasses();
+    document.getElementById("chart")._fitMax = 0;
     var about = document.getElementById("about"), wrap = document.getElementById("chartwrap");
     var tb = document.getElementById("m-toolbar");
     if (tb) tb.hidden = state.view === "about";
@@ -2585,6 +2585,11 @@
       var w = Math.floor(chartEl.getBoundingClientRect().width);
       if (w && Math.abs(w - chartEl._fullLayout.width) > 1) Plotly.relayout(chartEl, { width: w });
     }).observe(chartEl.parentElement);
+    var fitT;
+    new ResizeObserver(function () {
+      if (state.exporting || !chartEl._fullLayout || chartEl.style.display === "none" || !deskPolish()) return;
+      if (Math.abs(chartEl.clientHeight - (chartEl._fitAvail || 0)) > 2) { clearTimeout(fitT); fitT = setTimeout(render, 120); }
+    }).observe(chartEl);
   }
   // Debug and test hook (read-only): lets the browser check reproduce the R oracle.
   window.__explorer = { computeMaster: computeMaster, computeContextAll: computeContextAll, exportPNG: exportPNG,
