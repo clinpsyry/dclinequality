@@ -12,3 +12,7 @@ Caveats: trainees only (people who got a place); about 42% response; self-select
 Hull reports 100% "Once" (22 of 22), which is very unlikely: treat as a data error.
 
 Later editions (2024 onward) publish course results in Power BI dashboards, not PDFs, so they are not extracted here.
+
+`response_rates_2026_2027_edition.csv`: places per intake year (2023 to 2025), responses and % responded by course,
+from the 2026-2027 overview booklet (supplied by the user; responses collected 1 June to 12 July 2026; 1,410 responses, 38%).
+Southampton's published total (125) does not equal its three years (95); kept as published and flagged.
