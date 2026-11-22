@@ -3,11 +3,11 @@ edition,course,places_2023,places_2024,places_2025,places_total,responses,pct_re
 2026-2027,Bath,28,28,28,84,35,43,
 2026-2027,Birmingham,31,35,35,101,28,28,
 2026-2027,Coventry & Warwick,25,25,15,65,26,40,
-2026-2027,East Anglia,49,52,55,154,74,48,source total does not equal the three years (35+30+30=95)
+2026-2027,East Anglia,49,52,55,154,74,48,published total 154 does not equal the three years (156)
 2026-2027,East London,61,49,49,159,45,28,
 2026-2027,Edinburgh,47,45,44,136,38,28,
 2026-2027,Essex,31,31,35,97,34,35,
-2026-2027,Exeter,28,34,32,92,41,45,source total does not equal the three years (35+30+30=95)
+2026-2027,Exeter,28,34,32,92,41,45,published total 92 does not equal the three years (94)
 2026-2027,Glasgow,38,39,40,117,30,26,
 2026-2027,Hertfordshire,52,54,40,146,24,16,
 2026-2027,Hull,26,26,26,78,21,27,
@@ -16,9 +16,9 @@ edition,course,places_2023,places_2024,places_2025,places_total,responses,pct_re
 2026-2027,Leeds,30,30,30,90,39,43,
 2026-2027,Leicester,25,28,30,83,65,78,
 2026-2027,Liverpool,40,38,40,118,52,44,
-2026-2027,Manchester,40,42,42,122,33,27,source total does not equal the three years (35+30+30=95)
+2026-2027,Manchester,40,42,42,122,33,27,published total 122 does not equal the three years (124)
 2026-2027,Newcastle,30,30,30,90,39,43,
-2026-2027,North Thames (UCL),85,91,91,261,112,43,source total does not equal the three years (35+30+30=95)
+2026-2027,North Thames (UCL),85,91,91,261,112,43,published total 261 does not equal the three years (267)
 2026-2027,Oxford,52,52,52,156,82,53,
 2026-2027,Plymouth,24,24,24,72,29,40,
 2026-2027,"Queen's University, Belfast",21,21,21,63,41,65,
@@ -26,7 +26,7 @@ edition,course,places_2023,places_2024,places_2025,places_total,responses,pct_re
 2026-2027,Salomons (Canterbury),55,55,57,167,39,23,
 2026-2027,Sheffield,35,40,40,115,54,47,
 2026-2027,South Wales (Cardiff),28,29,36,93,40,43,
-2026-2027,Southampton,35,30,30,125,66,53,source total does not equal the three years (35+30+30=95)
+2026-2027,Southampton,35,30,30,125,66,53,published total 125 does not equal the three years (95)
 2026-2027,Staffordshire,23,24,24,71,22,31,
 2026-2027,Surrey,44,50,54,148,49,33,
 2026-2027,Teesside,35,30,35,100,40,40,
