@@ -4,15 +4,15 @@
 /* Layout: one reading column. Four numbered findings in order of certainty, then limits and working. */
 :root {
   --bg: #EADDCA; --fg: #2a2622; --muted: #5c554d; --line: #cbbda9;
-  --panel: #f3ebe0; --accent: #990F3D; --ref: #4d4740; --faint: #BCB3A4; --warn: #8a5a00;
+  --panel: #f3ebe0; --accent: #990F3D; --ref: #4d4740; --faint: #BCB3A4; --warn: #8a5a00; --blue: #2D6CA2;
   --font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --bg: #1f1c19; --fg: #ece4d8; --muted: #b3a999; --line: #4a433b;
-  --panel: #2a2622; --accent: #e0577f; --ref: #b3a999; --faint: #6b6258; --warn: #e0a84a; color-scheme: dark } }
+  --panel: #2a2622; --accent: #e0577f; --ref: #b3a999; --faint: #6b6258; --warn: #e0a84a; --blue: #6fa3d6; color-scheme: dark } }
 :root[data-theme="dark"] {
   --bg: #1f1c19; --fg: #ece4d8; --muted: #b3a999; --line: #4a433b;
-  --panel: #2a2622; --accent: #e0577f; --ref: #b3a999; --faint: #6b6258; --warn: #e0a84a; color-scheme: dark }
+  --panel: #2a2622; --accent: #e0577f; --ref: #b3a999; --faint: #6b6258; --warn: #e0a84a; --blue: #6fa3d6; color-scheme: dark }
 body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 15px; line-height: 1.55; }
 .wrap { max-width: 820px; margin: 0 auto; padding-block: 28px 56px;
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
@@ -86,6 +86,9 @@ ul { padding-left: 20px; margin: 6px 0 10px; }
   <div class="key" id="peopleKey"></div>
   <div id="peopleWaffle"></div>
   <div id="everChart" style="margin-top:14px"></div>
+  <h3>The same 1,000 people, try by try</h3>
+  <p class="small"><span class="tag scenario">Scenario</span>Who gets a place at each try comes from the trainee survey. Who stops is <b>assumed</b>: the same share of people who will never get in stops after each miss, set so that their average matches the slider. Move the slider and the flow changes.</p>
+  <div id="flow" class="tablebox"></div>
 
   <h2>5. What the data suggest about the pattern</h2>
   <p>We tested a standard statistical model, set up before we looked at the result: everyone has their own fixed chance, and some people stop applying. It did not fit the survey. If it were right, about 41% of trainees would have got in first time. The real figure is 31%.</p>
@@ -341,8 +344,55 @@ ul { padding-left: 20px; margin: 6px 0 10px; }
       '<circle cx="' + x(m) + '" cy="' + y(e) + '" r="5.5" fill="' + fg + '"/>' +
       '<text x="' + (x(m) + 10) + '" y="' + (y(e) - 8) + '" font-size="12">' + pct(e) + "</text>";
     c += '<text x="' + ((L + W - R) / 2) + '" y="' + (H - 2) + '" font-size="11" text-anchor="middle">Average tries of people who never get in (your choice above)</text></svg>';
+    drawFlow(m, e, eLo, eHi);
     document.getElementById("everChart").innerHTML = '<p class="small" style="margin:0"><b>Share of everyone who starts applying who ever gets a place</b></p>' + c +
       '<p class="small muted">Line: middle estimate (2019 to 2021 pooled). Band and error bar: from 2021 alone to 2019 alone. The band does not include the unknown tries: that is the axis, because the data cannot narrow it.</p>';
+  }
+
+  // Flow of 1,000 starters over tries 1 to 6 (6 = "6 or more").
+  function drawFlow(m, E, ELo, EHi) {
+    var tot = BPS.n.reduce(function (a, b) { return a + b; }, 0), f = BPS.n.map(function (x) { return x / tot; });
+    var START = 1000, K = 6, q = 1 / m, nv = START * (1 - E), tr = START * E, cumF = 0, steps = [];
+    for (var k = 1; k <= K; k++) {
+      var trIn = tr * (1 - cumF), nvIn = nv * Math.pow(1 - q, k - 1);
+      var placed = tr * f[k - 1], stop = k < K ? nvIn * q : nvIn, cont = k < K ? (trIn - placed) + (nvIn - stop) : 0;
+      steps.push({ k: k, applying: trIn + nvIn, placed: placed, stop: stop, cont: cont });
+      cumF += f[k - 1];
+    }
+    var blue = css("--blue", "#2D6CA2"), acc = css("--accent", "#990F3D"), faint = css("--faint", "#BCB3A4"), fg = css("--fg", "#2a2622"), muted = css("--muted", "#5c554d");
+    var W = 680, H = 360, L = 20, top = 40, barH = 240, bw = 34, gapX = (W - L - 70 - bw) / (K - 1);
+    var sc = barH / START, xk = function (k) { return L + (k - 1) * gapX; };
+    var s = '<svg viewBox="0 0 ' + W + " " + H + '" width="100%" style="min-width:520px" role="img" aria-label="Flow of 1,000 people over six tries">';
+    steps.forEach(function (st, i) {
+      var x = xk(st.k), y0 = top + (barH - st.applying * sc);     // bars sit on a common floor
+      var hC = st.cont * sc, hP = st.placed * sc, hS = st.stop * sc;
+      // ribbon: continuing part to the next bar
+      if (i < K - 1 && st.cont > 0) {
+        var nx = xk(st.k + 1), ny0 = top + (barH - steps[i + 1].applying * sc);
+        s += '<path d="M' + (x + bw) + "," + y0 + " C" + (x + bw + gapX / 2) + "," + y0 + " " + (nx - gapX / 2) + "," + ny0 + " " + nx + "," + ny0 +
+          " L" + nx + "," + (ny0 + steps[i + 1].applying * sc) + " C" + (nx - gapX / 2) + "," + (ny0 + steps[i + 1].applying * sc) + " " +
+          (x + bw + gapX / 2) + "," + (y0 + hC) + " " + (x + bw) + "," + (y0 + hC) + ' Z" fill="' + blue + '" fill-opacity="0.16"/>';
+      }
+      s += '<rect x="' + x + '" y="' + y0 + '" width="' + bw + '" height="' + hC + '" fill="' + blue + '" fill-opacity="0.6"/>' +
+        '<rect x="' + x + '" y="' + (y0 + hC) + '" width="' + bw + '" height="' + hP + '" fill="' + acc + '"/>' +
+        '<rect x="' + x + '" y="' + (y0 + hC + hP) + '" width="' + bw + '" height="' + hS + '" fill="' + faint + '"/>';
+      s += '<text x="' + (x + bw / 2) + '" y="' + (y0 - 8) + '" font-size="11" text-anchor="middle">' + Math.round(st.applying) + "</text>";
+      s += '<text x="' + (x + bw / 2) + '" y="' + (top + barH + 18) + '" font-size="12" text-anchor="middle" font-weight="600">Try ' + (st.k === K ? "6+" : st.k) + "</text>";
+      s += '<text x="' + (x + bw / 2) + '" y="' + (top + barH + 34) + '" font-size="11" text-anchor="middle" fill="' + acc + '">+' + Math.round(st.placed) + " in</text>";
+      s += '<text x="' + (x + bw / 2) + '" y="' + (top + barH + 49) + '" font-size="11" text-anchor="middle">' + Math.round(st.stop) + " stop</text>";
+      s += '<text x="' + (x + bw / 2) + '" y="' + (top + barH + 64) + '" font-size="10" text-anchor="middle" fill="' + muted + '">' + pct(st.placed / st.applying) + " success</text>";
+    });
+    s += '<text x="' + L + '" y="16" font-size="11" fill="' + muted + '">Number above each bar: people applying at that try</text></svg>';
+    var apps = steps.reduce(function (a, st) { return a + st.applying; }, 0);
+    var sw = function (c, o) { return '<span style="display:inline-block;width:12px;height:12px;vertical-align:-1px;margin-right:6px;background:' + c + ';opacity:' + o + '"></span>'; };
+    document.getElementById("flow").innerHTML = s +
+      '<div class="small" style="display:flex;flex-wrap:wrap;gap:4px 18px;margin-top:6px"><span>' + sw(acc, 1) + "Got a place at this try</span><span>" +
+      sw(faint, 1) + "Stopped applying after this try</span><span>" + sw(blue, 0.6) + "Missed, tries again</span></div>" +
+      '<p class="small" style="margin-top:8px">Of 1,000 who start: about <b>' + Math.round(START * E) + "</b> get a place in the end (" + Math.round(START * ELo) + " to " +
+      Math.round(START * EHi) + "), and about <b>" + Math.round(START * (1 - E)) + "</b> stop without one. Check: this flow uses " + Math.round(apps) +
+      " applications for " + Math.round(START * E) + " places, a success rate of " + pct(START * E / apps, 1) +
+      ", close to the Clearing House rate for these years. The \"success\" figure under each try is places divided by people applying at that try.</p>" +
+      '<p class="small muted">Range shown only for the end totals (years used, 2021 alone to 2019 alone). The try-by-try numbers use the middle estimate. Try 6+ groups every try from the sixth on; anyone still applying then is counted as stopping.</p>';
   }
 
   function drawScen(p, latest, yr) {
