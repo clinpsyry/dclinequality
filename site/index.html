@@ -950,8 +950,9 @@
         <p>The data is the Clearing House for Postgraduate Courses in Clinical Psychology
         equal-opportunities monitoring, published each year. The "acceptance rate" is the share of
         applicants in a group who were accepted onto a course. Every number on this site is computed
-        live in your browser from clean counts, and each computation is checked against an offline
-        reference written in R, so there is a gold-standard value behind every figure on screen.</p>
+        live in your browser from clean counts. The significance tests and their intervals are checked
+        against an offline reference written in R, so the verdicts have a gold-standard value behind
+        them; rates, shares and counts are plain sums of the same clean counts.</p>
 
         <h2>How the numbers are made</h2>
         <p>There are two layers. Offline, R cleans and reconciles the raw published tables, builds the
@@ -982,23 +983,41 @@
 
         <h2>What is new in this version</h2>
         <ul>
-          <li><strong>2025 entry</strong> data in every view, and <strong>2025 now counts in the DEI
-          era</strong>, which runs from 2021 to 2025 (pre-DEI: 2015 to 2019). Every DEI-era figure, including
-          the All groups chart, now pools 2021 to 2025, so it differs from the posts published before
-          2025's data, which used 2021 to 2024.</li>
-          <li><strong>All groups (full forest)</strong> now uses the method of the published chart: every
-          group with 300 or more applicants in the DEI era (2021 to 2025), across nine characteristics, each against
+          <li><strong>2025 counts in the DEI era</strong>, which now runs from 2021 to 2025 (pre-DEI:
+          2015 to 2019). Every DEI-era figure, including the All groups chart, pools 2021 to 2025, so
+          it differs from the posts published before 2025's data, which used 2021 to 2024.</li>
+          <li><strong>Play, year by year:</strong> Over time, Compare groups and Representation have a
+          Play button and a year slider. While they play, the axis and the order of the rows stay
+          fixed, so the years can be compared by eye. The <strong>GIF</strong> button saves the
+          animation, one frame per year.</li>
+          <li><strong>Mix and Share:</strong> on Over time, Numbers can show applicants, acceptances or
+          both, as counts or as each group's share, and Mix shows the shares as bars that move year
+          by year (see "Shares" below).</li>
+          <li><strong>All groups (full forest)</strong> uses the method of the published chart: every
+          group with 300 or more applicants in the DEI era, across nine characteristics, each against
           the largest group of its characteristic (socio-economic: Quintiles 2 and 3 combined), with one
           Benjamini-Hochberg correction across all of them. As published, red is above the reference and
-          blue below.</li>
+          blue below. On a computer, the full-screen button shows it whole.</li>
           <li><strong>Contextual background:</strong> the ten contextual-admissions questions the Clearing
           House has asked since 2023 entry (first in family at university, free school meals, family
           breakdown, care experience and others), each 'yes' against 'no', plus an overview of all ten.</li>
-          <li><strong>All applicants (overall):</strong> everyone who applied and everyone accepted, from
-          the published yearly totals, with a Numbers option to show counts as well as rates.</li>
-          <li><strong>Charts in the blog style</strong>, built for phones, and a PNG download in the same
-          shape as the charts in the posts.</li>
+          <li><strong>A new layout</strong> on computers and phones, charts in the blog style with a PNG
+          download in the same shape as the charts in the posts, and the site can be installed on a
+          phone's home screen.</li>
         </ul>
+
+        <h2>Shares</h2>
+        <p>In Numbers (Share) and Mix, a group's share is its part of everyone who answered the
+        question that year: applicants who chose "prefer not to say" are not in the data, so they are
+        left out, as in Representation. The total adds up the reported groups only, never a built
+        total such as Christian (all), so no one is counted twice, and the shares of all the groups of
+        a characteristic add up to 100%. A group whose acceptance count is withheld that year adds to
+        neither the total nor its own share, and shows as a gap, never as zero.</p>
+
+        <h2>Year by year</h2>
+        <p>Playing a chart one year at a time shows single-year figures. One year has roughly a fifth
+        of the applicants of an era, so its intervals are wider, and a group can move in or out of
+        significance from year to year by chance. Read the trend across the years, not one frame.</p>
 
         <h2>Uncertainty</h2>
         <p>Every rate is an estimate from a finite number of applicants, so it carries a confidence
@@ -1022,8 +1041,8 @@
         pre-specified register of families, not by how many groups you happen to have on screen. This
         prevents significance-shopping: you cannot make a result appear or disappear by changing the
         selection. Because the family size is pinned, a group can be significant in the pooled "All
-        groups" view but not within its own smaller family, since the correction differs. British
-        Welsh is the known borderline case.</p>
+        groups" view but not within its own smaller family (or the other way round), since the
+        correction differs; this happens most with p-values close to 0.05.</p>
         <p><strong>Reading the colour:</strong> red means a statistically significant difference, and a
         hollow grey point means no clear difference. Direction (better or worse than the reference) is
         shown by position, sign, or the direction of an arrow. The one exception is the full forest,
@@ -1045,7 +1064,7 @@
         (2021 to 2025). Each era value is the mean of that group's per-year rates or gaps, with a 95%
         interval, and the change is tested on those per-year values. <strong>2020 is treated as the
         changeover year and sits in neither era.</strong> In the other views 2020 is a normal,
-        fully-included year; the trend charts simply shade 2021 onward to mark the DEI era visually.</p>
+        fully-included year; on Over time the "DEI era" chip shades 2021 to 2025 (off by default).</p>
 
         <h2>Representativeness</h2>
         <p>This view asks a different question: does the applicant and accepted pool look like the
@@ -1131,14 +1150,18 @@
           <li>Proposing options and trade-offs for the author to weigh and decide on.</li>
         </ul>
         <p>AI assistants can and do make mistakes, so none of the figures here rely on trusting the
-        generated code. Every statistic the browser computes is checked against an independent
-        reference implemented in R, matched to eight decimal places, and the full data chain is
-        verified end to end: the source tables reconcile to the clean counts the site loads, and the
-        live browser calculations reproduce the R reference exactly. The R layer is the gold standard;
+        generated code. The significance tests the browser computes are checked against an independent
+        reference implemented in R: every verdict must match exactly, and the numbers must match R's
+        rounded values (rates and gaps within 0.02 pp, intervals within 0.05 pp, corrected p-values
+        within 0.001). The full data chain is verified end to end: the source tables reconcile to the
+        clean counts the site loads. The R layer is the gold standard;
         the AI-written browser code only ever has to reproduce it, and where the two disagree the R
         reference wins and the build does not ship.</p>
         <p>The AI accelerated the building, not the judgement. The analytical decisions are
-        the author's, and the arithmetic is held to an offline standard rather than taken on trust.</p>
+        the author's, and the statistics are held to an offline standard rather than taken on trust.</p>
+        <p>Charts are drawn with <a href="https://plotly.com/javascript/" target="_blank" rel="noopener">Plotly.js</a>
+        and GIFs are made with <a href="https://github.com/mattdesl/gifenc" target="_blank" rel="noopener">gifenc</a>,
+        both open source under the MIT licence.</p>
 
         <div class="src">
           <p>Source: Clearing House for Postgraduate Courses in Clinical Psychology,
