@@ -364,8 +364,15 @@
         align: "left", text: "<b>" + wrapLabel(escAnn(l.text), 13) + "</b>", font: { size: 12, color: l.color } };
     }));
     layout.showlegend = false;
-    if (layout.yaxis) delete layout.yaxis.title;
-    layout.margin = { t: 16, r: 104, b: 36, l: 44 };
+    if (layout.yaxis) { delete layout.yaxis.title; layout.yaxis.automargin = true; }
+    // Right margin just wide enough for the longest end label (12 px bold Inter is
+    // about 7.3 px per character, plus the 7 px offset and a little air), so the
+    // plot is not pushed left by an empty strip. The y axis sizes its own left margin.
+    var longest = 0;
+    labs.forEach(function (l) {
+      wrapLabel(l.text, 13).split("<br>").forEach(function (ln) { longest = Math.max(longest, ln.length); });
+    });
+    layout.margin = { t: 16, r: Math.min(104, Math.max(24, Math.ceil(longest * 7.3) + 14)), b: 36, l: 8 };
     layout.height = 440;
     return phoneAxes(layout);
   }
