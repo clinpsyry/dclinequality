@@ -156,7 +156,9 @@ critical level, so that "the bar excludes the null" coincides exactly with
   1. Raw p per comparison (uncorrected, e.g. chi-square).
   2. `p_bh = p.adjust(p_raw, "BH")`; `sig = p_bh < 0.05`.
   3. `rank = rank(p_raw)`; `m` = number of comparisons in the family.
-  4. `alpha_star = 0.05 * rank / m`.
+  4. `alpha_star = 0.05 * k / m` for a significant comparison (k = the number
+     significant in the family), `0.05 * rank / m` for a non-significant one
+     (22 Nov 2026, RULES.md C9).
   5. `z_star = qnorm(1 - alpha_star / 2)`.
   6. Each comparison's Newcombe interval AT ITS OWN `z_star`.
 The pipeline MUST emit, for every such row, a `bar_excludes_null` value and a
