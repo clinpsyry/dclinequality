@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#EADDCA">
 <title>DClinPsy Equal-Opportunities Explorer</title>
 <meta name="description" content="Interactive explorer of UK Doctorate in Clinical Psychology (DClinPsy) equal-opportunities admissions, 2015-2025: acceptance rates and disparities by applicant characteristic, computed live and verified against an offline statistical reference.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%23990F3D'/><text x='16' y='24' font-size='23' text-anchor='middle' fill='%23fff' font-family='Georgia,serif'>%CF%88</text></svg>">
@@ -45,7 +46,12 @@
     padding: 1.5rem 1.3rem .6rem; }
   .rail { grid-column: 1; grid-row: 2; min-height: 0; background: var(--card);
     border-right: 1px solid var(--line); overflow-y: auto; padding: .4rem 1.3rem 2rem; }
-  .brand .eyebrow { font-size: .68rem; font-weight: 600; letter-spacing: .13em;
+  .brand { display: flex; gap: .8rem; align-items: flex-start; }
+  .brand-text { min-width: 0; }
+  .logo { flex: 0 0 auto; width: 34px; height: 34px; border-radius: 9px; background: var(--accent); color: #fff;
+    display: grid; place-items: center; font: 700 22px/1 Georgia, "Times New Roman", serif; margin-top: .15rem; }
+  .t-short, .tab-ico, .m-toolbar, .sheet-head, .sheet-backdrop, .options-drawer { display: none; }
+  .brand .eyebrow { white-space: nowrap; font-size: .66rem; font-weight: 600; letter-spacing: .1em;
     text-transform: uppercase; color: var(--accent); margin-bottom: .45rem; }
   .brand h1 { font-size: 1.32rem; font-weight: 700; letter-spacing: -.02em; margin: 0; line-height: 1.18; }
   .brand p { color: var(--muted); margin: .55rem 0 0; font-size: .84rem; line-height: 1.45; }
@@ -65,20 +71,6 @@
   .panel { background: transparent; border: none; box-shadow: none; padding: 0; }
   .panel h2 { font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; font-weight: 600;
     color: var(--faint); margin: 0 0 .6rem; }
-  @media (max-width: 860px) {
-    /* Stack: title, then tabs + chart, then the controls below. */
-    .app { display: flex; flex-direction: column; height: auto; }
-    .brand { order: 1; border-right: none; padding: 1.1rem 1.1rem .4rem; }
-    .brand h1 { font-size: 1.18rem; }
-    .main { order: 2; min-height: 0; }
-    .rail { order: 3; border-right: none; border-top: 1px solid var(--line); overflow: visible;
-      padding: 1rem 1.1rem 1.1rem; }
-    .content { overflow: visible; padding: 1.1rem; }
-    .tabs { padding: 0 1.1rem; position: sticky; top: 0; z-index: 20; flex-wrap: nowrap;
-      overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
-    .tabs::-webkit-scrollbar { display: none; }
-    .tab { font-size: .85rem; padding: .7rem .6rem; white-space: nowrap; flex: 0 0 auto; }
-  }
   select { width: 100%; padding: .55rem .75rem; padding-right: 2rem; font: inherit; font-size: .92rem;
     color: var(--ink); border: 1px solid var(--line); border-radius: 10px; background-color: var(--card);
     cursor: pointer; appearance: none; -webkit-appearance: none;
@@ -149,25 +141,6 @@
   #cmp-ctl .cap { display: flex; align-items: center; gap: .45rem; cursor: pointer; }
   #cmp-ctl .cap input { margin: 0; }
   #cmp-years { margin-top: .45rem; }
-  /* Phones: the controls sit in a collapsible panel under the tabs */
-  .options-toggle { display: none; }
-  .options-drawer { display: none; }
-  @media (max-width: 860px) {
-    .options-toggle { display: flex; justify-content: space-between; align-items: center;
-      font: inherit; font-size: .9rem; font-weight: 600; color: var(--ink); background: var(--card);
-      border: none; border-bottom: 1px solid var(--line); padding: .75rem 1.1rem; cursor: pointer; }
-    .options-toggle[hidden] { display: none; }
-    .options-drawer.open { display: block; background: var(--card); border-bottom: 1px solid var(--line); }
-    .options-drawer .rail { border: none; padding: .2rem 1.1rem 1.1rem; }
-    /* Phones: the card runs edge to edge (no page gutter, no side padding), so
-       the plot is the full screen width: 375 px instead of 312 px on a 375 px
-       phone, about 20% more. The text keeps a .8rem inset. */
-    .content { padding: 1.1rem 0; }
-    .chartwrap { padding: 1rem 0 .8rem; border-radius: 0; border-left: none; border-right: none; }
-    .chartwrap #chart-head, .chartwrap .note, .chartwrap .note-toggle, .chartwrap .dl-group,
-    .chartwrap #table, .chartwrap #matrix { margin-left: .8rem; margin-right: .8rem; }
-    .chartwrap .chart-title { font-size: 1.05rem; }
-  }
   .dl-group { position: absolute; top: 1.2rem; right: 1.3rem; z-index: 3; display: flex; gap: .35rem; }
   .dl-group select { width: auto; font-size: .78rem; padding: .38rem 1.7rem .38rem .55rem; border-radius: 9px;
     background-color: #f3eadc; border-color: #d6c6ac; }
@@ -272,34 +245,39 @@
   .table-title { max-width: calc(100vw - 2.4rem); }
   .table-sub { max-width: min(72ch, calc(100vw - 2.4rem)); }
 
-  /* Mobile component overrides (placed last so they win over the base rules) */
-  @media (max-width: 860px) {
-    /* title first; the download buttons move under the chart */
-    .chartwrap { display: flex; flex-direction: column; }
-    .chartwrap .dl-group { position: static; order: 10; margin: .9rem .8rem 0; }
-    #chart-head { padding-right: 0; }
-    /* the floating support button covered charts: it moves under the chart card */
-    a.kofi-float { display: none; }
-    .mobile-support { display: block; text-align: center; margin: 1.1rem 0 .4rem; }
-  }
   /* Phone layout forced On on a larger screen: the chart column takes a phone's
      width, so what you see is what a phone reader (and the phone PNG) gets. */
-  body.phone-preview .content > .chartwrap { max-width: 430px; margin: 0 auto; display: flex; flex-direction: column; }
-  body.phone-preview .chartwrap .dl-group { position: static; order: 10; margin: .9rem .8rem 0; }
+  body.phone-preview .content > .chartwrap { max-width: 430px; margin: 0 auto; display: flex; flex-direction: column;
+    padding: 1rem 0 .9rem; }
   body.phone-preview #chart-head { padding-right: 0; }
-  body.phone-preview .chartwrap .chart-title { font-size: 1.05rem; }
-  body.phone-preview .content > .chartwrap { padding: 1rem 0 .8rem; }
-  body.phone-preview #chart-head, body.phone-preview .chartwrap .note, body.phone-preview .chartwrap .note-toggle,
-  body.phone-preview .chartwrap .dl-group, body.phone-preview .chartwrap #table,
+  body.phone-preview .chartwrap .chart-title { font-size: 1.08rem; }
+  body.phone-preview #chart-head, body.phone-preview .chartwrap #table,
   body.phone-preview .chartwrap #matrix { margin-left: .8rem; margin-right: .8rem; }
-  /* Phone layout: the chart footnote folds behind a "How to read this chart" button */
+
+  /* Under-chart actions on phones (and the phone preview): a "How to read this
+     chart" row that opens the footnote, then the download row. */
+  @media (max-width: 860px) {
+    .chart-actions { display: flex; flex-direction: column; gap: .6rem; margin: 1rem .8rem 0; }
+    .chartwrap .dl-group { position: static; margin: 0; }
+  }
+  body.phone-preview .chart-actions { display: flex; flex-direction: column; gap: .6rem; margin: 1rem .8rem 0; }
+  body.phone-preview .chartwrap .dl-group { position: static; margin: 0; }
+  body.phone-charts .chartwrap .dl-group { display: flex; gap: .5rem; }
+  body.phone-charts .chartwrap .dl-btn { flex: 1; justify-content: center; min-height: 44px; border-radius: 12px; font-size: .88rem; }
+  body.phone-charts .chartwrap .dl-group select { min-height: 44px; border-radius: 12px; font-size: .88rem; }
   .note-toggle { display: none; }
-  body.phone-charts .note-toggle { display: inline-flex; align-items: center; gap: .35rem; margin-top: .7rem;
-    align-self: flex-start; font: inherit; font-size: .82rem; font-weight: 600; color: #5f574a;
-    background: #f3eadc; border: 1px solid #d6c6ac; border-radius: 9px; padding: .4rem .7rem; cursor: pointer; }
-  body.phone-charts .note-toggle:hover { color: var(--ink); }
+  body.phone-charts .note-toggle { display: flex; align-items: center; gap: .55rem; width: 100%; min-height: 46px;
+    font: inherit; font-size: .9rem; font-weight: 600; color: var(--ink); text-align: left;
+    background: rgba(255,255,255,.5); border: 1px solid #d6c6ac; border-radius: 12px; padding: .6rem .9rem; cursor: pointer;
+    transition: background .15s ease; }
+  body.phone-charts .note-toggle:active { background: rgba(255,255,255,.8); }
+  body.phone-charts .note-toggle svg { width: 18px; height: 18px; color: var(--accent); flex: 0 0 auto; }
+  body.phone-charts .note-toggle .chev { margin-left: auto; color: var(--muted); transition: transform .2s ease; }
+  body.phone-charts .note-toggle[aria-expanded="true"] { border-radius: 12px 12px 0 0; border-bottom-color: transparent; }
+  body.phone-charts .chartwrap .note { margin: -.6rem 0 0; padding: .1rem .9rem .8rem; max-width: none;
+    background: rgba(255,255,255,.5); border: 1px solid #d6c6ac; border-top: none; border-radius: 0 0 12px 12px;
+    font-size: .84rem; line-height: 1.55; }
   body.phone-charts .chartwrap .note.folded { display: none; }
-  body.phone-charts .chartwrap .note { padding-right: 0; }
   /* Phone layout: every data table becomes a list of cards (one per row) */
   body.phone-charts table.datatable thead { display: none; }
   body.phone-charts table.datatable, body.phone-charts table.datatable tbody { display: block; width: 100%; }
@@ -315,13 +293,113 @@
   body.phone-charts table.datatable tr.allrow td { border: none; background: transparent; }
   body.phone-charts #table { overflow-x: visible; background: transparent; padding: 0; }
   body.phone-charts .table-title, body.phone-charts .table-sub { position: static; max-width: none; }
+  /* Long intro text above a table or the matrix: three lines, tap to read the rest */
+  body.phone-charts .table-sub, body.phone-charts .matrix-sub { display: -webkit-box; -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3; overflow: hidden; cursor: pointer; }
+  body.phone-charts .table-sub.open, body.phone-charts .matrix-sub.open { display: block; -webkit-line-clamp: unset; }
+
+  /* ===== App shell on phones and small tablets =====
+     One warm beige surface (the chart colour) between a slim top bar and a
+     bottom tab bar, the characteristic picker and an Options button above the
+     chart, and the controls in a slide-up sheet. */
+  @media (max-width: 860px) {
+    html { scrollbar-gutter: auto; }
+    body { background: #EADDCA; -webkit-tap-highlight-color: transparent;
+      padding-bottom: calc(66px + env(safe-area-inset-bottom)); }
+    .app { display: block; height: auto; }
+    .brand { position: sticky; top: 0; z-index: 30; align-items: center; gap: .65rem; border-right: none;
+      padding: calc(.55rem + env(safe-area-inset-top)) 1rem .55rem;
+      background: rgba(234,221,202,.86); -webkit-backdrop-filter: saturate(1.4) blur(14px); backdrop-filter: saturate(1.4) blur(14px);
+      border-bottom: 1px solid rgba(110,90,60,.14); }
+    .logo { width: 32px; height: 32px; border-radius: 9px; font-size: 20px; margin: 0; }
+    .brand-text { display: flex; flex-direction: column-reverse; min-width: 0; }
+    .brand h1 { font-size: 1.02rem; letter-spacing: -.015em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .brand .eyebrow { margin: .05rem 0 0; font-size: .7rem; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--muted); }
+    .t-long { display: none; }
+    .t-short { display: inline; }
+    .main { display: block; background: transparent; background-image: none; }
+    .content { overflow: visible; padding: 0 0 1rem; }
+    /* characteristic picker and Options button, above the chart */
+    .m-toolbar { display: flex; gap: .5rem; align-items: center; padding: .75rem .8rem .2rem; }
+    .m-char { flex: 1; min-width: 0; }
+    .m-char h2 { display: none; }
+    .m-char select { min-height: 44px; border-radius: 12px; font-weight: 600; font-size: .92rem;
+      background-color: rgba(255,255,255,.6); border-color: #d6c6ac; }
+    .options-toggle { display: inline-flex; align-items: center; gap: .4rem; min-height: 44px; padding: 0 .95rem;
+      font: inherit; font-size: .9rem; font-weight: 600; color: var(--ink); cursor: pointer;
+      background: rgba(255,255,255,.6); border: 1px solid #d6c6ac; border-radius: 12px; transition: background .15s ease; }
+    .options-toggle:active { background: rgba(255,255,255,.9); }
+    .options-toggle svg { width: 18px; height: 18px; color: var(--accent); }
+    /* the chart sits straight on the beige surface */
+    .chartwrap { display: flex; flex-direction: column; background: transparent; border: none; border-radius: 0;
+      box-shadow: none; padding: .7rem 0 .2rem; }
+    .chartwrap #chart-head, .chartwrap #table, .chartwrap #matrix { margin-left: .8rem; margin-right: .8rem; }
+    #chart-head { padding-right: 0; margin-bottom: .5rem; }
+    .chartwrap .chart-title { font-size: 1.08rem; line-height: 1.28; max-width: none; }
+    #table, #matrix { background: transparent; }
+    /* bottom tab bar */
+    .tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: flex; flex-wrap: nowrap; gap: 0;
+      padding: 5px 4px calc(5px + env(safe-area-inset-bottom));
+      background: rgba(255,253,249,.9); -webkit-backdrop-filter: saturate(1.4) blur(16px); backdrop-filter: saturate(1.4) blur(16px);
+      border-top: 1px solid rgba(110,90,60,.16); border-bottom: none; }
+    .tab { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 2px;
+      padding: 2px 0 1px; margin: 0; border-bottom: none; font-size: .66rem; font-weight: 500; color: #7a7264;
+      white-space: nowrap; }
+    .tab-ico { display: flex; align-items: center; justify-content: center; width: 50px; height: 28px; border-radius: 14px;
+      transition: background .2s ease, color .2s ease; }
+    .tab-ico svg { width: 21px; height: 21px; }
+    .tab.active { color: var(--accent); font-weight: 600; }
+    .tab.active .tab-ico { background: var(--accent-soft); }
+    /* options sheet */
+    .options-drawer { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; max-height: 80vh;
+      overflow-y: auto; overscroll-behavior: contain; background: var(--card); border-radius: 18px 18px 0 0;
+      box-shadow: 0 -12px 40px rgba(30,20,5,.22); padding-bottom: env(safe-area-inset-bottom);
+      transform: translateY(105%); visibility: hidden;
+      transition: transform .3s cubic-bezier(.2,.8,.2,1), visibility 0s linear .3s; }
+    .options-drawer.open { transform: none; visibility: visible; transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+    .sheet-head { display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 2;
+      background: var(--card); padding: 1.1rem 1.1rem .65rem; border-bottom: 1px solid var(--line-soft); }
+    .sheet-grab { position: absolute; top: 7px; left: 50%; width: 38px; height: 4px; margin-left: -19px;
+      border-radius: 2px; background: #ddd5c6; }
+    .sheet-title { font-weight: 700; font-size: 1.02rem; }
+    .sheet-done { font: inherit; font-size: .88rem; font-weight: 600; color: var(--accent); background: var(--accent-soft);
+      border: none; border-radius: 999px; padding: .5rem 1.05rem; cursor: pointer; }
+    .options-drawer .rail { display: block; border: none; background: transparent; overflow: visible; padding: .3rem 1.1rem 1.5rem; }
+    .options-drawer .panel { display: flex; flex-direction: column; }
+    .options-drawer #phone-ctl { order: 99; margin: 1.5rem 0 0 !important; padding-top: 1rem; border-top: 1px solid var(--line-soft); }
+    .options-drawer .seg-btn { min-height: 38px; }
+    .options-drawer select, .options-drawer .axisrange input { min-height: 44px; }
+    .options-drawer .chip { min-height: 38px; }
+    .options-drawer label.grp { padding: .45rem .25rem; font-size: .92rem; }
+    .options-drawer input[type="checkbox"] { width: 18px; height: 18px; }
+    .options-drawer .group-list { max-height: none; }
+    .sheet-backdrop { display: block; position: fixed; inset: 0; z-index: 55; background: rgba(28,22,12,.38);
+      opacity: 0; transition: opacity .25s ease; }
+    .sheet-backdrop.show { opacity: 1; }
+    body.sheet-open { overflow: hidden; }
+    /* about page and support link */
+    #about { padding: 1rem 1.1rem 0; }
+    .about h2 { font-size: 1.22rem; }
+    a.kofi-float { display: none; }
+    .mobile-support { display: block; text-align: center; margin: 1.4rem 0 .4rem; }
+    .mobile-support a.kofi-btn { background: transparent; color: var(--accent); box-shadow: none;
+      border: 1px solid rgba(153,15,61,.28); font-size: .84rem; }
+    .mobile-support a.kofi-btn:hover { background: rgba(255,255,255,.5); box-shadow: none; }
+    body.phone-charts .chart-actions .dl-word { display: none; }
+  }
+  @media (max-width: 860px) and (prefers-reduced-motion: reduce) {
+    .options-drawer, .options-drawer.open, .sheet-backdrop, .tab-ico { transition: none; }
+  }
 </style>
 </head>
 <body>
 <div class="app">
   <header class="brand">
-    <div class="eyebrow">Admissions equity &middot; 2015 to 2025</div>
-    <h1>DClinPsy Equal-Opportunities Explorer</h1>
+    <div class="logo" aria-hidden="true">&#968;</div>
+    <div class="brand-text">
+      <div class="eyebrow">Admissions equity &middot; 2015 to 2025</div>
+      <h1><span class="t-long">DClinPsy Equal-Opportunities Explorer</span><span class="t-short">DClinPsy Equality Explorer</span></h1>
+    </div>
   </header>
   <aside class="rail">
     <div class="panel">
@@ -512,35 +590,45 @@
   </aside>
 
   <main class="main">
-    <nav class="tabs" id="tabs">
-      <button class="tab active" data-view="trend">Over time</button>
-      <button class="tab" data-view="forest">Compare groups</button>
-      <button class="tab" data-view="era">Before vs after DEI</button>
-      <button class="tab" data-view="rep">Representation</button>
-      <button class="tab" data-view="table">Data table</button>
-      <button class="tab" data-view="about">About &amp; methods</button>
+    <nav class="tabs" id="tabs" aria-label="Views">
+      <button class="tab active" data-view="trend" aria-current="page"><span class="tab-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5.5-5.5 4 4L21 7"/><path d="M3 21h18"/></svg></span><span class="t-long">Over time</span><span class="t-short">Over time</span></button>
+      <button class="tab" data-view="forest"><span class="tab-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16M8 20h8M5 7h14"/><path d="M5 7l-3 6.5a3 3 0 006 0L5 7zM19 7l-3 6.5a3 3 0 006 0L19 7z"/></svg></span><span class="t-long">Compare groups</span><span class="t-short">Compare</span></button>
+      <button class="tab" data-view="era"><span class="tab-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="2.4" fill="currentColor"/><path d="M9 12h11M15 7l5 5-5 5"/></svg></span><span class="t-long">Before vs after DEI</span><span class="t-short">DEI era</span></button>
+      <button class="tab" data-view="rep"><span class="tab-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.3c2.9.4 5 2.8 5 5.7"/></svg></span><span class="t-long">Representation</span><span class="t-short">Population</span></button>
+      <button class="tab" data-view="table"><span class="tab-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M3 14.8h18M9.5 4v16"/></svg></span><span class="t-long">Data table</span><span class="t-short">Data</span></button>
+      <button class="tab" data-view="about"><span class="tab-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.6" r=".9" fill="currentColor"/></svg></span><span class="t-long">About &amp; methods</span><span class="t-short">About</span></button>
     </nav>
-    <button class="options-toggle" id="options-toggle" type="button" aria-expanded="false" hidden>
-      Chart options <span class="chev">▾</span></button>
-    <div class="options-drawer" id="options-drawer"></div>
+    <div class="sheet-backdrop" id="sheet-backdrop" hidden></div>
+    <div class="options-drawer" id="options-drawer" role="dialog" aria-modal="true" aria-labelledby="sheet-title" aria-hidden="true">
+      <div class="sheet-head"><span class="sheet-grab" aria-hidden="true"></span>
+        <div class="sheet-title" id="sheet-title">Chart options</div>
+        <button class="sheet-done" id="sheet-done" type="button">Done</button></div>
+    </div>
     <div class="content">
+      <div class="m-toolbar" id="m-toolbar">
+        <div class="m-char" id="m-char"></div>
+        <button class="options-toggle" id="options-toggle" type="button" aria-expanded="false" aria-controls="options-drawer" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></svg>Options</button>
+      </div>
       <div class="chartwrap" id="chartwrap">
+        <div id="chart-head"></div>
+        <div id="chart"></div>
+        <div id="matrix"></div>
+        <div id="table"></div>
+        <div class="chart-actions">
+          <button class="note-toggle" id="note-toggle" type="button" aria-expanded="false" aria-controls="chart-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.6" r=".9" fill="currentColor"/></svg>How to read this chart <span class="chev">▾</span></button>
+          <p class="note" id="chart-note"></p>
         <div class="dl-group" id="dl-group">
           <button class="dl-btn" id="dl-png" title="Download this chart as a PNG">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
               stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/>
-              <path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>Download PNG</button>
+              <path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg><span class="dl-word">Download </span>PNG</button>
           <select id="png-format" aria-label="PNG shape" title="PNG shape">
             <option value="phone">Phone (blog)</option>
             <option value="wide">Wide</option>
           </select>
         </div>
-        <div id="chart-head"></div>
-        <div id="chart"></div>
-        <div id="matrix"></div>
-        <div id="table"></div>
-        <button class="note-toggle" id="note-toggle" type="button" aria-expanded="false" aria-controls="chart-note">How to read this chart <span class="chev">▾</span></button>
-        <p class="note" id="chart-note"></p>
+        </div>
       </div>
       <div class="mobile-support">
         <a class="kofi-btn" href="https://ko-fi.com/Q5Q51YZ8GK" target="_blank" rel="noopener"

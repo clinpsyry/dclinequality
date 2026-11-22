@@ -1737,6 +1737,11 @@
   function render() {
     if (!state.exporting) applyPhoneClasses();
     var about = document.getElementById("about"), wrap = document.getElementById("chartwrap");
+    var tb = document.getElementById("m-toolbar");
+    if (tb) tb.hidden = state.view === "about";
+    // the About page carries its own support button
+    var ms = document.querySelector(".mobile-support");
+    if (ms) ms.hidden = state.view === "about";
     if (state.view === "about") {
       wrap.style.display = "none"; about.style.display = "block"; return;
     }
@@ -1867,7 +1872,7 @@
       state.characteristic = sel.value; state.selected = {}; resetY();
       defaultSelection(); buildGroupList();
       state.tableSelected = {}; buildTableCatList();
-      render();
+      render(); fadeIn();
     });
   }
 
@@ -2130,9 +2135,13 @@
     var tabs = document.getElementById("tabs");
     tabs.addEventListener("click", function (e) {
       var b = e.target.closest(".tab"); if (!b) return;
+      var changed = state.view !== b.getAttribute("data-view");
       state.view = b.getAttribute("data-view");
       tabs.querySelectorAll(".tab").forEach(function (x) {
-        x.classList.toggle("active", x === b); });
+        x.classList.toggle("active", x === b);
+        if (x === b) x.setAttribute("aria-current", "page"); else x.removeAttribute("aria-current"); });
+      // phones: the bottom bar switches screens, so start the new one at the top
+      if (changed && isAppShell()) window.scrollTo(0, 0);
       document.getElementById("trend-controls").hidden = state.view !== "trend";
       document.getElementById("forest-controls").hidden = state.view !== "forest";
       document.getElementById("era-controls").hidden = state.view !== "era";
@@ -2144,7 +2153,16 @@
         switchCharacteristic(state.view === "rep" ? "ETHNIC GROUP (BROAD)" : "ETHNICITY");
       updateCharOptions();
       render();
+      if (changed) fadeIn();
     });
+  }
+  // A short fade when the screen changes (skipped if the reader asks for less motion).
+  function fadeIn() {
+    var el = document.querySelector(".content");
+    if (!el || !el.animate) return;
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    el.animate([{ opacity: 0, transform: "translateY(6px)" }, { opacity: 1, transform: "none" }],
+      { duration: 220, easing: "cubic-bezier(.2,.8,.2,1)" });
   }
 
   function buildToggles() {
@@ -2263,22 +2281,53 @@
     buildRangeSelect("cmp-year-from", "cmp-year-to", "cmpFrom", "cmpTo");
   }
 
-  // Phones: the controls move from the side rail into a collapsible "Chart
-  // options" panel directly under the tabs, so they sit above the chart instead
-  // of below it. Desktop keeps the side rail.
+  // Phones and small tablets (the app shell, 860 px and below): the controls
+  // move from the side rail into a slide-up "Chart options" sheet, and the
+  // characteristic picker moves out of the rail to sit above the chart, next to
+  // the Options button. Desktop keeps the side rail.
   var rail = document.querySelector(".rail"), railHome = rail.parentNode, railNext = rail.nextSibling;
+  var charCtl = document.getElementById("char-control"), charHome = charCtl.parentNode, charNext = charCtl.nextSibling;
+  function isAppShell() { return window.innerWidth <= 860; }
   function placeRail() {
-    var narrow = window.innerWidth <= 860, drawer = document.getElementById("options-drawer");
+    var narrow = isAppShell(), drawer = document.getElementById("options-drawer"), slot = document.getElementById("m-char");
     if (narrow && rail.parentNode !== drawer) drawer.appendChild(rail);
-    else if (!narrow && rail.parentNode === drawer) railHome.insertBefore(rail, railNext);
+    else if (!narrow && rail.parentNode === drawer) { closeSheet(); railHome.insertBefore(rail, railNext); }
+    if (narrow && charCtl.parentNode !== slot) slot.appendChild(charCtl);
+    else if (!narrow && charCtl.parentNode === slot) charHome.insertBefore(charCtl, charNext);
     document.getElementById("options-toggle").hidden = !narrow;
   }
+  var sheetReturn = null;
+  function openSheet() {
+    var drawer = document.getElementById("options-drawer"), bd = document.getElementById("sheet-backdrop");
+    sheetReturn = document.activeElement;
+    bd.hidden = false;
+    requestAnimationFrame(function () { bd.classList.add("show"); });
+    drawer.classList.add("open"); drawer.setAttribute("aria-hidden", "false");
+    document.body.classList.add("sheet-open");
+    document.getElementById("options-toggle").setAttribute("aria-expanded", "true");
+    setTimeout(function () { var d = document.getElementById("sheet-done"); if (d) d.focus({ preventScroll: true }); }, 60);
+  }
+  function closeSheet() {
+    var drawer = document.getElementById("options-drawer"), bd = document.getElementById("sheet-backdrop");
+    if (!drawer.classList.contains("open")) return;
+    drawer.classList.remove("open"); drawer.setAttribute("aria-hidden", "true");
+    bd.classList.remove("show");
+    setTimeout(function () { if (!drawer.classList.contains("open")) bd.hidden = true; }, 260);
+    document.body.classList.remove("sheet-open");
+    document.getElementById("options-toggle").setAttribute("aria-expanded", "false");
+    if (sheetReturn && sheetReturn.focus) sheetReturn.focus({ preventScroll: true });
+  }
   function buildOptionsToggle() {
-    var btn = document.getElementById("options-toggle"), drawer = document.getElementById("options-drawer");
-    btn.addEventListener("click", function () {
-      var open = drawer.classList.toggle("open");
-      btn.setAttribute("aria-expanded", open ? "true" : "false");
-      btn.querySelector(".chev").textContent = open ? "▴" : "▾";
+    document.getElementById("options-toggle").addEventListener("click", openSheet);
+    document.getElementById("sheet-done").addEventListener("click", closeSheet);
+    document.getElementById("sheet-backdrop").addEventListener("click", closeSheet);
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeSheet(); });
+    // tap the long intro above a table or the matrix to read all of it (phones)
+    ["table", "matrix"].forEach(function (id) {
+      document.getElementById(id).addEventListener("click", function (e) {
+        var t = e.target.closest(".table-sub, .matrix-sub");
+        if (t && document.body.classList.contains("phone-charts")) t.classList.toggle("open");
+      });
     });
     placeRail();
     var t; window.addEventListener("resize", function () {
