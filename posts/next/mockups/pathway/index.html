@@ -1,0 +1,240 @@
+<title>The Road to a Place</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: one reading column. Four numbered findings in order of certainty, then limits and working. */
+:root {
+  --bg: #EADDCA; --fg: #2a2622; --muted: #5c554d; --line: #cbbda9;
+  --panel: #f3ebe0; --accent: #990F3D; --ref: #4d4740; --faint: #BCB3A4; --warn: #8a5a00;
+  --font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #1f1c19; --fg: #ece4d8; --muted: #b3a999; --line: #4a433b;
+  --panel: #2a2622; --accent: #e0577f; --ref: #b3a999; --faint: #6b6258; --warn: #e0a84a; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #1f1c19; --fg: #ece4d8; --muted: #b3a999; --line: #4a433b;
+  --panel: #2a2622; --accent: #e0577f; --ref: #b3a999; --faint: #6b6258; --warn: #e0a84a; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 820px; margin: 0 auto; padding-block: 28px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1 { font-size: 1.7rem; margin: 0 0 6px; text-wrap: balance; }
+h2 { font-size: 1.15rem; margin: 36px 0 6px; text-wrap: balance; }
+h3 { font-size: 0.95rem; margin: 18px 0 4px; }
+p, li { max-width: 66ch; }
+p { margin: 0 0 10px; }
+.muted { color: var(--muted); }
+.small { font-size: 0.85rem; }
+.tag { display: inline-block; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;
+  padding: 1px 7px; border-radius: 10px; border: 1px solid currentColor; margin-right: 6px; vertical-align: 2px; }
+.tag.measured { color: var(--ref); }
+.tag.approx { color: var(--warn); }
+.tag.scenario { color: var(--accent); }
+.key { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; margin: 12px 0; }
+.key b.big { font-size: 1.35rem; }
+.scen { border-left: 3px solid var(--accent); }
+svg text { fill: var(--fg); font-family: var(--font); }
+.tablebox { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; font-size: 0.9rem; }
+th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); }
+th { font-size: 0.75rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+td.num, th.num { text-align: right; }
+td.num { white-space: nowrap; }
+.row { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin: 8px 0; }
+.row label { font-size: 0.9rem; }
+input[type=range] { width: min(320px, 100%); accent-color: var(--accent); }
+input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+details { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; margin-top: 10px; }
+summary { cursor: pointer; font-weight: 600; }
+ul { padding-left: 20px; margin: 6px 0 10px; }
+</style>
+
+<div class="wrap">
+  <h1>The road to a place</h1>
+  <p class="muted">What the data say about getting onto the Doctorate in Clinical Psychology (DClinPsy): how many people get a place each year, how many tries trainees needed, and what the data cannot tell you. Each section has a label: <span class="tag measured">Measured</span> means counted, <span class="tag approx">Approximate</span> means it rests on one stated assumption, <span class="tag scenario">Scenario</span> means "what if", not an estimate.</p>
+
+  <!-- 1 -->
+  <h2>1. About one in five applicants gets a place each year</h2>
+  <p><span class="tag measured">Measured</span>Clearing House figures, all applicants, 2015 to 2025.</p>
+  <div class="key" id="rateKey"></div>
+  <div id="rateChart"></div>
+  <p class="small muted">Dots: share of applicants who got a place. Bars: 95% Wilson interval (very short, because the numbers are large). 2020 is grey and not joined to the line: the pandemic year was unusual.</p>
+
+  <!-- 2 -->
+  <h2>2. Most trainees needed more than one try</h2>
+  <p><span class="tag measured">Measured</span>BPS Alternative Handbook survey of current trainees, 2023 edition: "How many times did you apply (including the year you were successful)?"</p>
+  <div class="key" id="triesKey"></div>
+  <div id="triesChart"></div>
+  <div class="tablebox"><table id="triesTable"></table></div>
+  <p class="small muted">Trainees who started about 2019 to 2021, on 30 courses. About 42% of trainees answered. This covers only people who got a place.</p>
+
+  <!-- 3 -->
+  <h2>3. About half of all applications come from people who never get a place</h2>
+  <p><span class="tag approx">Approximate</span>This follows from two numbers, with one assumption.</p>
+  <div class="key" id="halfKey"></div>
+  <details><summary>How this is worked out</summary><div id="halfWorking" class="small"></div></details>
+
+  <!-- 4 -->
+  <h2>4. What the data suggest about the pattern</h2>
+  <p>We tested a standard statistical model, set up before we looked at the result: everyone has their own fixed chance, and some people stop applying. It did not fit the survey. If it were right, about 41% of trainees would have got in first time. The real figure is 31%.</p>
+  <p>One thing follows from simple arithmetic, with no model: <b>a second try succeeds more often than a first one, on average.</b> Not everyone who misses applies again, and those who do have already used one try. So for two tries to be almost as common as one among trainees (29% and 31%), the chance on the second try must be higher. This holds as long as the survey answers are typical of all trainees. Possible reasons include more experience by the second try, or people applying early to learn the process. The data cannot tell these apart, so we give no number for it.</p>
+
+  <!-- 5 -->
+  <h2>5. Scenario: what a yearly chance adds up to</h2>
+  <div class="key scen">
+    <p style="margin:0"><span class="tag scenario">Scenario</span>This is not your chance. It shows the arithmetic only: <b>if</b> your chance were the same every year, and you applied every year, how likely would a place be after each try? Section 4 shows that real chances are not the same each try, so read it as a rough guide.</p>
+  </div>
+  <div class="row">
+    <label for="pSlider">Chance each year: <b id="pOut"></b></label>
+    <input type="range" id="pSlider" min="5" max="50" step="1">
+  </div>
+  <p class="small muted" id="pNote"></p>
+  <div class="tablebox"><table id="scenTable"></table></div>
+
+  <!-- limits -->
+  <h2>What these data cannot tell you</h2>
+  <ul>
+    <li><b>Your own chance.</b> Experience, grades, interviews and which courses you choose are not in these data.</li>
+    <li><b>How many people never get a place.</b> The survey asks only people who did.</li>
+    <li><b>Why first tries succeed less often.</b> Several explanations fit equally well.</li>
+    <li><b>What happens next year.</b> Places depend on NHS funding. Applicant numbers have grown faster than places since 2022.</li>
+  </ul>
+
+  <details><summary>Methods, sources and check figures</summary><div id="methods" class="small"></div></details>
+
+  <p class="small muted" style="margin-top:24px">Sources: Clearing House for Postgraduate Courses in Clinical Psychology, equal-opportunities data 2015 to 2025. BPS Division of Clinical Psychology Pre-Qualification Group, Alternative Handbook 2023, course reports. Model fits: pipeline/10_pathway_model.R (RULES.md C10).</p>
+</div>
+
+<script src="stats.js" onerror="var s=document.createElement('script');s.src='../../../../site/js/stats.js';s.onload=function(){window.__statsReady&&window.__statsReady()};document.head.appendChild(s)"></script>
+<script>
+(function () {
+  "use strict";
+  // Clearing House totals: [year, applicants, accepted] (data/equalopps_merged.csv, TOTALS rows)
+  var CH = [[2015,3565,582],[2016,3571,585],[2017,3780,581],[2018,3765,589],[2019,3925,607],[2020,4099,762],
+            [2021,4420,985],[2022,4524,1135],[2023,4990,1181],[2024,5603,1154],[2025,5910,1177]];
+  // BPS Alternative Handbook 2023, "times applied", pooled over 30 courses, Hull excluded, "don't know" dropped
+  // (data/raw/bps_alternative_handbook/times_applied_2023_edition.csv; counts = percent x responses, rounded)
+  var BPS = { labels: ["1", "2", "3", "4", "5", "6+"], n: [298, 280, 201, 116, 60, 21], courses: 30, dk: 5 };
+  var COHORT = [2019, 2020, 2021];   // entry years of the surveyed trainees
+
+  function pct(x, d) { return (100 * x).toFixed(d == null ? 0 : d) + "%"; }
+  function fmt(n) { return n.toLocaleString("en-GB"); }
+  function css(v, f) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || f; }
+
+  function start() {
+    var W = Stats.wilsonCI;
+    var last = CH[CH.length - 1], lr = W(last[2], last[1]);
+
+    // ---- 1. Yearly rate --------------------------------------------------------
+    document.getElementById("rateKey").innerHTML = "In " + last[0] + ", <b class=\"big\">" + pct(lr.rate, 1) + "</b> of applicants got a place (" +
+      fmt(last[2]) + " of " + fmt(last[1]) + "). That is about " + (last[1] / last[2]).toFixed(1) + " applicants for each place.";
+    drawRate(W);
+
+    // ---- 2. Tries -------------------------------------------------------------
+    var tot = BPS.n.reduce(function (a, b) { return a + b; }, 0);
+    var cum = 0, rows = BPS.n.map(function (x, i) {
+      cum += x; var w = W(x, tot), cw = W(cum, tot);
+      return { lab: BPS.labels[i], x: x, s: w.rate, lo: w.lo, hi: w.hi, c: cw.rate, clo: cw.lo, chi: cw.hi };
+    });
+    document.getElementById("triesKey").innerHTML = "Of " + fmt(tot) + " trainees, <b class=\"big\">" + pct(rows[0].s) +
+      "</b> got in on their first try. " + pct(rows[1].c) + " were in within 2 tries, and " + pct(rows[2].c) + " within 3.";
+    drawTries(rows);
+    var t = "<tr><th>Tries</th><th class=\"num\">Trainees</th><th class=\"num\">Share</th><th class=\"num\">95% interval</th><th class=\"num\">This many tries or fewer</th></tr>";
+    rows.forEach(function (r) {
+      t += "<tr><td>" + r.lab + "</td><td class=\"num\">" + r.x + "</td><td class=\"num\">" + pct(r.s, 1) + "</td><td class=\"num\">" +
+        pct(r.lo, 1) + " to " + pct(r.hi, 1) + "</td><td class=\"num\">" + pct(r.c) + "</td></tr>";
+    });
+    document.getElementById("triesTable").innerHTML = t;
+
+    // ---- 3. Half of applications -----------------------------------------------
+    var A = 0, N = 0;
+    CH.forEach(function (r) { if (COHORT.indexOf(r[0]) >= 0) { N += r[1]; A += r[2]; } });
+    var vals = [1, 2, 3, 4, 5, 6], mean = 0, sq = 0;
+    BPS.n.forEach(function (x, i) { mean += vals[i] * x / tot; sq += vals[i] * vals[i] * x / tot; });
+    var se = Math.sqrt((sq - mean * mean) / tot), mlo = mean - 1.959964 * se, mhi = mean + 1.959964 * se;
+    var r = A / N, share = 1 - mean * r, shLo = 1 - mhi * r, shHi = 1 - mlo * r;
+    document.getElementById("halfKey").innerHTML = "<b class=\"big\">About " + pct(share) + "</b> (" + pct(shLo) + " to " + pct(shHi) +
+      ") of applications came from people who did not get a place in the end. There were " + (N / A).toFixed(1) +
+      " applications for each place, but trainees used only " + mean.toFixed(1) + " tries each.";
+    document.getElementById("halfWorking").innerHTML =
+      "<p><b>Step 1.</b> Clearing House, " + COHORT[0] + " to " + COHORT[COHORT.length - 1] + " (the years these trainees started): " + fmt(N) +
+      " applications, " + fmt(A) + " places. Applications per place = " + (N / A).toFixed(2) + ".</p>" +
+      "<p><b>Step 2.</b> BPS survey: average tries per trainee = " + mean.toFixed(2) + " (95% interval " + mlo.toFixed(2) + " to " + mhi.toFixed(2) +
+      "; \"6+\" counted as 6, so this is a little low).</p>" +
+      "<p><b>Step 3.</b> Each place uses about " + mean.toFixed(2) + " applications from the person who gets it. The other " +
+      (N / A - mean).toFixed(2) + " of every " + (N / A).toFixed(2) + " come from people who did not get a place. Share = 1 &minus; " +
+      mean.toFixed(2) + " / " + (N / A).toFixed(2) + " = " + pct(share, 1) + ".</p>" +
+      "<p><b>The assumption:</b> applicant numbers stay about the same from year to year (a \"steady state\"). They have grown, so read this as approximate. Survey answers come only from the 42% of trainees who answered, and from memory. If people who needed many tries answered less often, the share is a little too high.</p>";
+
+    // ---- 5. Scenario -------------------------------------------------------------
+    var sl = document.getElementById("pSlider");
+    sl.value = Math.round(100 * lr.rate);
+    sl.addEventListener("input", function () { drawScen(+sl.value / 100, lr.rate, last[0]); });
+    drawScen(+sl.value / 100, lr.rate, last[0]);
+
+    // ---- Methods -------------------------------------------------------------------
+    document.getElementById("methods").innerHTML =
+      "<p><b>Yearly rate:</b> accepted / applicants, all applicants, with a 95% Wilson interval. Source file: data/equalopps_merged.csv.</p>" +
+      "<p><b>Tries:</b> per-course percentages from " + BPS.courses + " BPS Alternative Handbook 2023 course reports, times the number of responses, rounded, then added up. " +
+      "Hull was left out: it reports 100% \"once\" (22 of 22), almost certainly an error. " + BPS.dk + " \"I don't know\" answers were dropped. 95% Wilson intervals. " +
+      "The intervals treat answers as independent; trainees on one course may be alike, so the real uncertainty is a little larger.</p>" +
+      "<p><b>Model test (section 4):</b> set out in RULES.md C10 before fitting. The model (each person has a fixed chance drawn from a Beta distribution; after a miss, a fixed chance of applying again) failed: deviance 122.3 on 3 degrees of freedom, p &lt; 0.001. A model where the chance changes with each try fitted (p = 0.66) but was chosen after seeing the data, is not unique, and gives implausible later values, so it is not shown as an estimate.</p>" +
+      "<p><b>Scenario:</b> have a place by try K = 1 &minus; (1 &minus; p)<sup>K</sup>, for a chosen p. No interval: it is a what-if, not an estimate.</p>" +
+      "<div class=\"tablebox\"><table><tr><th>Year</th><th class=\"num\">Applicants</th><th class=\"num\">Places</th><th class=\"num\">Rate</th><th class=\"num\">95% interval</th></tr>" +
+      CH.map(function (r) { var w = W(r[2], r[1]); return "<tr><td>" + r[0] + "</td><td class=\"num\">" + fmt(r[1]) + "</td><td class=\"num\">" + fmt(r[2]) +
+        "</td><td class=\"num\">" + pct(w.rate, 1) + "</td><td class=\"num\">" + pct(w.lo, 1) + " to " + pct(w.hi, 1) + "</td></tr>"; }).join("") + "</table></div>";
+  }
+
+  function drawRate(W) {
+    var w = 640, h = 240, L = 44, R = 14, T = 14, B = 30, ymax = 0.3;
+    var x = function (yr) { return L + (yr - 2015) / 10 * (w - L - R); };
+    var y = function (v) { return T + (1 - v / ymax) * (h - T - B); };
+    var acc = css("--accent", "#990F3D"), faint = css("--faint", "#BCB3A4"), line = css("--line", "#cbbda9");
+    var s = '<svg viewBox="0 0 ' + w + " " + h + '" width="100%" role="img" aria-label="Share of applicants who got a place, 2015 to 2025">';
+    [0, 0.1, 0.2, 0.3].forEach(function (v) {
+      s += '<line x1="' + L + '" x2="' + (w - R) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="' + line + '"/>' +
+        '<text x="' + (L - 6) + '" y="' + (y(v) + 4) + '" font-size="11" text-anchor="end">' + pct(v) + "</text>";
+    });
+    var pre = [], post = [];
+    CH.forEach(function (r) {
+      var c = W(r[2], r[1]), pt = x(r[0]) + "," + y(c.rate);
+      if (r[0] < 2020) pre.push(pt); else if (r[0] > 2020) post.push(pt);
+      var col = r[0] === 2020 ? faint : acc;
+      s += '<line x1="' + x(r[0]) + '" x2="' + x(r[0]) + '" y1="' + y(c.lo) + '" y2="' + y(c.hi) + '" stroke="' + col + '" stroke-width="2"/>' +
+        '<circle cx="' + x(r[0]) + '" cy="' + y(c.rate) + '" r="4" fill="' + col + '"/>';
+      if (r[0] % 2 === 1 || r[0] === 2020) s += '<text x="' + x(r[0]) + '" y="' + (h - 10) + '" font-size="11" text-anchor="middle">' + r[0] + "</text>";
+    });
+    s += '<polyline points="' + pre.join(" ") + '" fill="none" stroke="' + acc + '" stroke-width="1.5"/>' +
+      '<polyline points="' + post.join(" ") + '" fill="none" stroke="' + acc + '" stroke-width="1.5"/></svg>';
+    document.getElementById("rateChart").innerHTML = '<p class="small" style="margin:0"><b>Share of applicants who got a place, 2015 to 2025</b></p>' + s;
+  }
+
+  function drawTries(rows) {
+    var w = 640, h = 230, L = 44, R = 14, T = 20, B = 34, ymax = 0.4, bw = 56;
+    var x = function (i) { return L + (i + 0.5) * (w - L - R) / rows.length; };
+    var y = function (v) { return T + (1 - v / ymax) * (h - T - B); };
+    var acc = css("--accent", "#990F3D"), fg = css("--fg", "#2a2622"), line = css("--line", "#cbbda9");
+    var s = '<svg viewBox="0 0 ' + w + " " + h + '" width="100%" role="img" aria-label="How many tries trainees needed">';
+    [0, 0.1, 0.2, 0.3, 0.4].forEach(function (v) {
+      s += '<line x1="' + L + '" x2="' + (w - R) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="' + line + '"/>' +
+        '<text x="' + (L - 6) + '" y="' + (y(v) + 4) + '" font-size="11" text-anchor="end">' + pct(v) + "</text>";
+    });
+    rows.forEach(function (r, i) {
+      s += '<rect x="' + (x(i) - bw / 2) + '" y="' + y(r.s) + '" width="' + bw + '" height="' + (y(0) - y(r.s)) + '" fill="' + acc + '" fill-opacity="0.85"/>' +
+        '<line x1="' + x(i) + '" x2="' + x(i) + '" y1="' + y(r.lo) + '" y2="' + y(r.hi) + '" stroke="' + fg + '" stroke-width="1.5"/>' +
+        '<text x="' + x(i) + '" y="' + (y(r.hi) - 5) + '" font-size="11" text-anchor="middle">' + pct(r.s) + "</text>" +
+        '<text x="' + x(i) + '" y="' + (h - 16) + '" font-size="12" text-anchor="middle">' + r.lab + "</text>";
+    });
+    s += '<text x="' + ((L + w - R) / 2) + '" y="' + (h - 2) + '" font-size="11" text-anchor="middle">Number of tries, including the one that worked</text></svg>';
+    document.getElementById("triesChart").innerHTML = '<p class="small" style="margin:0"><b>How many tries trainees needed (share of trainees, 2023 survey)</b></p>' + s;
+  }
+
+  function drawScen(p, latest, yr) {
+    document.getElementById("pOut").textContent = pct(p);
+    document.getElementById("pNote").textContent = "Starts at " + pct(latest, 1) + ", the share of all applicants who got a place in " + yr + ". Move it to see other cases.";
+    var t = "<tr><th>Try</th><th class=\"num\">Have a place by this try (if the chance stayed at " + pct(p) + ")</th></tr>";
+    for (var k = 1; k <= 5; k++) t += "<tr><td>" + k + "</td><td class=\"num\">" + pct(1 - Math.pow(1 - p, k)) + "</td></tr>";
+    document.getElementById("scenTable").innerHTML = t;
+  }
+
+  if (window.Stats) start(); else window.__statsReady = start;
+})();
+</script>
