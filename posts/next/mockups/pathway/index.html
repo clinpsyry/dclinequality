@@ -100,7 +100,16 @@ ul { padding-left: 20px; margin: 6px 0 10px; }
 
   <h2>5. What the data suggest about the pattern</h2>
   <p>We tested a standard statistical model, set up before we looked at the result: everyone has their own fixed chance, and some people stop applying. It did not fit the survey. If it were right, about 41% of trainees would have got in first time. The real figure is 31%.</p>
-  <p>One thing follows from simple arithmetic, with no model: <b>a second try succeeds more often than a first one, on average.</b> Not everyone who misses applies again, and those who do have already used one try. So for two tries to be almost as common as one among trainees (29% and 31%), the chance on the second try must be higher. This holds as long as the survey answers are typical of all trainees. Possible reasons include more experience by the second try, or people applying early to learn the process. The data cannot tell these apart, so we give no number for it.</p>
+  <p>The survey pattern suggests that <b>people applying again do a bit better, as a group, than first-timers.</b> Fewer people make a second try than a first, yet the second try produced almost as many trainees (29% against 31%). No published table shows this directly, and it may be because of who chooses to reapply, not because trying again raises any one person's chance.</p>
+
+  <h3>How many tries trainees needed</h3>
+  <p class="small"><span class="tag measured">Measured</span>Share of trainees at each number of tries, with 95% intervals (2023 survey). Points are joined by lines; there are only six points, so no smoothing.</p>
+  <div id="distCurve"></div>
+
+  <h3>Chance of a place at each try</h3>
+  <p class="small"><span class="tag scenario">Scenario</span>No data give this directly. It is worked out from the two facts above plus two guesses (how often people who never get in apply, and that they stop at a steady rate). The line follows the section 4 slider. The darker band covers every slider setting from 1 to 4. The lighter band also covers the years used (2021 alone to 2019 alone). Where the bands are narrow, the guesses matter little. Where they fan out, we do not know.</p>
+  <div id="hazCurve"></div>
+
 
   <!-- 5 -->
   <h2>6. Scenario: what a yearly chance adds up to</h2>
@@ -164,6 +173,7 @@ ul { padding-left: 20px; margin: 6px 0 10px; }
       "</b> got in on their first try. " + pct(rows[1].c) + " were in within 2 tries, and " + pct(rows[2].c) + " within 3.";
     drawTries(rows);
     drawCum(rows);
+    drawDist(rows);
     var t = "<tr><th>Tries</th><th class=\"num\">Trainees</th><th class=\"num\">Share</th><th class=\"num\">95% interval</th><th class=\"num\">This many tries or fewer</th></tr>";
     rows.forEach(function (r) {
       t += "<tr><td>" + r.lab + "</td><td class=\"num\">" + r.x + "</td><td class=\"num\">" + pct(r.s, 1) + "</td><td class=\"num\">" +
@@ -181,7 +191,7 @@ ul { padding-left: 20px; margin: 6px 0 10px; }
     var yr = function (y) { var x = CH.filter(function (c) { return c[0] === y; })[0]; return x[1] / x[2]; };
     var ratioLo = yr(COHORT[COHORT.length - 1]), ratioHi = yr(COHORT[0]);   // 2021: fewest applications per place; 2019: most
     var shLo = 1 - mhi / ratioLo, shHi = 1 - mlo / ratioHi;
-    PEOPLE = { mid: 100 * (N / A - mean), lo: 100 * (ratioLo - mhi), hi: 100 * (ratioHi - mlo), ratioLo: ratioLo, ratioHi: ratioHi };
+    PEOPLE = { mean: mean, ratioMid: N / A, mid: 100 * (N / A - mean), lo: 100 * (ratioLo - mhi), hi: 100 * (ratioHi - mlo), ratioLo: ratioLo, ratioHi: ratioHi };
     document.getElementById("halfKey").innerHTML = "<b class=\"big\">About " + pct(share) + "</b> (somewhere between " + pct(shLo) + " and " + pct(shHi) +
       ", depending on the years used) of applications came from people who did not get a place in the end. There were " + (N / A).toFixed(1) +
       " applications for each place, but trainees used only " + mean.toFixed(1) + " tries each.";
@@ -353,6 +363,7 @@ ul { padding-left: 20px; margin: 6px 0 10px; }
       '<text x="' + (x(m) + 10) + '" y="' + (y(e) - 8) + '" font-size="12">' + pct(e) + "</text>";
     c += '<text x="' + ((L + W - R) / 2) + '" y="' + (H - 2) + '" font-size="11" text-anchor="middle">Average tries of people who never get in (your choice above)</text></svg>';
     drawFlow(m, e, eLo, eHi);
+    drawHaz(m);
     document.getElementById("everChart").innerHTML = '<p class="small" style="margin:0"><b>Share of everyone who starts applying who ever gets a place</b></p>' + c +
       '<p class="small muted">Line: middle estimate (2019 to 2021 pooled). Band and error bar: from 2021 alone to 2019 alone. The band does not include the unknown tries: that is the axis, because the data cannot narrow it.</p>';
   }
@@ -379,7 +390,7 @@ ul { padding-left: 20px; margin: 6px 0 10px; }
     document.getElementById("flow").innerHTML =
       '<p class="small" style="margin-top:8px">Of 1,000 who start: about <b>' + placed + "</b> get a place in the end (" + Math.round(1000 * ELo) + " to " +
       Math.round(1000 * EHi) + "), and about <b>" + (1000 - placed) + "</b> stop without one. Check: the journey uses " + fmt(apps) +
-      " applications for " + placed + " places, a success rate of " + pct(placed / apps, 1) + ", close to the Clearing House rate for these years.</p>" +
+      " applications for " + placed + " places, a success rate of " + pct(placed / apps, 1) + ". This matches the Clearing House rate by design (step 1 uses it), so it shows the numbers add up, not that the story is right.</p>" +
       '<p class="small muted">Range shown only for the end totals (years used, 2021 alone to 2019 alone). The year-by-year numbers use the middle estimate. Year 6 includes every later try; anyone still applying then is counted as stopping. Which dot does what is random: only the counts matter.</p>';
     flowReset(FLOW.seen);
   }
@@ -514,6 +525,73 @@ ul { padding-left: 20px; margin: 6px 0 10px; }
     new IntersectionObserver(function (es) {
       es.forEach(function (e) { if (e.isIntersecting && !FLOW.seen) { FLOW.seen = true; if (!FLOW.playing && FLOW.fired === 0) flowPlay(); } });
     }, { threshold: 0.4 }).observe(document.getElementById("flowCanvas"));
+  }
+
+  // Curve 1: share of trainees by number of tries, Wilson band.
+  function drawDist(rows) {
+    var w = 640, h = 230, L = 44, R = 14, T = 16, B = 34, ymax = 0.4;
+    var x = function (i) { return L + i * (w - L - R) / (rows.length - 1); };
+    var y = function (v) { return T + (1 - v / ymax) * (h - T - B); };
+    var acc = css("--accent", "#990F3D"), line = css("--line", "#cbbda9");
+    var s = '<svg viewBox="0 0 ' + w + " " + h + '" width="100%" role="img" aria-label="Share of trainees by number of tries, with 95% band">';
+    [0, 0.1, 0.2, 0.3, 0.4].forEach(function (v) { s += '<line x1="' + L + '" x2="' + (w - R) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="' + line + '"/><text x="' + (L - 6) + '" y="' + (y(v) + 4) + '" font-size="11" text-anchor="end">' + pct(v) + "</text>"; });
+    var up = rows.map(function (r, i) { return x(i) + "," + y(r.hi); }), dn = rows.slice().reverse().map(function (r, i) { return x(rows.length - 1 - i) + "," + y(r.lo); });
+    s += '<polygon points="' + up.concat(dn).join(" ") + '" fill="' + acc + '" fill-opacity="0.18"/>';
+    s += '<polyline points="' + rows.map(function (r, i) { return x(i) + "," + y(r.s); }).join(" ") + '" fill="none" stroke="' + acc + '" stroke-width="2.5"/>';
+    rows.forEach(function (r, i) { s += '<circle cx="' + x(i) + '" cy="' + y(r.s) + '" r="4.5" fill="' + acc + '"/><text x="' + x(i) + '" y="' + (y(r.hi) - 6) + '" font-size="11" text-anchor="middle">' + pct(r.s) + '</text><text x="' + x(i) + '" y="' + (h - 16) + '" font-size="12" text-anchor="middle">' + r.lab + "</text>"; });
+    s += '<text x="' + ((L + w - R) / 2) + '" y="' + (h - 2) + '" font-size="11" text-anchor="middle">Number of tries, including the one that worked</text></svg>';
+    document.getElementById("distCurve").innerHTML = s;
+  }
+
+  // Curve 3: implied success rate at tries 1 to 5 under the scenario.
+  function perTry(ratio, mean, m) {
+    var tot = BPS.n.reduce(function (a, b) { return a + b; }, 0), f = BPS.n.map(function (x) { return x / tot; });
+    var X = 100 * (ratio - mean), E = 100 / (100 + X / m), tr = 1000 * E, nv = 1000 - tr, q = 1 / m, left = 1000, out = [];
+    for (var k = 1; k <= 5; k++) {
+      var pl = tr * f[k - 1], st = nv * Math.pow(1 - q, k - 1) * q;
+      out.push(left > 0.5 ? pl / left : null); left -= pl + st;
+    }
+    return out;
+  }
+  function drawHaz(m) {
+    var P = PEOPLE, mean = P.mean, ratios = [P.ratioLo, P.ratioMid, P.ratioHi], ms = [];
+    for (var v = 1; v <= 4.0001; v += 0.25) ms.push(v);
+    var inner = [], outer = [];
+    for (var k = 0; k < 5; k++) { inner.push([1, 0]); outer.push([1, 0]); }
+    ms.forEach(function (mm) {
+      ratios.forEach(function (rt, ri) {
+        perTry(rt, mean, mm).forEach(function (h, k) {
+          if (h == null) return;
+          outer[k][0] = Math.min(outer[k][0], h); outer[k][1] = Math.max(outer[k][1], h);
+          if (ri === 1) { inner[k][0] = Math.min(inner[k][0], h); inner[k][1] = Math.max(inner[k][1], h); }
+        });
+      });
+    });
+    var mid = perTry(P.ratioMid, mean, m), overall = 1 / P.ratioMid;
+    var ymax = Math.min(1, Math.ceil(Math.max.apply(null, outer.map(function (o) { return o[1]; })) * 10 + 0.5) / 10);
+    var w = 640, h = 260, L = 44, R = 14, T = 16, B = 34;
+    var x = function (i) { return L + i * (w - L - R) / 4; };
+    var y = function (v) { return T + (1 - v / ymax) * (h - T - B); };
+    var acc = css("--accent", "#990F3D"), line = css("--line", "#cbbda9"), fg = css("--fg", "#2a2622");
+    var s = '<svg viewBox="0 0 ' + w + " " + h + '" width="100%" role="img" aria-label="Implied chance of a place at each try, with uncertainty bands">';
+    for (var g = 0; g <= ymax + 1e-9; g += 0.1) s += '<line x1="' + L + '" x2="' + (w - R) + '" y1="' + y(g) + '" y2="' + y(g) + '" stroke="' + line + '"/><text x="' + (L - 6) + '" y="' + (y(g) + 4) + '" font-size="11" text-anchor="end">' + pct(g) + "</text>";
+    function band(b, op) {
+      var up = b.map(function (o, i) { return x(i) + "," + y(o[1]); }), dn = b.slice().reverse().map(function (o, i) { return x(4 - i) + "," + y(o[0]); });
+      return '<polygon points="' + up.concat(dn).join(" ") + '" fill="' + acc + '" fill-opacity="' + op + '"/>';
+    }
+    s += band(outer, 0.12) + band(inner, 0.22);
+    s += '<line x1="' + L + '" x2="' + (w - R) + '" y1="' + y(overall) + '" y2="' + y(overall) + '" stroke="' + fg + '" stroke-dasharray="5 4"/>' +
+      '<text x="' + (w - R) + '" y="' + (y(overall) - 6) + '" font-size="11" text-anchor="end">All applications, 2019 to 2021: ' + pct(overall) + "</text>";
+    s += '<polyline points="' + mid.map(function (v, i) { return x(i) + "," + y(v); }).join(" ") + '" fill="none" stroke="' + acc + '" stroke-width="2.5"/>';
+    mid.forEach(function (v, i) {
+      s += '<circle cx="' + x(i) + '" cy="' + y(v) + '" r="4.5" fill="' + acc + '"/><text x="' + (x(i) + 8) + '" y="' + (y(v) + 14) + '" font-size="11">' + pct(v) + "</text>" +
+        '<text x="' + x(i) + '" y="' + (h - 16) + '" font-size="12" text-anchor="middle">' + (i + 1) + "</text>";
+    });
+    s += '<text x="' + ((L + w - R) / 2) + '" y="' + (h - 2) + '" font-size="11" text-anchor="middle">Try</text></svg>';
+    var rng = function (o) { return pct(o[0]) + " to " + pct(o[1]); };
+    document.getElementById("hazCurve").innerHTML = s +
+      '<p class="small">Line: slider at ' + m + (m === 1 ? " time" : " times") + ". Across all settings: try 1 is " + rng(outer[0]) + ", try 2 is " + rng(outer[1]) +
+      ", try 3 is " + rng(outer[2]) + ", try 5 is " + rng(outer[4]) + ". In every setting, try 1 is below the average for the same years, though at the high end only just. Later tries are uncertain.</p>";
   }
 
   function drawScen(p, latest, yr) {
