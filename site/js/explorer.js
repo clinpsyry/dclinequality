@@ -205,7 +205,7 @@
     tableSort:{ col:null, dir:1 }, repYearFrom:DEI_FROM, repYearTo:LATEST, repMode:"chart",
     repSort:{ col:null, dir:1 }, forestMode:"chart", forestSort:{ col:null, dir:1 },
     eraView:"chart", eraSort:{ col:null, dir:1 }, combine:false, sub:"",
-    yCustom:false, yMin:"", yMax:"", showDEI:false, phoneMode:"auto", pngFormat:"phone", noteOpen:false };
+    yCustom:false, yMin:"", yMax:"", showDEI:false, phoneMode:"auto", pngFormat:"phone", noteOpen:false, noteDeskOpen:false };
 
   // ---- pooled cells (RULES.md C8): flagged, not changed --------------------------
   // A row's acceptances may include hidden rows (pooled_with), or its own
@@ -510,6 +510,7 @@
     var key = [ch, cats.join("|"), y0, y1, state.numShow, narrow, deskPolish(), Math.floor(gd.getBoundingClientRect().width)].join("~");
     if (state._mixAnim && MIX_MS && !state.exporting && gd._fullLayout && gd._mixKey === key) {
       state._mixAnim = false;
+      gd._animUntil = Date.now() + MIX_MS + 60;
       Plotly.animate(gd, { data: traces, layout: { annotations: ann } },
         { transition: { duration: MIX_MS, easing: "cubic-in-out" }, frame: { duration: MIX_MS, redraw: false } });
       return;
@@ -2151,6 +2152,12 @@
   function render() {
     if (!state.exporting) applyPhoneClasses();
     if (state.view !== "trend") state.playYear = null;
+    // A Mix bar animation still running would carry over into a different chart
+    // (Plotly applies its pending frames to the new traces): start that chart clean.
+    var cg = document.getElementById("chart");
+    if (cg._animUntil && Date.now() < cg._animUntil && !(state.view === "trend" && state.trendMode === "mix")) {
+      cg._animUntil = 0; cg._mixKey = null; Plotly.purge(cg); cg.__zeroHook = false; cg._trendHoverBound = false;
+    }
     if (state._lockView !== state.view) { state._lockOn = false; state._lockView = state.view; }
     document.getElementById("chart")._fitMax = 0;
     var about = document.getElementById("about"), wrap = document.getElementById("chartwrap");
@@ -2398,7 +2405,8 @@
     years.forEach(function (y, i) {
       chain = chain.then(function () {
         setGifLabel("GIF " + (i + 1) + "/" + years.length);
-        c.go(y); render();   // redraw first, so the frame's title is this year's
+        c.go(y); state._mixAnim = false;   // frames are stills: no on-screen bar animation
+        render();   // redraw first, so the frame's title is this year's
         return downloadChart(true, { scale: scale });
       }).then(function (u) { urls.push(u); });
     });
@@ -2409,6 +2417,7 @@
       [["year-from", "yearFrom"], ["year-to", "yearTo"], ["rep-year-from", "repYearFrom"], ["rep-year-to", "repYearTo"]].forEach(function (p) {
         var el = document.getElementById(p[0]); if (el) el.value = state[p[1]]; });
       gifBusy = false; if (btn) btn.disabled = false; setGifLabel("GIF");
+      state._mixAnim = false;
       render();
     }
     return chain.then(function () {
@@ -2447,10 +2456,20 @@
     btn.hidden = !note.textContent;
     btn.setAttribute("aria-expanded", open ? "true" : "false");
     btn.querySelector(".chev").textContent = open ? "▴" : "▾";
+    // Desktop: two lines, then "Read the full note" (only when there is more to read)
+    var more = document.getElementById("note-more"); if (!more) return;
+    var desk = !document.body.classList.contains("phone-charts") && !isAppShell();
+    note.classList.toggle("clamp", desk && !state.noteDeskOpen);
+    var longer = desk && !!note.textContent && (state.noteDeskOpen || note.scrollHeight > note.clientHeight + 2);
+    more.hidden = !longer;
+    more.textContent = state.noteDeskOpen ? "Show less" : "Read the full note";
+    more.setAttribute("aria-expanded", state.noteDeskOpen ? "true" : "false");
   }
   function buildNoteToggle() {
     var btn = document.getElementById("note-toggle");
     if (btn) btn.addEventListener("click", function () { state.noteOpen = !state.noteOpen; foldNote(); });
+    var more = document.getElementById("note-more");
+    if (more) more.addEventListener("click", function () { state.noteDeskOpen = !state.noteDeskOpen; foldNote(); });
   }
 
   function updateNote() {
