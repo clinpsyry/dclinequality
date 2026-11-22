@@ -63,6 +63,7 @@ ul { padding-left: 20px; margin: 6px 0 10px; }
   <p><span class="tag measured">Measured</span>BPS Alternative Handbook survey of current trainees, 2023 edition: "How many times did you apply (including the year you were successful)?"</p>
   <div class="key" id="triesKey"></div>
   <div id="triesChart"></div>
+  <div id="cumChart" style="margin-top:14px"></div>
   <div class="tablebox"><table id="triesTable"></table></div>
   <p class="small muted">Trainees who started about 2019 to 2021, on 30 courses. About 42% of trainees answered. This covers only people who got a place.</p>
 
@@ -138,6 +139,7 @@ ul { padding-left: 20px; margin: 6px 0 10px; }
     document.getElementById("triesKey").innerHTML = "Of " + fmt(tot) + " trainees, <b class=\"big\">" + pct(rows[0].s) +
       "</b> got in on their first try. " + pct(rows[1].c) + " were in within 2 tries, and " + pct(rows[2].c) + " within 3.";
     drawTries(rows);
+    drawCum(rows);
     var t = "<tr><th>Tries</th><th class=\"num\">Trainees</th><th class=\"num\">Share</th><th class=\"num\">95% interval</th><th class=\"num\">This many tries or fewer</th></tr>";
     rows.forEach(function (r) {
       t += "<tr><td>" + r.lab + "</td><td class=\"num\">" + r.x + "</td><td class=\"num\">" + pct(r.s, 1) + "</td><td class=\"num\">" +
@@ -251,6 +253,29 @@ ul { padding-left: 20px; margin: 6px 0 10px; }
       "<span>" + sw(acc, 0.35) + "<b>" + missT + "</b> missed, but the person got in on a later try</span>" +
       "<span>" + sw(faint, 1) + "<b>" + never + "</b> from people who never got a place</span></div>" +
       '<p class="small muted" style="margin-top:6px">The red squares (' + trainee + ') are all the tries of the 100 people who got in. The grey squares are everyone else. Most applications miss each year, but many of those misses (light red) belong to people who get in later.</p>';
+  }
+
+  // Cumulative share of trainees in by each try, with Wilson intervals.
+  function drawCum(rows) {
+    var w = 640, h = 240, L = 44, R = 14, T = 20, B = 34;
+    var x = function (i) { return L + (i + 0.5) * (w - L - R) / rows.length; };
+    var y = function (v) { return T + (1 - v) * (h - T - B); };
+    var acc = css("--accent", "#990F3D"), line = css("--line", "#cbbda9");
+    var s = '<svg viewBox="0 0 ' + w + " " + h + '" width="100%" role="img" aria-label="Share of trainees who were in by each try">';
+    [0, 0.25, 0.5, 0.75, 1].forEach(function (v) {
+      s += '<line x1="' + L + '" x2="' + (w - R) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="' + line + '"/>' +
+        '<text x="' + (L - 6) + '" y="' + (y(v) + 4) + '" font-size="11" text-anchor="end">' + pct(v) + "</text>";
+    });
+    s += '<polyline points="' + rows.map(function (r, i) { return x(i) + "," + y(r.c); }).join(" ") + '" fill="none" stroke="' + acc + '" stroke-width="2.5"/>';
+    rows.forEach(function (r, i) {
+      s += '<line x1="' + x(i) + '" x2="' + x(i) + '" y1="' + y(r.clo) + '" y2="' + y(r.chi) + '" stroke="' + acc + '" stroke-width="2"/>' +
+        '<circle cx="' + x(i) + '" cy="' + y(r.c) + '" r="4.5" fill="' + acc + '"/>' +
+        '<text x="' + x(i) + '" y="' + (y(r.c) + (i === rows.length - 1 ? 16 : -10)) + '" font-size="12" text-anchor="middle">' + pct(r.c) + "</text>" +
+        '<text x="' + x(i) + '" y="' + (h - 16) + '" font-size="12" text-anchor="middle">' + r.lab + "</text>";
+    });
+    s += '<text x="' + ((L + w - R) / 2) + '" y="' + (h - 2) + '" font-size="11" text-anchor="middle">By this many tries</text></svg>';
+    document.getElementById("cumChart").innerHTML = '<p class="small" style="margin:0"><b>Share of trainees who were in by each try (cumulative, 2023 survey)</b></p>' + s +
+      '<p class="small muted">This is out of people who got in, so it always reaches 100%. It is not the chance for all applicants: people who stopped applying are not in the survey (see section 3).</p>';
   }
 
   function drawScen(p, latest, yr) {
