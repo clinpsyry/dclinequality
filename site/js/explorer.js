@@ -1741,11 +1741,102 @@
   }
   // Test hook: build the PNG without downloading it (used to check the export).
   function exportPNG() { return downloadChart(true); }
+  // ---- Quick controls (phones) ------------------------------------------------
+  // A row of the most-used settings for the current view, above the chart. Each
+  // one drives the real control in the Options sheet (a click, or a select change),
+  // so the two always agree and every existing handler still does the work.
+  var QB_SHORT = { "Vs reference": "Vs ref", "Percentage points": "pp", "Rate ratio": "Ratio",
+    "Combine Groups": "Combine", "95% CI": "95% CI", "DEI era": "DEI era" };
+  function qbSeg(segId, ariaLabel) {
+    var real = document.getElementById(segId); if (!real) return null;
+    var wrap = document.createElement("div"); wrap.className = "qb-seg"; wrap.setAttribute("role", "group");
+    wrap.setAttribute("aria-label", ariaLabel);
+    real.querySelectorAll(".seg-btn").forEach(function (rb) {
+      var b = document.createElement("button"); b.type = "button";
+      var t = rb.textContent.trim(); b.textContent = QB_SHORT[t] || t;
+      var on = rb.classList.contains("active");
+      b.className = on ? "on" : ""; b.setAttribute("aria-pressed", on ? "true" : "false");
+      b.addEventListener("click", function () { if (!rb.classList.contains("active")) rb.click(); });
+      wrap.appendChild(b);
+    });
+    return wrap;
+  }
+  function qbChip(id) {
+    var rb = document.getElementById(id); if (!rb) return null;
+    var b = document.createElement("button"), on = rb.classList.contains("on"), t = rb.textContent.trim();
+    b.type = "button"; b.className = "qb-chip" + (on ? " on" : "");
+    b.setAttribute("aria-pressed", on ? "true" : "false");
+    b.textContent = QB_SHORT[t] || t;
+    b.addEventListener("click", function () { rb.click(); });
+    return b;
+  }
+  // One year for Compare groups: sets the pooled window to that single year.
+  function qbYear() {
+    var sel = document.createElement("select"); sel.className = "qb-select"; sel.setAttribute("aria-label", "Year");
+    if (state.yearFrom !== state.yearTo) {
+      var o = document.createElement("option"); o.value = ""; o.textContent = state.yearFrom + "–" + state.yearTo;
+      o.selected = true; sel.appendChild(o);
+    }
+    ALL_YEARS.slice().reverse().forEach(function (y) {
+      var o = document.createElement("option"); o.value = y; o.textContent = y;
+      if (state.yearFrom === y && state.yearTo === y) o.selected = true;
+      sel.appendChild(o);
+    });
+    sel.addEventListener("change", function () {
+      if (!sel.value) return;
+      var y = +sel.value, f = document.getElementById("year-from"), t = document.getElementById("year-to");
+      state.yearFrom = y; state.yearTo = y; f.value = y; t.value = y;
+      render();
+    });
+    return sel;
+  }
+  function qbCompareTick() {
+    var cb = document.getElementById("cmp-on"), b = document.createElement("button");
+    b.type = "button"; b.className = "qb-chip" + (state.cmpOn ? " on" : "");
+    b.setAttribute("aria-pressed", state.cmpOn ? "true" : "false");
+    b.textContent = "vs " + rangeLabel(state.cmpFrom, state.cmpTo);
+    b.title = "Show the comparison years as a dark tick";
+    b.addEventListener("click", function () { cb.checked = !cb.checked; cb.dispatchEvent(new Event("change")); });
+    return b;
+  }
+  function buildQuickbar() {
+    var qb = document.getElementById("quickbar"); if (!qb) return;
+    qb.innerHTML = "";
+    var v = state.view, items = [];
+    if (v === "trend") {
+      items.push(qbSeg("trendmode-seg", "Show"));
+      if (state.trendMode === "vsref") items.push(qbSeg("trend-measure-seg", "Measure"));
+      if (state.trendMode !== "numbers") items.push(qbChip("toggle-ci"));
+      if (!isContext()) items.push(qbChip("toggle-dei"));
+      items.push(qbChip("toggle-combine"));
+    } else if (v === "forest") {
+      items.push(qbYear());
+      if (!isSESPairwise()) {
+        items.push(qbCompareTick());
+        if (!isOverview()) items.push(qbSeg("measure-seg", "Measure"));
+        items.push(qbSeg("forestmode-seg", "View"));
+      }
+    } else if (v === "era") {
+      items.push(qbSeg("eramode-seg", "Show"));
+      items.push(qbSeg("eraview-seg", "View"));
+    } else if (v === "rep") {
+      if (REP[state.characteristic]) items.push(qbSeg("repmode-seg", "View"));
+    } else if (v === "table") {
+      items.push(qbSeg("tablemode-seg", "Show"));
+    }
+    var keep = qb._view === v ? qb.scrollLeft : 0;   // a new view starts the row at its first control
+    items.filter(Boolean).forEach(function (el) { qb.appendChild(el); });
+    qb.hidden = v === "about" || !qb.children.length;
+    qb.scrollLeft = keep; qb._view = v;
+  }
+
   function render() {
     if (!state.exporting) applyPhoneClasses();
     var about = document.getElementById("about"), wrap = document.getElementById("chartwrap");
     var tb = document.getElementById("m-toolbar");
     if (tb) tb.hidden = state.view === "about";
+    var qbar = document.getElementById("quickbar");
+    if (qbar && state.view === "about") qbar.hidden = true;
     // the About page carries its own support button
     var ms = document.querySelector(".mobile-support");
     if (ms) ms.hidden = state.view === "about";
@@ -1795,6 +1886,7 @@
     labelTableCells();
     updateNote();
     foldNote();
+    if (!state.exporting) buildQuickbar();
   }
 
   // Phones: the footnote folds behind a "How to read this chart" button, closed
