@@ -1286,11 +1286,18 @@
       annos.forEach(function (a) { a.font = Object.assign({}, a.font, { size: 13.5 }); });
       annos.push({ xref: "paper", yref: "paper", x: 1, y: 1, xanchor: "right", yanchor: "bottom", yshift: 10,
         showarrow: false, text: pp ? "Gap (pp)" : "Ratio", font: { size: 12, color: MUTED } });
+      // full screen with many rows: smaller labels and marks, so tight rows stay legible
+      var tight = isMax() && fgd.clientHeight > 0 && fgd.clientHeight / nRows < 21;
+      if (tight) {
+        layout.yaxis.tickfont = { size: 12, color: INK };
+        annos.forEach(function (a) { if (a.font) a.font.size = 12; });
+      }
       traces.forEach(function (t) {
-        if (t.error_x) t.error_x.thickness = 3.2;
-        if (t.marker && typeof t.marker.size === "number") t.marker.size += 3;
+        if (t.error_x) t.error_x.thickness = tight ? 2.4 : 3.2;
+        if (t.marker && typeof t.marker.size === "number") t.marker.size += tight ? 0 : 3;
       });
       fgd._fitMax = nRows * 100 + 150;
+      fgd._fitMin = isMax() ? nRows * 15 + 60 : 0;   // full screen: never below about 15 px a row
     }
     if (lock) { layout.yaxis.autorange = false; layout.yaxis.range = [nRows - (narrow ? 0.4 : 0.5), narrow ? -0.7 : -0.5]; }
     var drawn = Plotly.react("chart", traces, lockZoom(phoneAxes(layout)), PLOT_CFG);
@@ -1843,7 +1850,9 @@
     // Off Over time, a few rows never stretch past twice their usual height.
     if (gd && deskPolish()) {
       var avail = Math.floor(gd.clientHeight), natural = layout.height || 450;
-      var minH = Math.min(natural, Math.max(220, Math.round(natural * 0.55)));
+      // full screen: let a long chart squeeze further, so it fits without scrolling
+      var minH = Math.min(natural, Math.max(220, Math.round(natural * (isMax() ? 0.3 : 0.55))));
+      if (gd._fitMin) minH = Math.max(minH, gd._fitMin);
       var maxH = gd._fitMax || (state.view === "trend" ? Infinity : natural * 2);
       if (avail > 0) layout.height = Math.max(minH, Math.min(maxH, avail));
       gd._fitAvail = avail;
@@ -2159,7 +2168,7 @@
       cg._animUntil = 0; cg._mixKey = null; Plotly.purge(cg); cg.__zeroHook = false; cg._trendHoverBound = false;
     }
     if (state._lockView !== state.view) { state._lockOn = false; state._lockView = state.view; }
-    document.getElementById("chart")._fitMax = 0;
+    document.getElementById("chart")._fitMax = 0; document.getElementById("chart")._fitMin = 0;
     var about = document.getElementById("about"), wrap = document.getElementById("chartwrap");
     var tb = document.getElementById("m-toolbar");
     if (tb) tb.hidden = state.view === "about";
@@ -2443,6 +2452,41 @@
       }
       restore(); return blob;
     }, function (e) { restore(); throw e; });
+  }
+
+  // Full screen (desktop): the chart card alone on the whole screen, drawn to its
+  // height (the fit in lockZoom), so a long chart such as All groups fits. Uses the
+  // browser's full screen where it can; otherwise the card fills the window. Esc,
+  // or the button again, returns.
+  var MAX_ICON = "M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5", MIN_ICON = "M9 4v5H4M20 9h-5V4M15 20v-5h5M4 15h5v5";
+  function isMax() { return document.body.classList.contains("chart-max"); }
+  function setMax(on) {
+    document.body.classList.toggle("chart-max", on);
+    var b = document.getElementById("max-btn"); if (!b) return;
+    var t = on ? "Exit full screen (Esc)" : "Full screen";
+    b.setAttribute("aria-pressed", on ? "true" : "false"); b.setAttribute("aria-label", t); b.title = t;
+    b.querySelector("path").setAttribute("d", on ? MIN_ICON : MAX_ICON);
+    requestAnimationFrame(function () { render(); });
+  }
+  function buildMaxButton() {
+    var b = document.getElementById("max-btn"); if (!b) return;
+    b.addEventListener("click", function () {
+      if (!isMax()) {
+        setMax(true);
+        var el = document.documentElement;
+        if (el.requestFullscreen) el.requestFullscreen().catch(function () {});
+      } else {
+        setMax(false);
+        if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(function () {});
+      }
+    });
+    document.addEventListener("fullscreenchange", function () {
+      if (!document.fullscreenElement && isMax()) setMax(false);   // Esc in the browser's full screen
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && isMax() && !document.fullscreenElement) setMax(false);
+    });
+    window.addEventListener("resize", function () { if (isMax() && isAppShell()) setMax(false); });
   }
 
   // Phones: the footnote folds behind a "How to read this chart" button, closed
@@ -3057,7 +3101,7 @@
   buildTabs(); buildCharPicker(); defaultSelection(); buildGroupList();
   buildToggles(); buildTrendModeSeg(); buildEraSeg(); buildRepControls();
   buildYearControls(); buildMeasureSeg(); buildLegendKey(); buildYControls(); buildXControls();
-  buildTableCatList(); buildTableControls(); buildViewToggles(); buildPhoneControls(); buildOptionsToggle(); buildNoteToggle(); buildPlaybar();
+  buildTableCatList(); buildTableControls(); buildViewToggles(); buildPhoneControls(); buildOptionsToggle(); buildNoteToggle(); buildPlaybar(); buildMaxButton();
   document.getElementById("dl-png").addEventListener("click", downloadChart);
   document.getElementById("dl-gif").addEventListener("click", function () {
     exportGIF().catch(function () { setGifLabel("GIF failed"); setTimeout(function () { setGifLabel("GIF"); }, 2500); });

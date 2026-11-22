@@ -272,6 +272,23 @@
   body.phone-charts .chartwrap .dl-btn { flex: 1; justify-content: center; min-height: 44px; border-radius: 12px; font-size: .88rem; }
   body.phone-charts .chartwrap .dl-group select { min-height: 44px; border-radius: 12px; font-size: .88rem; }
   .note-toggle { display: none; }
+  /* Full screen (desktop): the chart card alone on the whole screen, drawn to its
+     height, so a long chart such as All groups fits without scrolling */
+  .max-btn { display: none; }
+  @media (min-width: 861px) {
+    body:not(.phone-preview) .max-btn { display: inline-flex; align-items: center; justify-content: center;
+      position: absolute; top: 1.2rem; right: 1.3rem; z-index: 3; width: 36px; height: 36px; padding: 0;
+      border-radius: 999px; border: 1px solid var(--c-hair-2); background: var(--c-fill); color: var(--c-ink-2); cursor: pointer;
+      transition: background .15s ease, color .15s ease; }
+    body:not(.phone-preview) .max-btn:hover { background: #fff; color: var(--c-ink); }
+    body:not(.phone-preview) .max-btn:focus-visible { outline: 3px solid var(--accent-2); outline-offset: 2px; }
+    body:not(.phone-preview) .max-btn svg { width: 17px; height: 17px; }
+    body:not(.phone-preview) .chartwrap #chart-head { padding-right: 3.2rem; }
+    body.chart-max { overflow: hidden; }
+    body.chart-max:not(.phone-preview) .chartwrap { position: fixed; inset: 0; z-index: 200; margin: 0; border-radius: 0;
+      box-shadow: none; padding: 1.3rem 2.4rem 1rem; }
+    body.chart-max:not(.phone-preview) .max-btn { top: 1.1rem; right: 1.6rem; }
+  }
   /* Desktop: a long footnote shows two lines, and opens in full on request */
   .note-more { display: none; }
   @media (min-width: 861px) {
@@ -892,6 +909,7 @@
       </div>
       <div class="quickbar" id="quickbar" role="toolbar" aria-label="Quick chart controls"></div>
       <div class="chartwrap" id="chartwrap">
+        <button class="max-btn" id="max-btn" type="button" aria-pressed="false" aria-label="Full screen" title="Full screen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg></button>
         <div id="chart-head"></div>
         <div class="playbar" id="playbar" hidden>
           <button class="play-btn" id="play-btn" type="button" aria-pressed="false" aria-controls="chart"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5l9 5.5-9 5.5z"/></svg><span class="play-word">Play</span></button>
