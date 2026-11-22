@@ -437,7 +437,7 @@
     .chartwrap .legendkey .swatch { width: 10px; height: 10px; }
   }
   /* narrower desktops: the tab labels give way to their icons first */
-  @media (min-width: 861px) and (max-width: 1280px) {
+  @media (min-width: 861px) and (max-width: 1400px) {
     .app { grid-template-columns: 260px minmax(0, 1fr); }
     .navrow { padding: 0 1.2rem; }
     .content { padding: 0 1.2rem 1.2rem; }
@@ -453,6 +453,50 @@
     .c-vrule { display: none; }
     a.kofi-btn.nav-support { padding: .55rem .62rem; }
     a.kofi-btn.nav-support svg { margin: 0; }
+  }
+
+  /* Desktop fits the window, whatever its size: the chart card takes the height
+     left under the top bar and the control row, and the chart is drawn to it
+     (explorer.js, lockZoom). Long lists, very tall charts and tables scroll inside
+     their own box, never the page. The About page is text, and scrolls. */
+  @media (min-width: 861px) {
+    .rail .panel { height: 100%; min-height: 0; }
+    #trend-controls, #forest-controls, #era-controls, #rep-controls, #table-controls { flex: 0 1 auto; min-height: 0; }
+    #group-list { flex: 0 1 auto; min-height: 96px; overflow-y: auto; }
+    #era-legend, #rep-legend { flex: 0 1 auto; min-height: 60px; overflow-y: auto; }
+    #table-controls .ctl:has(#table-cat-list) { display: flex; flex-direction: column; flex: 0 1 auto; min-height: 0; }
+    #table-cat-list { flex: 0 1 auto; min-height: 96px; overflow-y: auto; }
+    #trend-controls > .note { flex: none; }
+    body:not(.phone-preview) .chartwrap { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+    body:not(.phone-preview) #chart-head, body:not(.phone-preview) .chart-actions { flex: none; }
+    body:not(.phone-preview) #chart { flex: 1 1 0; min-height: 0; overflow-y: auto; overflow-x: hidden; }
+    body:not(.phone-preview) #table, body:not(.phone-preview) #matrix { flex: 1 1 0; min-height: 0; overflow: auto; }
+  }
+  /* shorter windows: tighter spacing, so the chart keeps its room */
+  @media (min-width: 861px) and (max-height: 820px) {
+    .m-toolbar { padding: .7rem 0; }
+    .chartwrap { padding: 1.1rem 1.6rem .9rem; border-radius: 18px; }
+    .chartwrap .chart-title { font-size: 1.32rem; }
+    .chartwrap .note { margin-top: .6rem; padding-top: .55rem; font-size: .76rem; line-height: 1.5; }
+    .chartwrap .legendkey { margin-top: .2rem; font-size: .76rem; }
+    .content { padding-bottom: 1rem; }
+    .rail { padding-top: 1rem; padding-bottom: 1rem; }
+    .ctl, .rail .ctl[style] { margin-top: 1.05rem !important; }
+    label.grp { padding: .26rem .55rem; font-size: .85rem; }
+    #trend-controls > .note { margin-top: 1rem; padding-top: .7rem; font-size: .72rem; }
+    #phone-ctl { padding-top: 1rem; }
+  }
+  @media (min-width: 861px) and (max-height: 680px) {
+    .app { grid-template-rows: 60px 1fr; }
+    .navrow { flex-basis: 60px; }
+    .logo { width: 32px; height: 32px; font-size: 19px; }
+    .tab { padding-top: .38rem; padding-bottom: .38rem; }
+    .m-toolbar { padding: .55rem 0; }
+    .m-char select, .qb-chip, .qb-select, .m-toolbar .dl-btn, .m-toolbar .dl-group select { min-height: 34px; }
+    .qb-seg button { min-height: 28px; }
+    .chartwrap { padding: .85rem 1.3rem .7rem; }
+    .chartwrap .chart-title { font-size: 1.15rem; }
+    #chart-head { margin-bottom: .2rem; }
   }
 
   /* ===== App shell on phones and small tablets =====
