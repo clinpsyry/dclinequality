@@ -438,8 +438,13 @@
         gridcolor:GRID, zeroline:false, linecolor:AXISLINE, tickcolor:AXISLINE }),
       hovermode:"closest", legend:{ orientation:"h", y:-0.18, bgcolor:"rgba(0,0,0,0)", font:{ size:12 } }
     };
-    document.getElementById("chart")._smallMult = false;
-    Plotly.react("chart", traces, lockZoom(phoneLines(layout, traces)), PLOT_CFG);
+    var ngd = document.getElementById("chart");
+    ngd._smallMult = false;
+    var desk = deskPolish();
+    if (desk) { deskTrendLayout(layout, traces, false); ngd._deskBaseH = layout.height; }
+    var drawn = Plotly.react("chart", traces, lockZoom(phoneLines(layout, traces)), PLOT_CFG);
+    deskRailDots(traces);
+    if (desk) drawn.then(function () { return deskFill(ngd, 680); });
   }
 
   // Phones: x range padded so the value labels beside the marks have room.
@@ -523,7 +528,11 @@
           showarrow:false, text:"DEI era", font:{ size:11, color:"#7a6c55" } }
       ] : []
     };
-    Plotly.react("chart", traces, lockZoom(phoneLines(layout, traces)), PLOT_CFG);
+    var desk = deskPolish();
+    if (desk) { deskTrendLayout(layout, traces, true); gd._deskBaseH = layout.height; }
+    var drawn = Plotly.react("chart", traces, lockZoom(phoneLines(layout, traces)), PLOT_CFG);
+    deskRailDots(traces);
+    if (desk) drawn.then(function () { return deskFill(gd, 680); }).then(function () { return deskLineLabels(gd); });
     gd._lastHi = null; bindTrendHover(gd);
   }
 
@@ -1052,7 +1061,25 @@
         line:{ color:"#6d6252", width:1.3, dash:"dash" } }],
       annotations: annos
     };
-    Plotly.react("chart", traces, lockZoom(phoneAxes(layout)), PLOT_CFG);
+    var desk = deskPolish(), fgd = document.getElementById("chart");
+    if (desk) {
+      layout.margin = { t: 38, r: 84, b: 48, l: 14 };
+      Object.assign(layout.xaxis, { gridcolor: GRID_SOFT, showline: false, ticks: "", ticksuffix: pp ? " pp" : "x",
+        tickfont: { size: 12.5, color: MUTED } });
+      Object.assign(layout.yaxis, { tickfont: { size: 14, color: INK }, ticklabelstandoff: 14,
+        autorange: false, range: [rows.length - 0.5, -0.5] });
+      annos.forEach(function (a) { a.font = Object.assign({}, a.font, { size: 13.5 }); });
+      annos.push({ xref: "paper", yref: "paper", x: 1, y: 1, xanchor: "right", yanchor: "bottom", yshift: 10,
+        showarrow: false, text: pp ? "Gap (pp)" : "Ratio", font: { size: 12, color: MUTED } });
+      traces.forEach(function (t) {
+        if (t.error_x) t.error_x.thickness = 3.2;
+        if (t.marker && typeof t.marker.size === "number") t.marker.size += 3;
+      });
+      fgd._deskBaseH = layout.height;
+    }
+    var drawn = Plotly.react("chart", traces, lockZoom(phoneAxes(layout)), PLOT_CFG);
+    if (desk) drawn.then(function () { return deskFill(fgd, rows.length * 100 + 150); })
+      .then(function () { return deskRowBands(fgd, rows.length); });
   }
 
   // Shared title/subtitle for the forest and master views (chart and table).
@@ -1597,6 +1624,102 @@
     return layout;
   }
   var PLOT_CFG = { responsive: true, displayModeBar: false, scrollZoom: false, doubleClick: false };
+
+  // Desktop chart polish (Nov 2026 redesign), on screen only: never in a PNG
+  // export (the blog chart style stays) and never in the phone layout. The axis
+  // title becomes a level unit label above the plot; lines get thicker with a
+  // beige ring on each point; Rate and Vs reference name each line at its end
+  // instead of a legend; the chart grows to fill the window.
+  var GRID_SOFT = "#ddd0bb";
+  function deskPolish() { return !state.exporting && !narrowView() && !isAppShell(); }
+  function deskTrendLayout(layout, traces, lineLabels) {
+    var yt = layout.yaxis.title; yt = typeof yt === "string" ? yt : (yt && yt.text) || "";
+    layout.yaxis.title = { text: "" };
+    Object.assign(layout.yaxis, { ticks: "", showline: false, gridcolor: GRID_SOFT, ticklabelstandoff: 10,
+      tickfont: { size: 12.5, color: MUTED } });
+    Object.assign(layout.xaxis, { ticklen: 4, tickfont: { size: 12.5, color: MUTED } });
+    var widest = 0;
+    if (lineLabels) traces.forEach(function (t) {
+      if (t.name && t.showlegend !== false) wrapLabel(t.name, 22).split("<br>").forEach(function (l) {
+        widest = Math.max(widest, l.length); });
+    });
+    layout.margin = { t: 40, l: layout.margin.l, b: lineLabels ? 40 : layout.margin.b,
+      r: lineLabels ? Math.min(240, Math.max(60, Math.round(widest * 7.8) + 24)) : layout.margin.r };
+    if (lineLabels) layout.showlegend = false;
+    if (yt) layout.annotations = (layout.annotations || []).concat([{ xref: "paper", yref: "paper", x: 0, y: 1,
+      xanchor: "left", yanchor: "bottom", xshift: -(layout.margin.l - 8), yshift: 14, showarrow: false, align: "left",
+      text: escAnn(yt), font: { size: 12.5, color: MUTED } }]);
+    traces.forEach(function (t) {
+      if (!/lines/.test(t.mode || "")) return;
+      t.line = Object.assign({}, t.line, { width: 2.6 });
+      t.marker = Object.assign({}, t.marker, { size: 7.5, line: { color: BG, width: 1.5 } });
+    });
+  }
+  // Grow the chart so its card ends at the foot of the window (never below its
+  // own height, and never past cap).
+  function deskFill(gd, cap) {
+    var card = document.getElementById("chartwrap"), content = card && card.parentNode;
+    if (!gd._fullLayout || !content || gd.style.display === "none") return Promise.resolve();
+    var bottom = card.getBoundingClientRect().bottom + content.scrollTop;
+    var spare = content.getBoundingClientRect().bottom - 24 - bottom;
+    var h = Math.round(Math.max(gd._deskBaseH || 0, Math.min(cap, gd._fullLayout.height + spare)));
+    return Math.abs(h - gd._fullLayout.height) > 2 ? Plotly.relayout(gd, { height: h }) : Promise.resolve();
+  }
+  // Name each line at its right end, in its colour, nudged apart so no two overlap.
+  function deskLineLabels(gd) {
+    var fl = gd._fullLayout; if (!fl || !fl.yaxis || !gd.data) return Promise.resolve();
+    var labs = [];
+    gd.data.forEach(function (t) {
+      if (!t.name || !/lines/.test(t.mode || "") || t.showlegend === false || !t.y) return;
+      for (var k = t.y.length - 1; k >= 0; k--) if (t.y[k] != null) {
+        var txt = wrapLabel(t.name, 22);
+        labs.push({ text: txt, y: t.y[k], c: t.line.color, px: fl.yaxis.l2p(t.y[k]),
+          h: txt.split("<br>").length * 17 + 4 });
+        break;
+      }
+    });
+    labs.sort(function (a, b) { return a.px - b.px; });
+    var pos = labs.map(function (l) { return l.px; });
+    for (var it = 0; it < 60; it++) for (var j = 1; j < pos.length; j++) {
+      var need = (labs[j - 1].h + labs[j].h) / 2, d = pos[j] - pos[j - 1];
+      if (d < need) { var m = (need - d) / 2; pos[j - 1] -= m; pos[j] += m; }
+    }
+    var ann = (gd.layout.annotations || []).filter(function (a) { return a.name !== "desklab"; });
+    labs.forEach(function (l, i) {
+      ann.push({ name: "desklab", xref: "paper", x: 1, xanchor: "left", xshift: 10, yref: "y", y: l.y,
+        yanchor: "middle", yshift: l.px - pos[i], showarrow: false, align: "left",
+        text: "<b>" + l.text.split("<br>").map(escAnn).join("<br>") + "</b>", font: { size: 13, color: l.c } });
+    });
+    return Plotly.relayout(gd, { annotations: ann });
+  }
+  // Compare groups: a soft band behind each row, from the group name to its
+  // value, and a "Group" heading over the names (placed once the names' width is known).
+  function deskRowBands(gd, n) {
+    var sz = gd._fullLayout && gd._fullLayout._size; if (!sz) return Promise.resolve();
+    var x0 = -(sz.l - 2) / sz.w, x1 = 1 + (sz.r - 2) / sz.w;
+    var shapes = (gd.layout.shapes || []).filter(function (s) { return s.name !== "deskband"; });
+    for (var i = 0; i < n; i++) shapes.unshift({ name: "deskband", type: "rect", layer: "below", xref: "paper", yref: "y",
+      x0: x0, x1: x1, y0: i - 0.44, y1: i + 0.44, fillcolor: "rgba(255,255,255,.30)", line: { width: 0 } });
+    var ann = (gd.layout.annotations || []).filter(function (a) { return a.name !== "deskhead"; });
+    ann.push({ name: "deskhead", xref: "paper", yref: "paper", x: x0, y: 1, xanchor: "left", yanchor: "bottom",
+      xshift: 10, yshift: 10, showarrow: false, text: "Group", font: { size: 12, color: MUTED } });
+    return Plotly.relayout(gd, { shapes: shapes, annotations: ann });
+  }
+  // The group list doubles as the colour key: a dot in each drawn line's colour.
+  function deskRailDots(traces) {
+    document.querySelectorAll("#group-list label.grp").forEach(function (l) {
+      var span = l.querySelector("span:not(.c-dot)");
+      var base = span ? span.textContent.replace(/\s*\(reference\)|[*\u2020]/g, "").trim() : "";
+      var t = traces.filter(function (d) { return d.name && d.line && (d.name === base || d.name.indexOf(base + ":") === 0); })[0];
+      // Combine: every ticked group feeds the one pooled line
+      if (!t && traces.length === 1 && /^Combined/.test(traces[0].name || "")) t = traces[0];
+      var dot = l.querySelector(".c-dot");
+      if (!dot) { dot = document.createElement("span"); dot.className = "c-dot"; dot.setAttribute("aria-hidden", "true"); l.appendChild(dot); }
+      var on = !!t && l.querySelector("input").checked;
+      dot.className = "c-dot" + (on ? "" : " off");
+      dot.style.background = on ? t.line.color : "";
+    });
+  }
   // Signed axes ("+,") label zero as "+0"; zero has no sign. Plotly has no format
   // for "sign except at zero", so the label is corrected after drawing (on screen)
   // or fixed as explicit ticks (in the PNG export).
@@ -1828,6 +1951,7 @@
     var mctl = document.getElementById("measure-ctl");
     if (mctl) mctl.hidden = isOverview();
     if (state.view === "forest") buildLegendKey();
+    document.getElementById("legendkey").hidden = state.view !== "forest" || isSESPairwise();
     var chart = document.getElementById("chart"), matrix = document.getElementById("matrix"),
         table = document.getElementById("table");
     chart.style.display = "none"; matrix.style.display = "none"; table.style.display = "none";
@@ -2334,19 +2458,32 @@
     });
   }
 
-  // Phones and small tablets (the app shell, 860 px and below): the controls
-  // move from the side rail into a slide-up "Chart options" sheet, and the
-  // characteristic picker moves out of the rail to sit above the chart, next to
-  // the Options button. Desktop keeps the side rail.
+  // The characteristic picker always sits above the chart. Phones and small
+  // tablets (the app shell, 860 px and below): the other controls move from the
+  // side rail into a slide-up "Chart options" sheet, opened by the Options button
+  // beside the picker, and the quick controls make their own row under it.
+  // Desktop: the side rail stays; the quick controls and the download join the
+  // picker in one row, and the Compare groups key moves under the chart.
   var rail = document.querySelector(".rail"), railHome = rail.parentNode, railNext = rail.nextSibling;
-  var charCtl = document.getElementById("char-control"), charHome = charCtl.parentNode, charNext = charCtl.nextSibling;
+  var charCtl = document.getElementById("char-control");
+  function homeOf(el) { return { el: el, parent: el.parentNode, next: el.nextSibling }; }
+  var deskMoves = [homeOf(document.getElementById("quickbar")), homeOf(document.getElementById("dl-group")),
+    homeOf(document.getElementById("legendkey"))];
+  var vrule = document.createElement("span"); vrule.className = "c-vrule"; vrule.setAttribute("aria-hidden", "true");
   function isAppShell() { return window.innerWidth <= 860; }
   function placeRail() {
     var narrow = isAppShell(), drawer = document.getElementById("options-drawer"), slot = document.getElementById("m-char");
     if (narrow && rail.parentNode !== drawer) drawer.appendChild(rail);
     else if (!narrow && rail.parentNode === drawer) { closeSheet(); railHome.insertBefore(rail, railNext); }
-    if (narrow && charCtl.parentNode !== slot) slot.appendChild(charCtl);
-    else if (!narrow && charCtl.parentNode === slot) charHome.insertBefore(charCtl, charNext);
+    if (charCtl.parentNode !== slot) slot.appendChild(charCtl);
+    var tb = document.getElementById("m-toolbar"), note = document.getElementById("chart-note");
+    if (!narrow && vrule.parentNode !== tb) {
+      tb.appendChild(vrule); tb.appendChild(deskMoves[0].el); tb.appendChild(deskMoves[1].el);
+      note.parentNode.insertBefore(deskMoves[2].el, note);
+    } else if (narrow && vrule.parentNode === tb) {
+      vrule.remove();
+      deskMoves.forEach(function (m) { m.parent.insertBefore(m.el, m.next); });
+    }
     document.getElementById("options-toggle").hidden = !narrow;
   }
   var sheetReturn = null;

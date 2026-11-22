@@ -304,6 +304,157 @@
     -webkit-line-clamp: 3; overflow: hidden; cursor: pointer; }
   body.phone-charts .table-sub.open, body.phone-charts .matrix-sub.open { display: block; -webkit-line-clamp: unset; }
 
+  /* ===== Desktop (861 px and wider), Nov 2026 redesign: "refined warm" =====
+     One light cream surface for the app (top bar, rail, page); the chart card is
+     the one brand-beige surface. Tabs are a pill nav with the phone icons; the
+     characteristic, the view's quick controls and the download sit in one row
+     above the chart; the rail keeps the remaining settings. */
+  .navrow { display: contents; }
+  a.kofi-btn.nav-support, .rail-sec, .c-vrule, .c-dot { display: none; }
+  @media (min-width: 861px) {
+    :root { --c-page: #FBF8F2; --c-chart: #EADDCA; --c-hair: rgba(110,90,60,.14); --c-hair-2: rgba(110,90,60,.22);
+      --c-fill: rgba(255,255,255,.78); --c-ink: #1c1a16; --c-ink-2: #4d463b; --c-muted: #7a7264;
+      --c-claret-soft: #f6e8ed; }
+    body { background: var(--c-page); }
+    .app { grid-template-columns: 296px minmax(0, 1fr); grid-template-rows: 72px 1fr; }
+
+    /* brand: the left end of the top bar */
+    .brand { background: var(--c-page); border-right: 1px solid var(--c-hair); border-bottom: 1px solid var(--c-hair);
+      padding: 0 1.5rem; align-items: center; gap: .75rem; }
+    .logo { width: 36px; height: 36px; border-radius: 10px; margin: 0; font-size: 22px;
+      box-shadow: 0 1px 0 rgba(255,255,255,.25) inset, 0 4px 10px -4px rgba(153,15,61,.45); }
+    .brand-text { display: flex; flex-direction: column-reverse; }
+    .brand h1 { font-size: 1rem; line-height: 1.22; letter-spacing: -.012em; }
+    .brand .eyebrow { margin: .2rem 0 0; font-size: .74rem; font-weight: 500; letter-spacing: 0;
+      text-transform: none; color: var(--c-muted); }
+
+    /* rail: a quiet column of grouped settings */
+    .rail { background: var(--c-page); border-right: 1px solid var(--c-hair); padding: 1.3rem 1.5rem 1.6rem; }
+    .rail .panel { display: flex; flex-direction: column; min-height: 100%; }
+    #trend-controls, #forest-controls, #era-controls, #rep-controls, #table-controls { display: flex; flex-direction: column; }
+    #trend-controls[hidden], #forest-controls[hidden], #era-controls[hidden], #rep-controls[hidden],
+    #table-controls[hidden] { display: none !important; }
+    .rail .qb-dup { display: none !important; }   /* these sit in the row above the chart */
+    .ctl, .rail .ctl[style] { margin-top: 1.55rem !important; }
+    .ctl > label.cap, .rail-sec { display: block; font-size: .84rem; font-weight: 600; letter-spacing: 0;
+      text-transform: none; color: var(--c-ink); margin: 0 0 .55rem; }
+    #groups-title { order: -2; margin-top: .25rem; }
+    #group-list { order: -1; }
+    #table-controls .btn { margin-top: 1.4rem; }
+    .seg { border-radius: 999px; background: rgba(234,221,202,.42); border: 1px solid var(--c-hair); padding: 3px; }
+    .seg-btn { border-radius: 999px; font-size: .82rem; padding: .42rem .4rem; color: var(--c-ink-2); }
+    .seg-btn.active { background: #fff; color: var(--c-ink); box-shadow: 0 1px 2px rgba(60,40,10,.14), 0 0 0 1px rgba(110,90,60,.08); }
+    select, .axisrange input { border-radius: 999px; border-color: var(--c-hair-2); background-color: var(--c-fill);
+      font-size: .88rem; padding-top: .5rem; padding-bottom: .5rem; }
+    .yearrange span { color: var(--c-muted); font-size: .82rem; }
+    /* the group list doubles as the colour key */
+    .group-list { max-height: none; margin: 0; padding: 0; border: none; display: flex; flex-direction: column; gap: 2px; }
+    label.grp { padding: .42rem .55rem; border-radius: 10px; font-size: .88rem; gap: .6rem; color: var(--c-ink); }
+    label.grp:hover { background: rgba(234,221,202,.45); }
+    label.grp input { width: 15px; height: 15px; margin: 0; }
+    .c-dot { display: block; width: 10px; height: 10px; border-radius: 50%; flex: 0 0 auto; margin-left: auto;
+      box-shadow: 0 0 0 2px rgba(255,255,255,.9); }
+    .c-dot.off { background: transparent !important; box-shadow: inset 0 0 0 1.5px #cbbfa9; }
+    #trend-controls > .note { order: 5; margin: 1.6rem 0 0; padding: 1rem 0 0; border-top: 1px solid var(--c-hair);
+      font-size: .76rem; line-height: 1.55; color: var(--c-muted); max-width: none; }
+    /* the phone layout switch: quiet, at the foot of the rail */
+    #phone-ctl { order: 99; margin: auto 0 0 !important; padding-top: 1.6rem; }
+    #phone-ctl > label.cap { font-size: .76rem; font-weight: 500; color: var(--c-muted); margin-bottom: .4rem; }
+    #phone-ctl .seg-btn { font-size: .76rem; padding: .3rem; }
+
+    /* main column and top bar */
+    .main { background: var(--c-page); background-image: none; min-width: 0; }
+    .navrow { flex: 0 0 72px; display: flex; align-items: center; gap: .6rem; padding: 0 2rem;
+      border-bottom: 1px solid var(--c-hair); background: var(--c-page); min-width: 0; }
+    .tabs { display: inline-flex; flex-wrap: nowrap; gap: 2px; padding: 4px; min-width: 0; overflow-x: auto;
+      scrollbar-width: none; background: rgba(234,221,202,.5); border: 1px solid var(--c-hair); border-radius: 999px; }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab { display: inline-flex; align-items: center; gap: .45rem; padding: .48rem .8rem .48rem .68rem; margin: 0;
+      border: none; border-radius: 999px; font-size: .845rem; font-weight: 500; color: var(--c-ink-2); white-space: nowrap;
+      transition: background .15s ease, color .15s ease, box-shadow .15s ease; }
+    .tab:hover { color: var(--c-ink); background: rgba(255,255,255,.5); }
+    .tab .tab-ico { display: inline-flex; width: 18px; height: 18px; color: var(--c-muted); }
+    .tab .tab-ico svg { width: 18px; height: 18px; }
+    .tab.active { background: #fff; color: var(--c-ink); font-weight: 600; border: none;
+      box-shadow: 0 1px 2px rgba(60,40,10,.14), 0 0 0 1px rgba(110,90,60,.08); }
+    .tab.active .tab-ico { color: var(--accent); }
+    /* support: an outline claret pill in the top bar, as on the phone */
+    a.kofi-float { display: none; }
+    a.kofi-btn.nav-support { display: inline-flex; margin-left: auto; flex: 0 0 auto; white-space: nowrap;
+      background: transparent; color: var(--accent); border: 1px solid rgba(153,15,61,.32); box-shadow: none;
+      font-size: .82rem; padding: .55rem .9rem; }
+    a.kofi-btn.nav-support:hover { background: var(--c-claret-soft); box-shadow: none; }
+
+    .content { padding: 0 2rem 1.5rem; display: flex; flex-direction: column; scrollbar-gutter: auto; }
+    #about { padding-top: 1.8rem; }
+
+    /* the row above the chart: characteristic, quick controls, download */
+    .m-toolbar { display: flex !important; align-items: center; gap: .6rem; padding: 1.1rem 0; flex-wrap: wrap; }
+    .m-toolbar[hidden] { display: none !important; }
+    .m-char { flex: 0 0 auto; }
+    .m-char h2 { display: none; }
+    .m-char select { width: 236px; min-height: 40px; font-weight: 600; font-size: .9rem; padding-left: 1rem;
+      padding-right: 2.2rem; background-color: #fff; box-shadow: 0 1px 2px rgba(60,40,10,.06); }
+    .options-toggle { display: none !important; }
+    .c-vrule { display: block; width: 1px; height: 24px; background: var(--c-hair-2); margin: 0 .25rem; }
+    .quickbar { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; padding: 0; overflow: visible; }
+    .quickbar[hidden], .quickbar:empty { display: none; }
+    .qb-seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: 999px; background: rgba(234,221,202,.42);
+      border: 1px solid var(--c-hair); }
+    .qb-seg button, .qb-chip { font: inherit; font-size: .84rem; font-weight: 600; white-space: nowrap; cursor: pointer;
+      min-height: 32px; padding: 0 .9rem; border-radius: 999px; border: none; background: transparent; color: var(--c-ink-2);
+      transition: background .15s ease, color .15s ease; }
+    .qb-seg button:hover { color: var(--c-ink); }
+    .qb-seg button.on { background: var(--accent); color: #fff; box-shadow: 0 1px 2px rgba(153,15,61,.3); }
+    .qb-chip { min-height: 40px; border: 1px solid var(--c-hair-2); background: var(--c-fill); padding: 0 1rem; }
+    .qb-chip:hover { border-color: rgba(110,90,60,.35); color: var(--c-ink); }
+    .qb-chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .qb-chip .tick { display: inline-block; width: 1.05em; }
+    .qb-select { width: auto; min-height: 40px; font-size: .84rem; font-weight: 600; padding: 0 2.1rem 0 1rem;
+      color: var(--c-ink-2); }
+    .m-toolbar .dl-group { position: static; margin-left: auto; display: flex; gap: .4rem; }
+    .m-toolbar .dl-group[hidden] { display: none; }
+    .m-toolbar .dl-word { display: none; }
+    .m-toolbar .dl-btn { border-radius: 999px; min-height: 40px; padding: 0 1rem; background: transparent;
+      border: 1px solid var(--c-hair-2); color: var(--c-ink-2); font-size: .84rem; box-shadow: none; }
+    .m-toolbar .dl-btn:hover { background: var(--c-fill); color: var(--c-ink); }
+    .m-toolbar .dl-group select { width: auto; min-height: 40px; font-size: .84rem; font-weight: 500;
+      background-color: transparent; color: var(--c-ink-2); padding: 0 2rem 0 .95rem; }
+
+    /* the chart card: the one beige surface */
+    .chartwrap { background: var(--c-chart); border: none; border-radius: 22px; padding: 1.7rem 2rem 1.2rem;
+      box-shadow: 0 1px 0 rgba(255,255,255,.55) inset, 0 1px 2px rgba(60,40,10,.06), 0 18px 40px -28px rgba(60,40,10,.35); }
+    #chart-head { padding-right: 0; margin: 0 0 .5rem; }
+    .chartwrap .chart-title { font-size: 1.62rem; font-weight: 700; letter-spacing: -.024em; line-height: 1.18;
+      max-width: 52ch; color: var(--c-ink); text-wrap: balance; }
+    .chartwrap .note { margin: .9rem 0 0; padding: .85rem 0 0; max-width: none; border-top: 1px solid rgba(110,90,60,.18);
+      font-size: .8rem; line-height: 1.6; color: #5f574a; }
+    /* Compare groups: the colour key sits under the chart */
+    .chartwrap .legendkey { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem 1.4rem; margin: .4rem 0 0;
+      padding: 0; border: none; font-size: .8rem; color: var(--c-ink-2); line-height: 1.5; }
+    .chartwrap .legendkey > div { margin: 0 !important; }
+    .chartwrap .legendkey > div:nth-child(n+3) { color: var(--c-muted); }
+    .chartwrap .legendkey .swatch { width: 10px; height: 10px; }
+  }
+  /* narrower desktops: the tab labels give way to their icons first */
+  @media (min-width: 861px) and (max-width: 1280px) {
+    .app { grid-template-columns: 260px minmax(0, 1fr); }
+    .navrow { padding: 0 1.2rem; }
+    .content { padding: 0 1.2rem 1.2rem; }
+    .tab .t-long, .brand h1 .t-long { display: none; }
+    .tab .t-short, .brand h1 .t-short { display: inline; }
+    .m-toolbar { gap: .45rem; }
+    .m-char select { width: 200px; }
+    .qb-seg button, .qb-chip { padding: 0 .72rem; }
+    .m-toolbar .dl-btn { padding: 0 .8rem; }
+  }
+  @media (min-width: 861px) and (max-width: 1100px) {
+    .nav-support .ns-label { display: none; }
+    .c-vrule { display: none; }
+    a.kofi-btn.nav-support { padding: .55rem .62rem; }
+    a.kofi-btn.nav-support svg { margin: 0; }
+  }
+
   /* ===== App shell on phones and small tablets =====
      One warm beige surface (the chart colour) between a slim top bar and a
      bottom tab bar, the characteristic picker and an Options button above the
@@ -394,8 +545,8 @@
     body.phone-charts .chart-actions .dl-word { display: none; }
   }
   /* Quick controls: the most-used settings for the current view, in one
-     sideways-scrolling row between the picker and the chart (phones only). */
-  .quickbar { display: none; }
+     sideways-scrolling row between the picker and the chart (phones; on desktop
+     the row sits beside the picker, see the desktop block above). */
   @media (max-width: 860px) {
     .quickbar { display: flex; gap: .45rem; align-items: center; overflow-x: auto; scrollbar-width: none;
       -webkit-overflow-scrolling: touch; padding: .55rem .8rem .15rem;
@@ -447,7 +598,7 @@
 
     <!-- Trend controls -->
     <div id="trend-controls">
-      <div class="ctl" style="margin-top:.2rem">
+      <div class="ctl qb-dup" style="margin-top:.2rem">
         <label class="cap">Show</label>
         <div class="seg" id="trendmode-seg">
           <button class="seg-btn active" data-mode="rate">Rate</button>
@@ -455,7 +606,7 @@
           <button class="seg-btn" data-mode="numbers">Numbers</button>
         </div>
       </div>
-      <div class="ctl" id="trend-measure-ctl" hidden>
+      <div class="ctl qb-dup" id="trend-measure-ctl" hidden>
         <label class="cap">Measure</label>
         <div class="seg" id="trend-measure-seg">
           <button class="seg-btn active" data-measure="pp">Percentage points</button>
@@ -479,7 +630,7 @@
           <input type="number" id="y-max" step="any" aria-label="Y axis to">
         </div>
       </div>
-      <div class="ctl">
+      <div class="ctl qb-dup">
         <label class="cap">Display</label>
         <div class="chips">
           <button class="chip" id="toggle-ci" type="button" title="Show 95% confidence intervals">95% CI</button>
@@ -487,6 +638,7 @@
           <button class="chip" id="toggle-dei" type="button" title="Shade the DEI era (2021 to 2024)">DEI era</button>
         </div>
       </div>
+      <div class="rail-sec" id="groups-title">Groups shown</div>
       <div class="group-list" id="group-list"></div>
       <p class="note">* aggregate group: broad ethnic groups and Mixed use the source's
       official published totals; Christian is a transparent sum of its denominations.
@@ -495,7 +647,7 @@
 
     <!-- Forest controls -->
     <div id="forest-controls" hidden>
-      <div class="ctl" id="forest-view-ctl" style="margin-top:.2rem">
+      <div class="ctl qb-dup" id="forest-view-ctl" style="margin-top:.2rem">
         <label class="cap">View</label>
         <div class="seg" id="forestmode-seg">
           <button class="seg-btn active" data-mode="chart">Chart</button>
@@ -508,7 +660,7 @@
           <select id="year-from"></select><span>to</span><select id="year-to"></select>
         </div>
       </div>
-      <div class="ctl" id="measure-ctl">
+      <div class="ctl qb-dup" id="measure-ctl">
         <label class="cap">Measure</label>
         <div class="seg" id="measure-seg">
           <button class="seg-btn active" data-measure="pp">Percentage points</button>
@@ -531,14 +683,14 @@
 
     <!-- Era controls -->
     <div id="era-controls" hidden>
-      <div class="ctl" style="margin-top:.2rem">
+      <div class="ctl qb-dup" style="margin-top:.2rem">
         <label class="cap">View</label>
         <div class="seg" id="eraview-seg">
           <button class="seg-btn active" data-mode="chart">Chart</button>
           <button class="seg-btn" data-mode="table">Table</button>
         </div>
       </div>
-      <div class="ctl">
+      <div class="ctl qb-dup">
         <label class="cap">Show</label>
         <div class="seg" id="eramode-seg">
           <button class="seg-btn active" data-mode="rate">Rate</button>
@@ -561,7 +713,7 @@
 
     <!-- Representativeness controls -->
     <div id="rep-controls" hidden>
-      <div class="ctl" style="margin-top:.2rem">
+      <div class="ctl qb-dup" style="margin-top:.2rem">
         <label class="cap">View</label>
         <div class="seg" id="repmode-seg">
           <button class="seg-btn active" data-mode="chart">Chart</button>
@@ -590,7 +742,7 @@
 
     <!-- Table controls -->
     <div id="table-controls" hidden>
-      <div class="ctl" style="margin-top:.2rem">
+      <div class="ctl qb-dup" style="margin-top:.2rem">
         <label class="cap">Show</label>
         <div class="seg" id="tablemode-seg">
           <button class="seg-btn active" data-mode="pooled">Pooled</button>
@@ -613,6 +765,7 @@
   </aside>
 
   <main class="main">
+    <div class="navrow">
     <nav class="tabs" id="tabs" aria-label="Views">
       <button class="tab active" data-view="trend" aria-current="page"><span class="tab-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5.5-5.5 4 4L21 7"/><path d="M3 21h18"/></svg></span><span class="t-long">Over time</span><span class="t-short">Over time</span></button>
       <button class="tab" data-view="forest"><span class="tab-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16M8 20h8M5 7h14"/><path d="M5 7l-3 6.5a3 3 0 006 0L5 7zM19 7l-3 6.5a3 3 0 006 0L19 7z"/></svg></span><span class="t-long">Compare groups</span><span class="t-short">Compare</span></button>
@@ -621,6 +774,9 @@
       <button class="tab" data-view="table"><span class="tab-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M3 14.8h18M9.5 4v16"/></svg></span><span class="t-long">Data table</span><span class="t-short">Data</span></button>
       <button class="tab" data-view="about"><span class="tab-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.6" r=".9" fill="currentColor"/></svg></span><span class="t-long">About &amp; methods</span><span class="t-short">About</span></button>
     </nav>
+      <a class="kofi-btn nav-support" href="https://ko-fi.com/Q5Q51YZ8GK" target="_blank" rel="noopener" aria-label="Support this project"
+        title="Please consider supporting this project: it keeps it free and independent"><svg viewBox="0 0 24 24" aria-hidden="true"><text x="12" y="19" text-anchor="middle" font-size="22" font-weight="700" font-family="Georgia, 'Times New Roman', serif" fill="currentColor">&#968;</text></svg><span class="ns-label">Support this project</span></a>
+    </div>
     <div class="sheet-backdrop" id="sheet-backdrop" hidden></div>
     <div class="options-drawer" id="options-drawer" role="dialog" aria-modal="true" aria-labelledby="sheet-title" aria-hidden="true">
       <div class="sheet-head"><span class="sheet-grab" aria-hidden="true"></span>
