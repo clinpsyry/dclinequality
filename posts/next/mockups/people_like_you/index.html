@@ -1,82 +1,81 @@
-<title>People Like You</title>
+<title>Chances by Try</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
-/* Layout: one plain column. Inputs, then the anchor rate, then one row per trait, then the working. */
+/* Layout: one plain column. Pick a group, see the yearly rate, then the try-by-try model, then the working. */
 :root {
   --bg: #EADDCA; --fg: #2a2622; --muted: #5c554d; --line: #cbbda9;
-  --panel: #f3ebe0; --accent: #990F3D; --warn: #8a5a00;
+  --panel: #f3ebe0; --accent: #990F3D; --ref: #4d4740; --warn: #8a5a00;
   --font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --bg: #1f1c19; --fg: #ece4d8; --muted: #b3a999; --line: #4a433b;
-  --panel: #2a2622; --accent: #e0577f; --warn: #e0a84a; color-scheme: dark } }
+  --panel: #2a2622; --accent: #e0577f; --ref: #b3a999; --warn: #e0a84a; color-scheme: dark } }
 :root[data-theme="dark"] {
   --bg: #1f1c19; --fg: #ece4d8; --muted: #b3a999; --line: #4a433b;
-  --panel: #2a2622; --accent: #e0577f; --warn: #e0a84a; color-scheme: dark }
+  --panel: #2a2622; --accent: #e0577f; --ref: #b3a999; --warn: #e0a84a; color-scheme: dark }
 body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 15px; line-height: 1.5; }
-.wrap { max-width: 880px; margin: 0 auto; padding-block: 24px 48px;
+.wrap { max-width: 860px; margin: 0 auto; padding-block: 24px 48px;
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 h1 { font-size: 1.6rem; margin: 0 0 4px; text-wrap: balance; }
 h2 { font-size: 1.1rem; margin: 28px 0 8px; }
 p { margin: 0 0 10px; max-width: 65ch; }
 .muted { color: var(--muted); }
 .small { font-size: 0.85rem; }
-.inputs { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px 16px; }
-.inputs label { display: flex; flex-direction: column; gap: 2px; font-size: 0.85rem; color: var(--muted); min-width: 0; }
+.inputs { display: flex; flex-wrap: wrap; gap: 10px 16px; }
+.inputs label { display: flex; flex-direction: column; gap: 2px; font-size: 0.85rem; color: var(--muted); flex: 1 1 240px; min-width: 0; }
 select { font: inherit; font-size: 0.95rem; padding: 6px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); border-radius: 4px; min-width: 0; }
-select:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.anchor { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; margin-top: 16px; }
-.anchor b { font-size: 1.3rem; }
+select:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.box { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; margin-top: 16px; }
+.box b.big { font-size: 1.3rem; }
+.model { border-left: 3px solid var(--accent); }
 .tablebox { overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
-th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
-th { font-size: 0.8rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
-td.num { white-space: nowrap; }
-.tag { display: inline-block; font-size: 0.75rem; padding: 1px 6px; border-radius: 10px; border: 1px solid var(--line); white-space: nowrap; }
-.tag.ok { color: var(--fg); }
-.tag.small-n { color: var(--warn); border-color: var(--warn); }
-.flag { color: var(--warn); font-size: 0.8rem; margin-top: 3px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 0.78rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+td.num, th.num { text-align: right; white-space: nowrap; }
+.you { color: var(--accent); font-weight: 600; }
+.flag { color: var(--warn); font-size: 0.85rem; margin: 6px 0 0; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 0.85rem; margin-top: 4px; }
+.sw { display: inline-block; width: 18px; height: 3px; vertical-align: middle; margin-right: 6px; }
 svg text { fill: var(--fg); font-family: var(--font); }
 svg .grid { stroke: var(--line); }
-svg .ci { stroke: var(--accent); stroke-width: 2; }
-svg .dot { fill: var(--accent); }
-svg .dot.hollow { fill: var(--bg); stroke: var(--accent); stroke-width: 1.5; }
-svg .overall { stroke: var(--fg); stroke-dasharray: 4 3; }
-details { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; margin-bottom: 8px; }
+details { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; }
 summary { cursor: pointer; font-weight: 600; }
 .working { font-size: 0.85rem; overflow-x: auto; }
-.working table td, .working table th { padding: 3px 6px; }
-.why { border-left: 3px solid var(--accent); padding-left: 12px; }
-button { font: inherit; padding: 6px 12px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); border-radius: 4px; cursor: pointer; }
+.working p { margin-top: 8px; }
+code { font-size: 0.85em; }
 </style>
 
 <div class="wrap">
-  <h1>People like you</h1>
-  <p class="muted">Engine mock-up. Pick the traits that apply to you. For each one, the page shows how many people with that trait got a place. It describes groups. It does not predict you.</p>
-  <p class="small muted" id="exampleNote">The traits below are filled in as an example. Change them, or set any to "Skip".</p>
+  <h1>Chances by try</h1>
+  <p class="muted">Engine mock-up. If you keep applying, what share of people like you would have a place after 1, 2, 3, 4 or 5 tries? Pick one trait, or leave it as everyone.</p>
 
-  <div class="inputs" id="inputs"></div>
-  <p style="margin-top:10px"><button id="clearBtn" type="button">Skip all</button></p>
+  <div class="inputs">
+    <label for="trait">Trait
+      <select id="trait"></select>
+    </label>
+    <label for="group">Your group
+      <select id="group"></select>
+    </label>
+  </div>
+  <p class="small muted" id="exampleNote">Filled in as an example: people with dependants.</p>
 
-  <div class="anchor" id="anchor">Loading data...</div>
+  <div class="box" id="measured">Loading data...</div>
 
-  <h2>Your traits, one at a time</h2>
-  <p class="small muted">Each rate is for everyone with that one trait, 2021 to 2025 (the DEI era), with a 95% Wilson interval. The rates are not combined.</p>
-  <div id="chart"></div>
-  <div class="tablebox"><table id="results"></table></div>
-
-  <h2>Why there is no single number</h2>
-  <div class="why">
-    <p><b>No combined chance.</b> The data gives each trait on its own. It does not say how many people were, for example, both aged 30 to 34 and had dependants. The traits overlap, so we cannot multiply or average them without a guess we cannot test.</p>
-    <p><b>No "years until a place".</b> The data does not follow the same person from year to year. The naive sum (a 22% chance each year, so about 53% within 3 tries) assumes each try is a fresh coin toss. It is not, and we cannot say by how much.</p>
-    <p><b>Your own chance is different.</b> Experience, grades, interviews and the courses you choose are not in this data. They probably matter much more than any trait here.</p>
+  <h2>The model: if you keep applying</h2>
+  <div class="box model">
+    <p style="margin:0"><b>This is a model, not a count.</b> It assumes each year is a fresh try with the same chance, whatever happened before. The data cannot check this. People differ, so those still applying after several tries probably have lower chances. The real numbers are probably lower than these: read them as a best case.</p>
   </div>
 
+  <div id="chart" style="margin-top:16px"></div>
+  <div class="tablebox"><table id="tries"></table></div>
+  <div id="flags"></div>
+  <p class="small muted">Range: 95% interval from the year-to-year spread in the rate (2021 to 2025, each year counted as one data point). It covers how much the rate moves between years. It does not cover the risk that the "fresh try" assumption is wrong.</p>
+
   <h2>Show the working</h2>
-  <p class="small muted">How the engine got each number. Years where the source hid a count are dropped from both the top and the bottom of the rate, never counted as zero. 2020 is left out.</p>
   <div id="working"></div>
 
-  <p class="small muted" style="margin-top:24px">Source: DClinPsy Clearing House equal-opportunities data, 2015 to 2025. Not adjusted for overlap between traits. Uses the explorer's data file and stats code (site/data/counts.json, site/js/stats.js).</p>
+  <p class="small muted" style="margin-top:24px">Source: DClinPsy Clearing House equal-opportunities data, 2021 to 2025 (contextual questions: 2023 to 2025). One trait at a time. Years where the source hid a count are left out, never counted as zero. Uses the explorer's data file and stats code (site/data/counts.json, site/js/stats.js).</p>
 </div>
 
 <script src="stats.js" onerror="var s=document.createElement('script');s.src='../../../../site/js/stats.js';s.onload=function(){window.__statsReady&&window.__statsReady()};document.head.appendChild(s)"></script>
@@ -84,10 +83,11 @@ button { font: inherit; padding: 6px 12px; border: 1px solid var(--line); backgr
 (function () {
   "use strict";
 
-  // Traits offered, in order. Groups left out: prefer-not-to-say, published
-  // totals, merged source rows, and Wheelchair and Blind on their own (pooled-cell
-  // artefacts, RULES C8: the combined group is offered instead).
+  var TRIES = 5, MIN_N = 100;
+  // Traits offered. Groups left out: prefer-not-to-say, totals, merged source rows,
+  // and Wheelchair and Blind on their own (pooled-cell artefacts, RULES C8).
   var TRAITS = [
+    { key: "", label: "None (everyone)" },
     { key: "AGE", label: "Age" },
     { key: "GENDER", label: "Gender" },
     { key: "ETHNICITY", label: "Ethnicity" },
@@ -108,162 +108,198 @@ button { font: inherit; padding: 6px 12px; border: 1px solid var(--line); backgr
     "Wheelchair user/mobility difficulties": 1, "Blind/partially sighted": 1,
     "Mixed (all)": 1, "Christian (all)": 1
   };
-  var EXAMPLE = {
-    "AGE": "30-34 years", "GENDER": "Female", "DEPENDANTS": "Has dependants",
-    "SOCIO-ECONOMIC BACKGROUND": "Quintile 2", "CONTEXT: First in family at university": "Yes"
-  };
-  var MIN_N = 100; // RULES: single-characteristic results need 100+ applicants
 
-  var counts, idx = {}, DEI, EXCLUDED;
+  var counts, idx = {}, DEI;
 
-  function pct(x, d) { return (100 * x).toFixed(d == null ? 1 : d) + "%"; }
+  function pct(x, d) { return (100 * x).toFixed(d == null ? 0 : d) + "%"; }
   function fmt(n) { return n.toLocaleString("en-GB"); }
+  function clamp(v) { return Math.max(0, Math.min(1, v)); }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 
   function start() {
     fetch("counts.json").then(function (r) { if (!r.ok) throw 0; return r.json(); })
       .catch(function () { return fetch("../../../../site/data/counts.json").then(function (r) { return r.json(); }); })
       .then(function (data) {
-        counts = data;
-        DEI = data.meta.eras.dei; EXCLUDED = data.meta.eras.excluded;
+        counts = data; DEI = data.meta.eras.dei;
         data.groups.forEach(function (g) { idx[g.characteristic + "|" + g.group] = g; });
         buildInputs(); render();
       })
-      .catch(function () { document.getElementById("anchor").textContent = "Could not load the data file."; });
+      .catch(function () { document.getElementById("measured").textContent = "Could not load the data file."; });
   }
 
   function buildInputs() {
-    var box = document.getElementById("inputs");
-    TRAITS.forEach(function (t, i) {
-      var groups = counts.groups.filter(function (g) {
-        return g.characteristic === t.key && !LEAVE_OUT[g.group] && (!t.yesNo || g.group === "Yes" || g.group === "No");
-      }).map(function (g) { return g.group; });
-      var lab = document.createElement("label");
-      lab.setAttribute("for", "t" + i);
-      lab.textContent = t.label;
-      var sel = document.createElement("select");
-      sel.id = "t" + i; sel.dataset.key = t.key;
-      sel.innerHTML = '<option value="">Skip</option>' + groups.map(function (g) {
-        return '<option' + (EXAMPLE[t.key] === g ? " selected" : "") + ">" + esc(g) + "</option>";
-      }).join("");
-      sel.addEventListener("change", function () { document.getElementById("exampleNote").hidden = true; render(); });
-      lab.appendChild(sel); box.appendChild(lab);
-    });
-    document.getElementById("clearBtn").addEventListener("click", function () {
-      box.querySelectorAll("select").forEach(function (s) { s.value = ""; });
-      document.getElementById("exampleNote").hidden = true; render();
-    });
+    var t = document.getElementById("trait");
+    t.innerHTML = TRAITS.map(function (x, i) { return '<option value="' + i + '">' + esc(x.label) + "</option>"; }).join("");
+    t.value = String(TRAITS.map(function (x) { return x.key; }).indexOf("DEPENDANTS"));
+    fillGroups("Has dependants");
+    t.addEventListener("change", function () { hideExample(); fillGroups(); render(); });
+    document.getElementById("group").addEventListener("change", function () { hideExample(); render(); });
+  }
+  function hideExample() { document.getElementById("exampleNote").hidden = true; }
+
+  function fillGroups(pick) {
+    var trait = TRAITS[+document.getElementById("trait").value], g = document.getElementById("group");
+    if (!trait.key) { g.innerHTML = "<option>All applicants</option>"; g.disabled = true; return; }
+    g.disabled = false;
+    var names = counts.groups.filter(function (x) {
+      return x.characteristic === trait.key && !LEAVE_OUT[x.group] && (!trait.yesNo || x.group === "Yes" || x.group === "No");
+    }).map(function (x) { return x.group; });
+    g.innerHTML = names.map(function (n) { return "<option" + (n === pick ? " selected" : "") + ">" + esc(n) + "</option>"; }).join("");
   }
 
-  // The engine for one group: pool the DEI-era years, dropping hidden ones,
-  // then a Wilson interval. Also keeps a year-by-year trace for "show the working".
-  function compute(g) {
+  // ---- The engine -----------------------------------------------------------
+  // 1. Yearly rate for each DEI-era year the source reports (hidden years dropped).
+  // 2. p = mean of the yearly rates; 95% t-interval with each year as one point.
+  // 3. Fresh-try model: by try K = 1 - (1-p)^K; on exactly try K = (1-p)^(K-1) p.
+  //    "By try K" rises with p, so the interval ends map straight across.
+  //    "Exactly on try K" does not, so its range is the min and max over the p interval.
+  function engine(g) {
+    var years = [];
+    g.by_year.forEach(function (r) {
+      if (DEI.indexOf(r.year) < 0) return;
+      years.push({ year: r.year, app: r.applicants, acc: r.accepted,
+        rate: r.accepted != null && r.applicants ? r.accepted / r.applicants : null,
+        pooledWith: r.pooled_with, pooledInto: r.pooled_into });
+    });
+    var used = years.filter(function (y) { return y.rate != null; });
+    var rates = used.map(function (y) { return y.rate; });
     var pooled = Stats.poolGroup(g, DEI);
-    var ci = Stats.wilsonCI(pooled.acc, pooled.app);
-    var trace = [], flags = [];
-    counts.meta.years.forEach(function (y) {
-      var r = g.by_year.filter(function (b) { return b.year === y; })[0];
-      var inEra = DEI.indexOf(y) >= 0;
-      var row = { year: y, app: r ? r.applicants : null, acc: r ? r.accepted : null, status: "" };
-      if (!r) row.status = "not in the data";
-      else if (y === EXCLUDED) row.status = "2020: left out";
-      else if (!inEra) row.status = "before DEI era: trend only";
-      else if (r.accepted == null) row.status = r.pooled_into ? "hidden: counted inside " + r.pooled_into + ". Dropped." : "hidden by source. Dropped.";
-      else row.status = "used";
-      if (r && inEra && r.pooled_with) { row.status += ". Includes hidden counts from " + [].concat(r.pooled_with).join(", "); flags.push(y); }
-      if (r && r.accepted != null && r.applicants) row.rate = r.accepted / r.applicants;
-      trace.push(row);
-    });
-    var latest = g.by_year.filter(function (b) { return b.year === counts.meta.latest_year; })[0];
-    return { pooled: pooled, ci: ci, trace: trace, pooledWithYears: flags,
-      latest: latest && latest.accepted != null ? { acc: latest.accepted, app: latest.applicants, ci: Stats.wilsonCI(latest.accepted, latest.applicants) } : null };
+    var out = { years: years, used: used, pooled: pooled, n: rates.length };
+    if (rates.length === 0) return out;
+    var mean = rates.reduce(function (s, v) { return s + v; }, 0) / rates.length;
+    out.p = mean;
+    if (rates.length >= 2) {
+      var ti = Stats.tInterval(rates, 0.95);
+      var sd = Math.sqrt(rates.reduce(function (s, v) { return s + (v - mean) * (v - mean); }, 0) / (rates.length - 1));
+      out.sd = sd; out.tcrit = Stats.qt(0.975, rates.length - 1);
+      out.lo = clamp(ti.lo); out.hi = clamp(ti.hi); out.clipped = ti.lo < 0;
+    }
+    out.tries = [];
+    for (var k = 1; k <= TRIES; k++) {
+      var row = { k: k, by: byTry(mean, k), on: onTry(mean, k) };
+      if (out.lo != null) {
+        row.byLo = byTry(out.lo, k); row.byHi = byTry(out.hi, k);
+        var r = onTryRange(out.lo, out.hi, k); row.onLo = r[0]; row.onHi = r[1];
+      }
+      out.tries.push(row);
+    }
+    out.notBy5 = Math.pow(1 - mean, TRIES);
+    return out;
+  }
+  function byTry(p, k) { return 1 - Math.pow(1 - p, k); }
+  function onTry(p, k) { return Math.pow(1 - p, k - 1) * p; }
+  function onTryRange(lo, hi, k) {
+    var mn = Infinity, mx = -Infinity;
+    for (var i = 0; i <= 200; i++) { var v = onTry(lo + (hi - lo) * i / 200, k); mn = Math.min(mn, v); mx = Math.max(mx, v); }
+    return [mn, mx];
   }
 
+  // ---- Render ---------------------------------------------------------------
   function render() {
-    // Anchor: everyone
-    var all = compute(idx["OVERALL|All applicants"]);
-    var a = document.getElementById("anchor");
-    a.innerHTML = "Of everyone who applied in 2021 to 2025, <b>" + pct(all.ci.rate) + "</b> got a place (" +
-      fmt(all.pooled.acc) + " of " + fmt(all.pooled.app) + "). In " + counts.meta.latest_year + ": " +
-      pct(all.latest.ci.rate) + " (" + fmt(all.latest.acc) + " of " + fmt(all.latest.app) + ").";
+    var trait = TRAITS[+document.getElementById("trait").value];
+    var name = trait.key ? document.getElementById("group").value : "All applicants";
+    var g = trait.key ? idx[trait.key + "|" + name] : idx["OVERALL|All applicants"];
+    var all = engine(idx["OVERALL|All applicants"]);
+    var you = engine(g);
+    var isAll = !trait.key;
+    var label = isAll ? "Everyone" : (trait.yesNo ? trait.label + ": " + name : name);
 
-    var picked = [];
-    document.querySelectorAll("#inputs select").forEach(function (s) {
-      if (!s.value) return;
-      var t = TRAITS.filter(function (x) { return x.key === s.dataset.key; })[0];
-      var g = idx[s.dataset.key + "|" + s.value];
-      picked.push({ trait: t, group: s.value, res: compute(g) });
-    });
-
-    var tbl = document.getElementById("results");
-    if (!picked.length) {
-      tbl.innerHTML = '<tr><td class="muted">Pick at least one trait above.</td></tr>';
-      document.getElementById("chart").innerHTML = ""; document.getElementById("working").innerHTML = "";
+    // Measured yearly rate
+    var m = document.getElementById("measured");
+    if (you.p == null) {
+      m.innerHTML = "<b>" + esc(label) + "</b>: the source hid this group's acceptances in every year, so there is nothing to show.";
+      ["chart", "tries", "flags", "working"].forEach(function (id) { document.getElementById(id).innerHTML = ""; });
       return;
     }
-    tbl.innerHTML = "<tr><th>Trait</th><th>Got a place, 2021 to 2025</th><th>95% interval</th><th>Accepted / applied</th><th>" + counts.meta.latest_year + "</th><th>Data</th></tr>" +
-      picked.map(function (p) {
-        var r = p.res, ok = r.pooled.app >= MIN_N, none = !r.pooled.app;
-        var years = r.pooled.nYears + " of " + DEI.length + " years";
-        var tag = none ? '<span class="tag small-n">No usable data</span>' :
-          ok ? '<span class="tag ok">Enough data</span>' : '<span class="tag small-n">Small group: read with care</span>';
-        var flag = "";
-        if (r.pooled.nYears < DEI.length && !none) flag += '<div class="flag">Uses ' + years + ": the rest were hidden or not asked.</div>";
-        if (r.pooledWithYears.length) flag += '<div class="flag">In ' + r.pooledWithYears.join(", ") + " the source added hidden counts from other groups to this one, so this rate may be too high.</div>";
-        return "<tr><td>" + esc(p.trait.label) + ": <b>" + esc(p.group) + "</b>" + flag + "</td>" +
-          '<td class="num"><b>' + (none ? "n/a" : pct(r.ci.rate)) + "</b></td>" +
-          '<td class="num">' + (none ? "" : pct(r.ci.lo) + " to " + pct(r.ci.hi)) + "</td>" +
-          '<td class="num">' + (none ? "" : fmt(r.pooled.acc) + " / " + fmt(r.pooled.app)) + "</td>" +
-          '<td class="num">' + (r.latest ? pct(r.latest.ci.rate) : "hidden") + "</td>" +
-          "<td>" + tag + "</td></tr>";
-      }).join("");
+    var range = you.lo != null ? " (95% range " + pct(you.lo, 1) + " to " + pct(you.hi, 1) + ")" : "";
+    m.innerHTML = "<b>Measured:</b> for <b>" + esc(label) + "</b>, an average of <b class=\"big\">" + pct(you.p, 1) +
+      "</b> got a place each year" + range + ". Based on " + you.n + " year" + (you.n === 1 ? "" : "s") + ", " +
+      fmt(you.pooled.app) + " applications in total." +
+      (isAll ? "" : "<br><span class=\"small muted\">Everyone: " + pct(all.p, 1) + " (" + pct(all.lo, 1) + " to " + pct(all.hi, 1) + ").</span>");
 
-    drawChart(picked, all);
-    drawWorking(picked);
+    drawChart(you, isAll ? null : all, label);
+    drawTable(you, isAll ? null : all, label);
+    drawFlags(you);
+    drawWorking(you, label);
   }
 
-  // Dot and interval for each trait, with everyone's rate as a dashed line.
-  function drawChart(picked, all) {
-    var rows = picked.filter(function (p) { return p.res.pooled.app; });
-    var W = 640, labelW = 230, rowH = 30, top = 26, H = top + rows.length * rowH + 24;
-    var maxHi = Math.max.apply(null, rows.map(function (p) { return p.res.ci.hi; }).concat([all.ci.rate]));
-    var xMax = Math.min(1, Math.ceil(maxHi * 10 + 0.5) / 10);
-    function x(v) { return labelW + (v / xMax) * (W - labelW - 20); }
-    var s = '<svg viewBox="0 0 ' + W + " " + H + '" width="100%" role="img" aria-label="Rate for each trait with 95% interval">';
-    for (var t = 0; t <= xMax + 1e-9; t += 0.1) {
-      s += '<line class="grid" x1="' + x(t) + '" x2="' + x(t) + '" y1="' + (top - 6) + '" y2="' + (H - 20) + '"/>';
-      s += '<text x="' + x(t) + '" y="' + (H - 6) + '" font-size="11" text-anchor="middle">' + Math.round(t * 100) + "%</text>";
-    }
-    s += '<line class="overall" x1="' + x(all.ci.rate) + '" x2="' + x(all.ci.rate) + '" y1="' + (top - 10) + '" y2="' + (H - 20) + '"/>';
-    s += '<text x="' + x(all.ci.rate) + '" y="' + (top - 14) + '" font-size="11" text-anchor="middle">Everyone ' + pct(all.ci.rate) + "</text>";
-    rows.forEach(function (p, i) {
-      var y = top + i * rowH + rowH / 2, r = p.res, small = r.pooled.app < MIN_N;
-      var name = p.trait.yesNo ? p.trait.label + ": " + p.group : p.group;
-      if (name.length > 32) name = name.slice(0, 31) + "...";
-      s += '<text x="0" y="' + (y + 4) + '" font-size="12">' + esc(name) + "</text>";
-      s += '<line class="ci" x1="' + x(r.ci.lo) + '" x2="' + x(r.ci.hi) + '" y1="' + y + '" y2="' + y + '"/>';
-      s += '<circle class="dot' + (small ? " hollow" : "") + '" cx="' + x(r.ci.rate) + '" cy="' + y + '" r="5"/>';
+  function drawTable(you, all, label) {
+    var h = "<tr><th>Try</th><th class=\"num\">Get a place on this try</th><th class=\"num\">Have a place by this try</th>" +
+      (all ? "<th class=\"num\">Everyone, by this try</th>" : "") + "</tr>";
+    you.tries.forEach(function (r, i) {
+      var rng = function (lo, hi) { return lo == null ? "" : ' <span class="muted small">(' + pct(lo) + " to " + pct(hi) + ")</span>"; };
+      h += "<tr><td>" + r.k + "</td><td class=\"num\">" + pct(r.on) + rng(r.onLo, r.onHi) + "</td>" +
+        "<td class=\"num you\">" + pct(r.by) + rng(r.byLo, r.byHi) + "</td>" +
+        (all ? "<td class=\"num\">" + pct(all.tries[i].by) + rng(all.tries[i].byLo, all.tries[i].byHi) + "</td>" : "") + "</tr>";
     });
-    s += "</svg>";
-    document.getElementById("chart").innerHTML = s +
-      '<p class="small muted">Dot: rate. Line: 95% Wilson interval. Hollow dot: fewer than ' + MIN_N + " applicants. Dashed line: everyone.</p>";
+    h += "<tr><td colspan=\"" + (all ? 4 : 3) + "\" class=\"small muted\">Out of 100 people like you who start applying and keep going: about " +
+      Math.round(100 * you.tries[0].on) + " get a place on the first try, and about " + Math.round(100 * you.notBy5) +
+      " still have no place after " + TRIES + " tries.</td></tr>";
+    document.getElementById("tries").innerHTML = h;
   }
 
-  function drawWorking(picked) {
-    document.getElementById("working").innerHTML = picked.map(function (p) {
-      var r = p.res;
-      var rows = r.trace.map(function (t) {
-        return "<tr><td>" + t.year + "</td><td>" + (t.app == null ? "" : fmt(t.app)) + "</td><td>" +
-          (t.acc == null ? (t.app == null ? "" : "hidden") : fmt(t.acc)) + "</td><td>" +
-          (t.rate != null ? pct(t.rate) : "") + "</td><td>" + esc(t.status) + "</td></tr>";
-      }).join("");
-      var sum = r.pooled.app ?
-        "Sum of used years: " + fmt(r.pooled.acc) + " / " + fmt(r.pooled.app) + " = " + pct(r.ci.rate, 2) +
-        ". Wilson 95% interval: " + pct(r.ci.lo, 2) + " to " + pct(r.ci.hi, 2) + "." : "No usable years.";
-      return "<details><summary>" + esc(p.trait.label) + ": " + esc(p.group) + "</summary><div class=\"working\">" +
-        "<table><tr><th>Year</th><th>Applied</th><th>Accepted</th><th>Rate</th><th>What the engine did</th></tr>" + rows +
-        "</table><p style=\"margin-top:6px\">" + sum + "</p></div></details>";
+  function drawFlags(you) {
+    var f = [];
+    if (you.pooled.app < MIN_N) f.push("Small group: fewer than " + MIN_N + " applications in total. Read with great care.");
+    if (you.n < DEI.length) f.push("Uses " + you.n + " of " + DEI.length + " years. The others were hidden by the source or the question was not asked.");
+    if (you.n < 2) f.push("Only one year of data, so no range can be given.");
+    if (you.clipped) f.push("The low end of the range fell below 0% and was set to 0%.");
+    var pw = you.years.filter(function (y) { return y.pooledWith && y.rate != null; }).map(function (y) { return y.year; });
+    if (pw.length) f.push("In " + pw.join(", ") + " the source added hidden counts from other groups to this one, so the rate may be too high.");
+    document.getElementById("flags").innerHTML = f.map(function (s) { return '<p class="flag">' + esc(s) + "</p>"; }).join("");
+  }
+
+  // "By this try" curve with its range band; everyone as a grey reference.
+  function drawChart(you, all, label) {
+    var W = 640, H = 300, L = 44, R = 16, T = 16, B = 40;
+    function x(k) { return L + (k - 1) / (TRIES - 1) * (W - L - R); }
+    function y(v) { return T + (1 - v) * (H - T - B); }
+    var s = '<svg viewBox="0 0 ' + W + " " + H + '" width="100%" role="img" aria-label="Share with a place by each try">';
+    [0, 0.25, 0.5, 0.75, 1].forEach(function (v) {
+      s += '<line class="grid" x1="' + L + '" x2="' + (W - R) + '" y1="' + y(v) + '" y2="' + y(v) + '"/>';
+      s += '<text x="' + (L - 6) + '" y="' + (y(v) + 4) + '" font-size="11" text-anchor="end">' + pct(v) + "</text>";
+    });
+    for (var k = 1; k <= TRIES; k++) s += '<text x="' + x(k) + '" y="' + (H - B + 18) + '" font-size="11" text-anchor="middle">' + k + "</text>";
+    s += '<text x="' + ((L + W - R) / 2) + '" y="' + (H - 4) + '" font-size="11" text-anchor="middle">Try</text>';
+    function series(e, cls, color, fillOp) {
+      var out = "";
+      if (e.tries[0].byLo != null) {
+        var up = e.tries.map(function (r) { return x(r.k) + "," + y(r.byHi); });
+        var dn = e.tries.slice().reverse().map(function (r) { return x(r.k) + "," + y(r.byLo); });
+        out += '<polygon points="' + up.concat(dn).join(" ") + '" fill="' + color + '" fill-opacity="' + fillOp + '" stroke="none"/>';
+      }
+      out += '<polyline points="' + e.tries.map(function (r) { return x(r.k) + "," + y(r.by); }).join(" ") + '" fill="none" stroke="' + color + '" stroke-width="2.5"/>';
+      e.tries.forEach(function (r) { out += '<circle cx="' + x(r.k) + '" cy="' + y(r.by) + '" r="3.5" fill="' + color + '"/>'; });
+      return out;
+    }
+    var cs = getComputedStyle(document.documentElement);
+    var acc = cs.getPropertyValue("--accent").trim() || "#990F3D", ref = cs.getPropertyValue("--ref").trim() || "#4d4740";
+    if (all) s += series(all, "all", ref, 0.12);
+    s += series(you, "you", acc, 0.18);
+    s += "</svg>";
+    var leg = '<div class="legend"><span><span class="sw" style="background:' + acc + '"></span>' + esc(label) + "</span>" +
+      (all ? '<span><span class="sw" style="background:' + ref + '"></span>Everyone</span>' : "") +
+      '<span class="muted">Shaded: 95% range</span></div>';
+    document.getElementById("chart").innerHTML = '<p class="small" style="margin:0"><b>Have a place by this try</b> (model)</p>' + s + leg;
+  }
+
+  function drawWorking(you, label) {
+    var rows = you.years.map(function (y) {
+      var note = y.rate != null ? "used" : (y.pooledInto ? "hidden: counted inside " + y.pooledInto + ". Left out." : "hidden by source. Left out.");
+      if (y.pooledWith && y.rate != null) note += ". Includes hidden counts from " + [].concat(y.pooledWith).join(", ");
+      return "<tr><td>" + y.year + "</td><td class=\"num\">" + fmt(y.app) + "</td><td class=\"num\">" + (y.acc == null ? "hidden" : fmt(y.acc)) +
+        "</td><td class=\"num\">" + (y.rate == null ? "" : pct(y.rate, 1)) + "</td><td>" + esc(note) + "</td></tr>";
     }).join("");
+    var steps = "<p><b>Step 1.</b> Yearly rate = accepted / applied, for each year above.</p>" +
+      "<p><b>Step 2.</b> p = mean of the " + you.n + " yearly rates = <b>" + pct(you.p, 2) + "</b>." +
+      (you.sd != null ? " SD = " + pct(you.sd, 2) + ", t(0.975, df " + (you.n - 1) + ") = " + you.tcrit.toFixed(3) +
+        ". 95% range = p &plusmn; t &times; SD / &radic;" + you.n + " = " + pct(you.lo, 2) + " to " + pct(you.hi, 2) + "." : " Only one year, so no range.") + "</p>" +
+      "<p><b>Step 3.</b> Fresh-try model. Have a place by try K = 1 &minus; (1 &minus; p)<sup>K</sup>. Example, try 3: 1 &minus; (1 &minus; " + you.p.toFixed(4) + ")<sup>3</sup> = " + pct(you.tries[2].by, 1) +
+      ". The range uses the same formula on the low and high ends of p.</p>" +
+      "<p><b>Step 4.</b> Get a place on exactly try K = (1 &minus; p)<sup>K&minus;1</sup> &times; p. Its range is the lowest and highest value of this across the range of p.</p>";
+    document.getElementById("working").innerHTML = "<details open><summary>" + esc(label) + "</summary><div class=\"working\">" +
+      "<table><tr><th>Year</th><th class=\"num\">Applied</th><th class=\"num\">Accepted</th><th class=\"num\">Rate</th><th>What the engine did</th></tr>" +
+      rows + "</table>" + steps + "</div></details>";
   }
 
   if (window.Stats) start(); else window.__statsReady = start;
