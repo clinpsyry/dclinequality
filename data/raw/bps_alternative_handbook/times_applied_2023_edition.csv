@@ -1,0 +1,31 @@
+edition,course,responses,trainees_on_course,pct_once,pct_twice,pct_3,pct_4,pct_5,pct_6plus,pct_dont_know,note,source_url
+2023,Bangor,25,33,24.0,32.0,16.0,16.0,8.0,0.0,4.0,,https://cms.bps.org.uk/sites/default/files/2022-09/Alternative%20Handbook%202023%20-%20Bangor.pdf
+2023,Bath,34,65,35.3,23.5,29.4,8.8,2.9,0.0,0,,https://cms.bps.org.uk/sites/default/files/2022-09/Alternative%20Handbook%202023%20-%20Bath.pdf
+2023,Birmingham,29,63,24.1,10.3,20.7,24.1,17.2,3.4,0,,https://cms.bps.org.uk/sites/default/files/2022-09/Alternative%20Handbook%202023%20-%20Birmingham.pdf
+2023,Coventry and Warwick,12,39,8.3,25.0,25.0,8.3,25.0,8.3,0,,https://cms.bps.org.uk/sites/default/files/2022-09/Alternative%20Handbook%202023%20-%20Coventry%20and%20Warwick.pdf
+2023,East Anglia,35,110,31.4,25.7,14.3,17.1,8.6,2.9,0,,https://cms.bps.org.uk/sites/default/files/2022-09/Alternative%20Handbook%202023%20-%20East%20Anglia.pdf
+2023,East London,26,101,23.1,42.3,19.2,11.5,3.8,0.0,0,,https://cms.bps.org.uk/sites/default/files/2022-09/Alternative%20Handbook%202023%20-%20East%20London.pdf
+2023,Edinburgh,55,122,36.4,23.6,23.6,10.9,3.6,1.8,0,,https://cms.bps.org.uk/sites/default/files/2022-09/Alternative%20Handbook%202023%20-%20Edinburgh.pdf
+2023,Essex,25,62,40.0,16.0,12.0,20.0,8.0,0.0,4.0,,https://cms.bps.org.uk/sites/default/files/2022-09/Alternative%20Handbook%202023%20-%20Essex.pdf
+2023,Exeter,19,55,21.1,26.3,42.1,10.5,0.0,0.0,0,,https://cms.bps.org.uk/sites/default/files/2022-09/Alternative%20Handbook%202023%20-%20Exeter.pdf
+2023,Glasgow,20,88,30.0,30.0,20.0,10.0,5.0,0.0,5.0,,https://cms.bps.org.uk/sites/default/files/2022-09/Alternative%20Handbook%202023%20-%20Glasgow.pdf
+2023,Hertfordshire,26,92,15.4,15.4,23.1,15.4,23.1,7.7,0,,https://cms.bps.org.uk/sites/default/files/2022-09/Alternative%20Handbook%202023%20-%20Hertfordshire.pdf
+2023,Hull,22,61,100.0,0.0,0.0,0.0,0.0,0.0,0,"source reports 100% once: likely a data error, excluded from pooled figures",https://cms.bps.org.uk/sites/default/files/2022-09/Alternative%20Handbook%202023%20-%20Hull.pdf
+2023,Lancaster,33,94,36.4,30.3,24.2,6.1,3.0,0.0,0,,https://cms.bps.org.uk/sites/default/files/2022-09/Alternative%20Handbook%202023%20-%20Lancaster.pdf
+2023,Leeds,28,61,35.7,10.7,21.4,28.6,3.6,0.0,0,,https://cms.bps.org.uk/sites/default/files/2022-09/Alternative%20Handbook%202023%20-%20Leeds.pdf
+2023,Leicester,19,49,36.8,42.1,0.0,10.5,0.0,10.5,0,,https://cms.bps.org.uk/sites/default/files/2022-09/Alternative%20Handbook%202023%20-%20Leicester.pdf
+2023,Liverpool,36,84,27.8,16.7,19.4,27.8,5.6,2.8,0,,https://cms.bps.org.uk/sites/default/files/2022-09/Alternative%20Handbook%202023%20-%20Liverpool.pdf
+2023,Manchester,27,95,18.5,59.3,14.8,3.7,3.7,0.0,0,,https://cms.bps.org.uk/sites/default/files/2022-09/Alternative%20Handbook%202023%20-%20Manchester.pdf
+2023,Newcastle,24,58,12.5,29.2,20.8,4.2,25.0,8.3,0,,https://cms.bps.org.uk/sites/default/files/2022-09/Alternative%20Handbook%202023%20-%20Newcastle.pdf
+2023,North Thames,81,169,44.4,32.1,14.8,8.6,0.0,0.0,0,,https://cms.bps.org.uk/sites/default/files/2022-09/Alternative%20Handbook%202023%20-%20North%20Thames.pdf
+2023,Oxford,55,93,50.9,27.3,14.5,3.6,0.0,3.6,0,,https://cms.bps.org.uk/sites/default/files/2022-09/Alternative%20Handbook%202023%20-%20Oxford.pdf
+2023,Plymouth,30,47,20.0,40.0,20.0,13.3,3.3,3.3,0,,https://cms.bps.org.uk/sites/default/files/2022-09/Alternative%20Handbook%202023%20-%20Plymouth.pdf
+2023,Royal Holloway,29,121,34.5,34.5,20.7,6.9,3.4,0.0,0,,https://cms.bps.org.uk/sites/default/files/2022-09/Alternative%20Handbook%202023%20-%20Royal%20Holloway.pdf
+2023,Salomons,62,131,25.8,25.8,27.4,12.9,6.5,1.6,0,,https://cms.bps.org.uk/sites/default/files/2022-09/Alternative%20Handbook%202023%20-%20Salomons.pdf
+2023,Sheffield,48,70,20.8,33.3,25.0,12.5,4.2,2.1,2.1,,https://cms.bps.org.uk/sites/default/files/2022-09/Alternative%20Handbook%202023%20-%20Sheffield.pdf
+2023,South Wales,33,56,30.3,18.2,30.3,12.1,0.0,9.1,0,,https://cms.bps.org.uk/sites/default/files/2022-09/Alternative%20Handbook%202023%20-%20South%20Wales.pdf
+2023,Southampton,31,75,12.9,25.8,32.3,12.9,12.9,3.2,0,,https://cms.bps.org.uk/sites/default/files/2022-09/Alternative%20Handbook%202023%20-%20Southampton.pdf
+2023,Staffordshire,27,54,25.9,29.6,14.8,3.7,22.2,3.7,0,,https://cms.bps.org.uk/sites/default/files/2022-09/Alternative%20Handbook%202023%20-%20Staffordshire.pdf
+2023,Surrey,50,118,38.0,28.0,20.0,12.0,2.0,0.0,0,,https://cms.bps.org.uk/sites/default/files/2022-09/Alternative%20Handbook%202023%20-%20Surrey.pdf
+2023,Teesside,25,55,28.0,24.0,20.0,16.0,12.0,0.0,0,,https://cms.bps.org.uk/sites/default/files/2022-09/Alternative%20Handbook%202023%20-%20Teesside.pdf
+2023,Trent,37,60,29.7,51.4,10.8,2.7,2.7,0.0,2.7,,https://cms.bps.org.uk/sites/default/files/2022-09/Alternative%20Handbook%202023%20-%20Trent.pdf
