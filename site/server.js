@@ -8,7 +8,8 @@ const root = __dirname;
 const PORT = 8137;
 const TYPES = { ".html": "text/html", ".js": "text/javascript",
   ".json": "application/json", ".css": "text/css", ".map": "application/json",
-  ".woff2": "font/woff2" };
+  ".woff2": "font/woff2", ".png": "image/png", ".svg": "image/svg+xml",
+  ".webmanifest": "application/manifest+json" };
 
 http.createServer(function (req, res) {
   var p = decodeURIComponent(req.url.split("?")[0]);
