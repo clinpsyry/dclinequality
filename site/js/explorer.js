@@ -91,7 +91,7 @@
   // Colours (house style)
   // Blog chart style (R/dclinpsy_style.R): warm beige panel, FT red, blue for
   // "below reference" in the full forest, faded grey for no clear difference,
-  // grey20 ink for the comparison ticks.
+  // grey20 ink.
   var REF_COLOR = "#333333", BG = "#EADDCA", INK = "#333333";
   var RED = "#990F3D", BLUE = "#2D6CA2", DESC = "#6f6a5d", NOSIG = "#BCB3A4";
   var ACCENTS = ["#990F3D","#2D6CA2","#B07A2D","#4F7942","#7A3B69","#1A6B6B",
@@ -196,17 +196,16 @@
     return agg.concat(TREND_HIDE[ch] || []);
   }
 
-  // Compare groups opens on the latest year, with the published 2021-24 figures as
-  // dark comparison ticks (the layout of the blog's 2025 charts).
+  // Compare groups opens on the latest year. The DEI era band is off until the
+  // "DEI era" chip turns it on.
   var state = { view:"trend", characteristic:"ETHNIC GROUP (BROAD)", selected:{}, showCI:false,
     trendMode:"rate", trendMeasure:"pp", trendFrom:FIRST_YEAR, trendTo:LATEST, eraMode:"rate",
     yearFrom:LATEST, yearTo:LATEST, measure:"pp",
-    cmpOn:true, cmpFrom:DEI_FROM, cmpTo:DEI_TO,
     tableYearFrom:FIRST_YEAR, tableYearTo:LATEST, tableSelected:{}, tableMode:"pooled",
     tableSort:{ col:null, dir:1 }, repYearFrom:DEI_FROM, repYearTo:LATEST, repMode:"chart",
     repSort:{ col:null, dir:1 }, forestMode:"chart", forestSort:{ col:null, dir:1 },
     eraView:"chart", eraSort:{ col:null, dir:1 }, combine:false, sub:"",
-    yCustom:false, yMin:"", yMax:"", showDEI:true, phoneMode:"auto", pngFormat:"phone", noteOpen:false };
+    yCustom:false, yMin:"", yMax:"", showDEI:false, phoneMode:"auto", pngFormat:"phone", noteOpen:false };
 
   // ---- pooled cells (RULES.md C8): flagged, not changed --------------------------
   // A row's acceptances may include hidden rows (pooled_with), or its own
@@ -742,14 +741,9 @@
       ref_applicants: refp.app, ref_accepted: refp.acc, rows: rows };
   }
 
-  function cmpYears() {
-    var ys = []; for (var y = state.cmpFrom; y <= state.cmpTo; y++) ys.push(y); return ys;
-  }
   function forestFor(years) { return isOverview() ? computeOverview(years) : computeForest(years); }
   function renderForest() {
-    var res = forestFor(windowYears());
-    var cmp = state.cmpOn ? forestFor(cmpYears()) : null;
-    drawForest(res, cmp);
+    drawForest(forestFor(windowYears()));
   }
 
   // SES pairwise quintile matrix (frozen family, m = 10 over all Q-vs-Q pairs).
@@ -959,22 +953,19 @@
     var names = typeof mb === "string" ? [mb] : mb.components;
     return names.map(function (n) { return getGroup(ch, n); }).filter(Boolean);
   }
-  function rowKey(r) { return (r.characteristic || "") + "|" + r.group; }
   function rangeLabel(a, b) { return a === b ? "" + a : a + "–" + b; }
 
-  // Forest in the blog style: dot and bar for the chosen years, a dark tick for the
-  // comparison years, the value at the right of every row. Colour: red = significant
+  // Forest in the blog style: dot and bar for the chosen years, the value at the
+  // right of every row. Colour: red = significant
   // (the full forest, as published, uses red above / blue below its reference);
   // hollow grey = no clear difference. Phones: group name above its row.
-  function drawForest(res, cmp) {
+  function drawForest(res) {
     var pp = usePP();
     var rows = res.rows.filter(function (r) {
       return r.computable && (pp ? r.pp != null : (r.rr != null && r.rr_lo != null));
     });
     rows.sort(function (a, b) { return (pp ? b.pp - a.pp : b.rr - a.rr); });   // largest at top
     var years = windowYears(), narrow = narrowView();
-    var cmpMap = {};
-    if (cmp) cmp.rows.forEach(function (c) { if (c.computable) cmpMap[rowKey(c)] = c; });
 
     function val(r) { return pp ? r.pp : r.rr; }
     function cls(r) {
@@ -988,8 +979,7 @@
     var info = rows.map(function (r, i) {
       var pc = []; rowGroups(res, r).forEach(function (g) { pc = pc.concat(pooledCells(g, years)); });
       if (pc.length) pooledAny = true;
-      var c = cmpMap[rowKey(r)];
-      return { r: r, i: i, c: cls(r), pooled: pc, cmp: c ? (pp ? c.pp : c.rr) : null,
+      return { r: r, i: i, c: cls(r), pooled: pc,
         label: r.group + (r.applicants < 100 ? "*" : "") + (pc.length ? DAGGER : "") };
     });
 
@@ -1003,18 +993,11 @@
         (res.kind === "bh" ? "<br>raw p " + pHover(r.raw_p) + ", p (BH) " + pHover(r.p_bh)
           : res.kind === "single" ? "<br>p " + pHover(r.raw_p) : "") +
         "<br>" + (res.kind === "descriptive" ? "descriptive (no test)" : isSig(res, r) ? "significant" : "no clear difference");
-      if (o.cmp != null) t += "<br>" + rangeLabel(state.cmpFrom, state.cmpTo) + ": " +
-        (pp ? (o.cmp >= 0 ? "+" : "") + o.cmp.toFixed(1) + " pp" : o.cmp.toFixed(2) + "x");
       if (o.pooled.length) t += "<br>† pooled in source: " + poolNote(o.pooled);
       return t;
     }
 
     var traces = [];
-    // comparison ticks first, so the 2025 dots sit on top
-    var withCmp = info.filter(function (o) { return o.cmp != null; });
-    if (withCmp.length) traces.push({ type:"scatter", mode:"markers", hoverinfo:"skip",
-      x: withCmp.map(function (o) { return o.cmp; }), y: withCmp.map(function (o) { return o.i; }),
-      marker:{ symbol:"line-ns", size: narrow ? 17 : 18, line:{ color:INK, width: narrow ? 3 : 2.6 } } });
     ["ns", "desc", "sig", "above", "below"].forEach(function (k) {
       var g = info.filter(function (o) { return o.c === k; }); if (!g.length) return;
       var hollow = k === "ns";
@@ -1029,12 +1012,8 @@
     });
 
     // Desktop: the value at the right of each row. Phones: the value just right
-    // of the interval's upper end (or of the comparison tick, if that is further
-    // right, so the two never overlap), and the name above the row.
-    function hiEnd(o) {
-      var h = pp ? o.r.pp_hi : o.r.rr_hi;
-      return o.cmp != null ? Math.max(h, o.cmp) : h;
-    }
+    // of the interval's upper end, and the name above the row.
+    function hiEnd(o) { return pp ? o.r.pp_hi : o.r.rr_hi; }
     var annos = info.map(function (o) {
       var strong = o.c !== "ns" && o.c !== "desc";
       var txt = (strong ? "<b>" : "") + (pp ? sgn1(val(o.r)) : val(o.r).toFixed(2) + "x") + (strong ? "</b>" : "");
@@ -1055,7 +1034,7 @@
     });
 
     var nullX = pp ? 0 : 1;
-    setForestHead(res, cmp, pooledAny);
+    setForestHead(res, pooledAny);
     var rowH = narrow ? 50 : 36;
     var layout = {
       paper_bgcolor:BG, plot_bgcolor:BG, height: Math.max(260, rows.length * rowH + 70),
@@ -1078,14 +1057,14 @@
 
   // Shared title/subtitle for the forest and master views (chart and table).
   // Plain descriptive title (house rule, Nov 2026); everything else is footnote.
-  function setForestHead(res, cmp, pooledAny) {
+  function setForestHead(res, pooledAny) {
     var pp = usePP(), win = rangeLabel(state.yearFrom, state.yearTo);
     var unit = pp ? " (percentage points)" : " (rate ratio)";
     var title = res.master ? "Acceptance-rate gap from each group's reference group, " + win + unit
       : res.context ? "Acceptance-rate gap by contextual admissions question, 'yes' vs 'no', " + win + unit
       : "Acceptance-rate gap by " + (CHAR_LABELS[state.characteristic] || "").toLowerCase().replace(/^context: /, "") +
         " vs " + (isContext() ? "'no'" : res.ref) + ", " + win + unit;
-    var key = "Dot and bar: " + win + "." + (cmp ? " Dark tick: " + rangeLabel(state.cmpFrom, state.cmpTo) + "." : "");
+    var key = "Dot and bar: " + win + ".";
     var sub;
     if (res.master)
       sub = key + " Each group vs the largest group of its characteristic (socio-economic: Q2 and Q3 combined). " +
@@ -1790,15 +1769,6 @@
     });
     return sel;
   }
-  function qbCompareTick() {
-    var cb = document.getElementById("cmp-on"), b = document.createElement("button");
-    b.type = "button"; b.className = "qb-chip" + (state.cmpOn ? " on" : "");
-    b.setAttribute("aria-pressed", state.cmpOn ? "true" : "false");
-    b.textContent = "vs " + rangeLabel(state.cmpFrom, state.cmpTo);
-    b.title = "Show the comparison years as a dark tick";
-    b.addEventListener("click", function () { cb.checked = !cb.checked; cb.dispatchEvent(new Event("change")); });
-    return b;
-  }
   function buildQuickbar() {
     var qb = document.getElementById("quickbar"); if (!qb) return;
     qb.innerHTML = "";
@@ -1812,7 +1782,6 @@
     } else if (v === "forest") {
       items.push(qbYear());
       if (!isSESPairwise()) {
-        items.push(qbCompareTick());
         if (!isOverview()) items.push(qbSeg("measure-seg", "Measure"));
         items.push(qbSeg("forestmode-seg", "View"));
       }
@@ -1855,11 +1824,9 @@
     var fvc = document.getElementById("forest-view-ctl");
     if (fvc) fvc.style.display = (state.view === "forest" && isSESPairwise()) ? "none" : "";
     // extra room on the right of forests so the value labels never sit on the data
-    // overviews are percentage points only; the SES matrix has no comparison ticks
+    // overviews are percentage points only
     var mctl = document.getElementById("measure-ctl");
     if (mctl) mctl.hidden = isOverview();
-    var cctl = document.getElementById("cmp-ctl");
-    if (cctl) cctl.hidden = isSESPairwise();
     if (state.view === "forest") buildLegendKey();
     var chart = document.getElementById("chart"), matrix = document.getElementById("matrix"),
         table = document.getElementById("table");
@@ -2209,14 +2176,12 @@
   // Sidebar key for Compare groups; rebuilt on every render (the full forest
   // colours direction as published: red above, blue below).
   function buildLegendKey() {
-    var tick = '<div><span class="swatch" style="border-radius:0;width:3px;height:13px;background:' + INK +
-      ';margin:0 .55rem 0 .25rem"></span>Comparison years (dark tick)</div>';
     var hollow = '<div><span class="swatch" style="background:#fff;border:1.6px solid #8a8073"></span>No clear difference</div>';
     var html = isAllGroups()
       ? '<div><span class="swatch" style="background:' + RED + '"></span>Above its reference group</div>' +
-        '<div><span class="swatch" style="background:' + BLUE + '"></span>Below its reference group</div>' + hollow + tick +
+        '<div><span class="swatch" style="background:' + BLUE + '"></span>Below its reference group</div>' + hollow +
         '<div style="margin-top:.3rem">One Benjamini-Hochberg correction across every group, as in the published full forest.</div>'
-      : '<div><span class="swatch" style="background:' + RED + '"></span>Significant (after correction)</div>' + hollow + tick +
+      : '<div><span class="swatch" style="background:' + RED + '"></span>Significant (after correction)</div>' + hollow +
         '<div style="margin-top:.3rem">Position shows the direction (above or below the reference); colour shows significance.</div>';
     html += '<div style="margin-top:.3rem">† the source pooled a small hidden count with this group; hover for detail.</div>';
     document.getElementById("legendkey").innerHTML = html;
@@ -2369,18 +2334,6 @@
     });
   }
 
-  // Comparison ticks: on/off and the comparison years (Compare groups view).
-  function buildCompareControls() {
-    var cb = document.getElementById("cmp-on");
-    cb.checked = state.cmpOn;
-    cb.addEventListener("change", function () {
-      state.cmpOn = cb.checked;
-      document.getElementById("cmp-years").hidden = !state.cmpOn;
-      render();
-    });
-    buildRangeSelect("cmp-year-from", "cmp-year-to", "cmpFrom", "cmpTo");
-  }
-
   // Phones and small tablets (the app shell, 860 px and below): the controls
   // move from the side rail into a slide-up "Chart options" sheet, and the
   // characteristic picker moves out of the rail to sit above the chart, next to
@@ -2481,7 +2434,7 @@
     "Admissions equity · " + FIRST_YEAR + " to " + LATEST;
   buildTabs(); buildCharPicker(); defaultSelection(); buildGroupList();
   buildToggles(); buildTrendModeSeg(); buildEraSeg(); buildRepControls();
-  buildYearControls(); buildMeasureSeg(); buildLegendKey(); buildCompareControls(); buildYControls(); buildXControls();
+  buildYearControls(); buildMeasureSeg(); buildLegendKey(); buildYControls(); buildXControls();
   buildTableCatList(); buildTableControls(); buildViewToggles(); buildPhoneControls(); buildOptionsToggle(); buildNoteToggle();
   document.getElementById("dl-png").addEventListener("click", downloadChart);
   updateCharOptions();

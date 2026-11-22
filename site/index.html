@@ -147,9 +147,6 @@
   .chartwrap .note { color: #5f574a; }
   .chartwrap .dl-btn { background: #f3eadc; border-color: #d6c6ac; }
   #table, #matrix { background: var(--card); border-radius: 10px; }
-  #cmp-ctl .cap { display: flex; align-items: center; gap: .45rem; cursor: pointer; }
-  #cmp-ctl .cap input { margin: 0; }
-  #cmp-years { margin-top: .45rem; }
   .dl-group { position: absolute; top: 1.2rem; right: 1.3rem; z-index: 3; display: flex; gap: .35rem; }
   .dl-group select { width: auto; font-size: .78rem; padding: .38rem 1.7rem .38rem .55rem; border-radius: 9px;
     background-color: #f3eadc; border-color: #d6c6ac; }
@@ -511,12 +508,6 @@
           <select id="year-from"></select><span>to</span><select id="year-to"></select>
         </div>
       </div>
-      <div class="ctl" id="cmp-ctl">
-        <label class="cap"><input type="checkbox" id="cmp-on"> Compare with (dark tick)</label>
-        <div class="yearrange" id="cmp-years">
-          <select id="cmp-year-from"></select><span>to</span><select id="cmp-year-to"></select>
-        </div>
-      </div>
       <div class="ctl" id="measure-ctl">
         <label class="cap">Measure</label>
         <div class="seg" id="measure-seg">
@@ -709,9 +700,6 @@
         <ul>
           <li><strong>2025 entry</strong> data in every view. 2025 is reported as the latest year; the
           pre-DEI (2015 to 2019) and DEI (2021 to 2024) eras are unchanged.</li>
-          <li><strong>Comparison ticks.</strong> In Compare groups, a dark tick shows each group's figure
-          for a comparison period (2021 to 2024 by default), so a single year can be read against the
-          published era.</li>
           <li><strong>All groups (full forest)</strong> now uses the method of the published chart: every
           group with 300 or more applicants in 2021 to 2024, across nine characteristics, each against
           the largest group of its characteristic (socio-economic: Quintiles 2 and 3 combined), with one
