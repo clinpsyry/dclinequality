@@ -386,6 +386,41 @@
     return yaxis;
   }
 
+  // Play (Over time): the lines draw year by year. state.playYear is the last
+  // year drawn (null: every year). While it plays the y axis keeps the range of
+  // the whole series, so the lines grow into a still frame instead of the axis
+  // jumping each year. Never in a PNG export.
+  function playClip(traces, yaxis, include) {
+    state._playRange = null;
+    if (state.playYear == null || state.exporting) return;
+    if (!applyY({}).range) {
+      var lo = include == null ? Infinity : include, hi = include == null ? -Infinity : include;
+      traces.forEach(function (t) {
+        (t.y || []).forEach(function (v, k) {
+          if (v == null) return;
+          var a = v, b = v;
+          if (t.error_y && t.error_y.array) { b = v + (t.error_y.array[k] || 0); a = v - (t.error_y.arrayminus[k] || 0); }
+          lo = Math.min(lo, a); hi = Math.max(hi, b);
+        });
+      });
+      if (isFinite(lo)) {
+        var zero = yaxis && yaxis.rangemode === "tozero", pad = (hi - lo || 1) * 0.06;
+        state._playRange = [zero ? Math.min(0, lo) : lo - pad, hi + pad];
+        if (yaxis) { yaxis.range = state._playRange.slice(); yaxis.autorange = false; }
+      }
+    }
+    traces.forEach(function (t) {
+      if (t.x && t.y) t.y = t.y.map(function (v, k) { return t.x[k] > state.playYear ? null : v; });
+    });
+  }
+  // the year being drawn, large and faint behind the lines
+  function playMark(layout) {
+    if (state.playYear == null || state.exporting) return;
+    layout.annotations = (layout.annotations || []).concat([{ xref: "paper", yref: "paper", x: 0.015, y: 0.985,
+      xanchor: "left", yanchor: "top", showarrow: false, text: String(state.playYear),
+      font: { size: narrowView() ? 30 : 52, color: "#d8c8ad" } }]);
+  }
+
   // Numbers mode: applicants (solid) and acceptances (dotted) as counts, per group.
   // Combine Groups sums the ticked groups into one pair of lines; a year where any
   // ticked group's acceptances are suppressed shows no accepted point (never a
@@ -485,6 +520,7 @@
             rangemode:"tozero", tickformat:",", showgrid:true, gridcolor:GRID, zeroline:false, linecolor:AXISLINE, tickcolor:AXISLINE }),
       hovermode:"closest", legend:{ orientation:"h", y:-0.18, bgcolor:"rgba(0,0,0,0)", font:{ size:12 } }
     };
+    playClip(traces, layout.yaxis); playMark(layout);
     var ngd = document.getElementById("chart");
     // Phones, 3 or more lines: one small panel per line, as in Rate
     if (narrowView() && traces.length >= 3) {
@@ -515,6 +551,7 @@
   function sgn1(v) { var t = v.toFixed(1); return t === "0.0" || t === "-0.0" ? "0.0" : (v > 0 ? "+" : "") + t; }   // about 50 px of a 340 px plot: fits "+12.3" at 12 px plus its offset
 
   function renderTrend() {
+    if (state.playYear != null && (state.playYear < state.trendFrom || state.playYear >= state.trendTo)) state.playYear = null;
     document.getElementById("num-show-ctl").hidden = state.trendMode !== "numbers";
     document.getElementById("num-unit-ctl").hidden = state.trendMode !== "numbers" || state.characteristic === "OVERALL";
     if (state.trendMode === "numbers") { renderNumbers(); return; }
@@ -562,6 +599,7 @@
       (rr ? "Ratio of each group's acceptance rate to " + ref + " each year (1 = parity), with 95% intervals."
          : vs ? "Difference from " + ref + " each year, in percentage points, with 95% intervals."
          : "Share of applicants accepted each year, with 95% Wilson intervals.") + combNote);
+    playClip(traces, yaxis, vs ? (rr ? 1 : 0) : null);
     var gd = document.getElementById("chart");
     // Phones, 3 or more separate lines: one small panel per group instead of a tangle.
     if (narrowView() && !combining && traces.length >= 3) {
@@ -586,6 +624,7 @@
           showarrow:false, text:"DEI era", font:{ size:11, color:"#7a6c55" } }
       ] : []
     };
+    playMark(layout);
     var desk = deskPolish();
     if (desk) deskTrendLayout(layout, traces, true);
     var drawn = Plotly.react("chart", traces, lockZoom(phoneLines(layout, traces)), PLOT_CFG);
@@ -619,6 +658,7 @@
     var pad = (hi - lo || 1) * 0.06, yr = [o.vs || lo < 0 ? lo - pad : lo, hi + pad];
     var user = applyY({});
     if (user.range) yr = user.range;
+    else if (state._playRange) yr = state._playRange.slice();
     function fmtV(v) {
       return o.count ? Math.round(v).toLocaleString() : o.rr ? v.toFixed(2) + "x" : o.vs ? (v >= 0 ? "+" : "") + v.toFixed(1) + " pp" : v.toFixed(1) + "%";
     }
@@ -1986,6 +2026,7 @@
 
   function render() {
     if (!state.exporting) applyPhoneClasses();
+    if (state.view !== "trend") state.playYear = null;
     document.getElementById("chart")._fitMax = 0;
     var about = document.getElementById("about"), wrap = document.getElementById("chartwrap");
     var tb = document.getElementById("m-toolbar");
@@ -2040,7 +2081,46 @@
     labelTableCells();
     updateNote();
     foldNote();
-    if (!state.exporting) buildQuickbar();
+    if (!state.exporting) { buildQuickbar(); syncPlaybar(); }
+  }
+
+  // Play bar (Over time): a Play button and a year slider inside the chart card.
+  var playTimer = null;
+  var PLAY_MS = (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) ? 1200 : 700;
+  function setPlayIcon(on) {
+    var b = document.getElementById("play-btn"); if (!b) return;
+    b.querySelector(".play-word").textContent = on ? "Pause" : "Play";
+    b.querySelector("path").setAttribute("d", on ? "M4 3h3.5v10H4zM8.5 3H12v10H8.5z" : "M4 2.5l9 5.5-9 5.5z");
+    b.setAttribute("aria-pressed", on ? "true" : "false");
+  }
+  function stopPlay() { if (playTimer) { clearInterval(playTimer); playTimer = null; } setPlayIcon(false); }
+  function syncPlaybar() {
+    var bar = document.getElementById("playbar"); if (!bar) return;
+    var on = state.view === "trend" && state.trendTo > state.trendFrom;
+    bar.hidden = !on;
+    if (!on) { stopPlay(); return; }
+    var sl = document.getElementById("play-year"), y = state.playYear == null ? state.trendTo : state.playYear;
+    sl.min = state.trendFrom; sl.max = state.trendTo; sl.value = y;
+    sl.setAttribute("aria-valuetext", String(y));
+    document.getElementById("play-yr").textContent = y;
+  }
+  function playTo(y) { state.playYear = y >= state.trendTo ? null : y; render(); }
+  function buildPlaybar() {
+    var btn = document.getElementById("play-btn"), sl = document.getElementById("play-year");
+    if (!btn || !sl) return;
+    btn.addEventListener("click", function () {
+      if (playTimer) { stopPlay(); return; }
+      var cur = state.playYear == null ? state.trendTo : state.playYear;
+      setPlayIcon(true);
+      playTo(cur >= state.trendTo ? state.trendFrom : cur + 1);
+      playTimer = setInterval(function () {
+        var c = state.playYear == null ? state.trendTo : state.playYear;
+        if (state.view !== "trend" || c >= state.trendTo) { stopPlay(); return; }
+        playTo(c + 1);
+        if (state.playYear == null) stopPlay();
+      }, PLAY_MS);
+    });
+    sl.addEventListener("input", function () { stopPlay(); playTo(+sl.value); });
   }
 
   // Phones: the footnote folds behind a "How to read this chart" button, closed
@@ -2645,7 +2725,7 @@
   buildTabs(); buildCharPicker(); defaultSelection(); buildGroupList();
   buildToggles(); buildTrendModeSeg(); buildEraSeg(); buildRepControls();
   buildYearControls(); buildMeasureSeg(); buildLegendKey(); buildYControls(); buildXControls();
-  buildTableCatList(); buildTableControls(); buildViewToggles(); buildPhoneControls(); buildOptionsToggle(); buildNoteToggle();
+  buildTableCatList(); buildTableControls(); buildViewToggles(); buildPhoneControls(); buildOptionsToggle(); buildNoteToggle(); buildPlaybar();
   document.getElementById("dl-png").addEventListener("click", downloadChart);
   updateCharOptions();
   render();
