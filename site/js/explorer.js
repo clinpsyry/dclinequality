@@ -1660,15 +1660,30 @@
       text: yrs, font: { size: narrow ? 30 : 52, color: "#d8c8ad" } });
     // fixed label slots (one value per bar, one note per row), empty when not
     // needed: the bar animation replaces annotations slot by slot
+    // The value belongs to its bar, so it sits at the bar's end: inside a long bar
+    // (white), else just outside it. Only when a mark falls where the outside
+    // label would be is the label moved past that mark, so it never sits on one
+    // and never sits beside a distant mark it does not belong to.
+    var axr = applyX("rep", { range: range.slice() }).range;   // a set x range changes where labels fit
+    var span = (axr[1] - axr[0]) || 1, gdw = Math.floor(document.getElementById("chart").getBoundingClientRect().width) || 900;
+    var plotW = Math.max(160, (state.exporting === "phone" ? 400 : gdw) - (narrow ? 110 : 150)), perPx = span / plotW;
     series.forEach(function (sr) { rows.forEach(function (r, i) {
-      var v = sr.app ? r.appPct : r.accPct, far = v;
+      var v = sr.app ? r.appPct : r.accPct, txt = v == null ? "" : v.toFixed(1) + "%";
+      var a = { xref: "x", yref: "y", x: 0, y: i + sr.off, xanchor: "left", xshift: 0, showarrow: false, text: txt,
+        font: { size: narrow ? 11.5 : 12, color: INK } };
       if (v != null) {
-        var t = startBy[r.key], tv = state.repStart && t ? (sr.app ? t.appPct : t.accPct) : null;
-        var pv = census ? (sr.app ? r.popApp : r.popAcc) : null;
-        [tv, pv].forEach(function (m) { if (m != null && isFinite(m)) far = Math.max(far, m); });
+        var labW = (txt.length * 6.8 + 10) * perPx, t = startBy[r.key];
+        var marks = [state.repStart && t ? (sr.app ? t.appPct : t.accPct) : null, census ? (sr.app ? r.popApp : r.popAcc) : null];
+        // inside only when the bar is long and no mark sits where the inside label would be
+        var clashIn = marks.some(function (m) { return m != null && isFinite(m) && m >= v - labW - 8 * perPx && m <= v + 6 * perPx; });
+        if (v - axr[0] >= labW * 1.4 && !clashIn) { a.x = v; a.xanchor = "right"; a.xshift = -6; a.font.color = "#fff"; }
+        else {
+          var x = v, moved = false;
+          marks.forEach(function (m) { if (m != null && isFinite(m) && m >= v - 6 * perPx && m <= v + labW) { x = Math.max(x, m); moved = true; } });
+          a.x = x; a.xshift = moved ? 9 : 5;
+        }
       }
-      ann.push({ xref: "x", yref: "y", x: v == null ? 0 : far, y: i + sr.off, xanchor: "left", xshift: v == null ? 0 : 7,
-        showarrow: false, text: v == null ? "" : v.toFixed(1) + "%", font: { size: narrow ? 11.5 : 12, color: INK } });
+      ann.push(a);
     }); });
     rows.forEach(function (r, i) {
       ann.push({ xref: "x", yref: "y", x: 0, y: i, xanchor: "left", xshift: 8, showarrow: false,
@@ -2172,11 +2187,13 @@
     var top = 24 + titleLines * 24 + 14, bottom = 40 + footLines * 14 + 30;
     var srcH = layout.height || 480, H = srcH + top + bottom;
     var m = Object.assign({ t: 10, r: 58, b: 44, l: 10 }, layout.margin || {});
+    // a chart with a tall top margin (a legend stacked on phones) keeps the title above it
+    var tLift = Math.max(0, m.t - 30);
     m.t += top; m.b += bottom;
     layout.margin = m; layout.width = W; layout.height = H;
     layout.paper_bgcolor = BG; layout.plot_bgcolor = BG;
     layout.annotations = (layout.annotations || []).concat([
-      { xref: "paper", x: 0, yref: "paper", y: 1, yanchor: "bottom", yshift: top - 24 - titleLines * 24 + 8,
+      { xref: "paper", x: 0, yref: "paper", y: 1, yanchor: "bottom", yshift: top - 24 - titleLines * 24 + 8 + tLift,
         xanchor: "left", xshift: -(m.l - 12), showarrow: false, align: "left",
         text: "<b>" + wrapAnn(escAnn(title), TW) + "</b>",
         font: { size: 18, color: "#1c1a16", family: "Inter, sans-serif" } },
