@@ -199,7 +199,7 @@
   // Compare groups opens on the latest year. The DEI era band is off until the
   // "DEI era" chip turns it on.
   var state = { view:"trend", characteristic:"ETHNIC GROUP (BROAD)", selected:{}, showCI:false,
-    trendMode:"rate", trendMeasure:"pp", numShow:"both", numUnit:"count", trendFrom:FIRST_YEAR, trendTo:LATEST, eraMode:"rate",
+    trendMode:"rate", trendMeasure:"pp", numShow:"both", numUnit:"count", repKind:"share", repPop:true, repStart:true, repSel:{}, trendFrom:FIRST_YEAR, trendTo:LATEST, eraMode:"rate",
     yearFrom:LATEST, yearTo:LATEST, measure:"pp",
     tableYearFrom:FIRST_YEAR, tableYearTo:LATEST, tableSelected:{}, tableMode:"pooled",
     tableSort:{ col:null, dir:1 }, repYearFrom:DEI_FROM, repYearTo:LATEST, repMode:"chart",
@@ -437,89 +437,6 @@
     return tot;
   }
 
-  // Mix (Over time): each ticked group's share of applicants and of acceptances
-  // for one year, as bars that move when the year changes (Play or the slider).
-  // The same shares as Numbers > Share. The ticks mark each group's share in the
-  // first year shown, so you can see how far it has moved.
-  var MIX_MS = (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) ? 0 : 450;
-  function renderMix() {
-    var ch = state.characteristic, label = CHAR_LABELS[ch], narrow = narrowView();
-    var groups = (byChar[ch] || []).filter(function (g) { return state.selected[g.group]; });
-    var tot = shareTotals(ch), y0 = state.trendFrom, y1 = state.trendTo;
-    var yr = state.playYear == null ? y1 : state.playYear;
-    var showApp = state.numShow !== "accepted", showAcc = state.numShow !== "applicants";
-    function share(g, y, app) {
-      var r = null; g.by_year.forEach(function (x) { if (x.year === y) r = x; });
-      var t = tot[y]; if (!r || r.accepted == null || !t) return null;
-      var v = app ? r.applicants / t.app : r.accepted / t.acc;
-      return isFinite(v) ? 100 * v : null;
-    }
-    // fixed order: the largest applicant share in the last year shown at the top
-    groups = groups.slice().sort(function (a, b) { return (share(b, y1, true) || -1) - (share(a, y1, true) || -1); });
-    var cats = groups.map(function (g) { return wrapLabel(g.group, narrow ? 16 : 30); });
-    var xmax = 1;
-    groups.forEach(function (g) { for (var y = y0; y <= y1; y++) xmax = Math.max(xmax, share(g, y, true) || 0, share(g, y, false) || 0); });
-    function bars(app, name, color) {
-      var xs = groups.map(function (g) { return share(g, yr, app); });
-      return { type: "bar", orientation: "h", name: name, y: cats, x: xs, marker: { color: color },
-        text: xs.map(function (v) { return v == null ? "" : v.toFixed(1) + "%"; }), textposition: "outside", cliponaxis: false,
-        textfont: { size: narrow ? 11.5 : 12, color: INK }, customdata: groups.map(function (g) { return g.group; }),
-        hovertemplate: "%{customdata}<br>" + yr + ": %{x:.1f}% of " + (app ? "applicants" : "acceptances") + "<extra></extra>" };
-    }
-    var traces = [];
-    if (showApp) traces.push(bars(true, "Applicants", BLUE));
-    if (showAcc) traces.push(bars(false, "Accepted", RED));
-    var tickApp = showApp, ticks = groups.map(function (g) { return share(g, y0, tickApp); });
-    traces.push({ type: "scatter", mode: "markers", name: (tickApp ? "Applicants" : "Accepted") + " in " + y0, y: cats, x: ticks,
-      marker: { symbol: "line-ns", size: showApp && showAcc ? 24 : 16, line: { color: INK, width: 2 } },
-      customdata: groups.map(function (g) { return g.group; }),
-      hovertemplate: "%{customdata}<br>" + y0 + ": %{x:.1f}%<extra></extra>" });
-    var ann = [{ xref: "paper", yref: "paper", x: 1, y: 0.01, xanchor: "right", yanchor: "bottom", showarrow: false,
-      text: String(yr), font: { size: narrow ? 30 : 52, color: "#d8c8ad" } }];
-    groups.forEach(function (g, i) {
-      var gone = (!showApp || share(g, yr, true) == null) && (!showAcc || share(g, yr, false) == null);
-      var row = null; g.by_year.forEach(function (x) { if (x.year === yr) row = x; });
-      // a withheld count is "hidden"; a group the source did not report that year is "no data".
-      // One label slot per group, empty when not needed: the year-to-year animation
-      // replaces annotations slot by slot and would leave a stale extra one behind.
-      ann.push({ x: 0, y: cats[i], xanchor: "left", xshift: 22, showarrow: false,
-        text: !gone ? "" : row && row.accepted == null ? "hidden this year" : "no data this year", font: { size: 12, color: MUTED } });
-    });
-    setChartHead((showApp && showAcc ? "Share of applicants and of acceptances" : showApp ? "Share of applicants" : "Share of acceptances") +
-      ", " + label.toLowerCase() + ", " + yr + " (%)",
-      "Each group's share of everyone who answered this question in " + yr + "; across all the groups of this characteristic " +
-      "each colour adds up to 100%. Prefer-not-to-say is not counted. Black ticks: the " + (tickApp ? "applicant" : "acceptance") +
-      " share in " + y0 + ". Press Play or move the slider to change the year. A group whose acceptance count is hidden that " +
-      "year shows 'hidden this year' (never counted as zero) and is left out of that year's total; 'no data' means the " +
-      "source did not report that group that year.");
-    var per = showApp && showAcc ? (narrow ? 50 : 54) : (narrow ? 34 : 36);
-    var layout = { paper_bgcolor: BG, plot_bgcolor: BG, height: Math.max(260, groups.length * per + 90),
-      font: { family: "Inter, system-ui, sans-serif", color: "#1a1a1a", size: 13 },
-      margin: { t: 30, r: narrow ? 46 : 64, b: 40, l: 10 }, barmode: "group", bargap: 0.3, bargroupgap: 0.06,
-      hovermode: "closest", showlegend: true,
-      legend: { orientation: "h", x: 0, y: 1, yanchor: "bottom", bgcolor: "rgba(0,0,0,0)", font: { size: 12 } },
-      xaxis: { range: [0, xmax * 1.16], ticksuffix: "%", showgrid: true, gridcolor: GRID, zeroline: false,
-        linecolor: AXISLINE, tickcolor: AXISLINE, fixedrange: true },
-      yaxis: { autorange: "reversed", automargin: true, showgrid: false, zeroline: false, fixedrange: true,
-        tickfont: { size: narrow ? 12 : 13, color: INK }, ticklabelstandoff: 6 },
-      annotations: ann };
-    var gd = document.getElementById("chart");
-    gd._smallMult = false;
-    gd._fitMax = Math.round(layout.height * 1.5);
-    document.querySelectorAll("#group-list .c-dot").forEach(function (d) { d.remove(); });
-    var key = [ch, cats.join("|"), y0, y1, state.numShow, narrow, deskPolish(), Math.floor(gd.getBoundingClientRect().width)].join("~");
-    if (state._mixAnim && MIX_MS && !state.exporting && gd._fullLayout && gd._mixKey === key) {
-      state._mixAnim = false;
-      gd._animUntil = Date.now() + MIX_MS + 60;
-      Plotly.animate(gd, { data: traces, layout: { annotations: ann } },
-        { transition: { duration: MIX_MS, easing: "cubic-in-out" }, frame: { duration: MIX_MS, redraw: false } });
-      return;
-    }
-    state._mixAnim = false;
-    Plotly.react("chart", traces, lockZoom(layout), PLOT_CFG);
-    if (!state.exporting) gd._mixKey = key;
-  }
-
   // Numbers mode: applicants (solid) and acceptances (dotted) as counts, per group.
   // Combine Groups sums the ticked groups into one pair of lines; a year where any
   // ticked group's acceptances are suppressed shows no accepted point (never a
@@ -641,16 +558,8 @@
 
   function renderTrend() {
     if (state.playYear != null && (state.playYear < state.trendFrom || state.playYear >= state.trendTo)) state.playYear = null;
-    document.getElementById("num-show-ctl").hidden = state.trendMode !== "numbers" && state.trendMode !== "mix";
+    document.getElementById("num-show-ctl").hidden = state.trendMode !== "numbers";
     document.getElementById("num-unit-ctl").hidden = state.trendMode !== "numbers" || state.characteristic === "OVERALL";
-    var mixBtn = document.querySelector('#trendmode-seg .seg-btn[data-mode="mix"]');
-    if (mixBtn) mixBtn.hidden = state.characteristic === "OVERALL";
-    if (state.trendMode === "mix" && state.characteristic === "OVERALL") {
-      state.trendMode = "rate";
-      document.querySelectorAll("#trendmode-seg .seg-btn").forEach(function (x) {
-        x.classList.toggle("active", x.getAttribute("data-mode") === "rate"); });
-    }
-    if (state.trendMode === "mix") { renderMix(); return; }
     if (state.trendMode === "numbers") { renderNumbers(); return; }
     var ch = state.characteristic, ref = refFor(ch), refGroup = getGroup(ch, ref);
     var vs = state.trendMode === "vsref" && !!refGroup;
@@ -1464,9 +1373,10 @@
       "Quintile 5 (highest)":["Quintile 5 (highest participation rate in HE)"] } }
   };
   function repYears() { var ys=[]; for (var y=state.repYearFrom; y<=state.repYearTo; y++) ys.push(y); return ys; }
-  function computeRep() {
+  function computeRep(years) {
     var ch = state.characteristic, cfg = REP[ch]; if (!cfg) return null;
-    var census = window.CENSUS[cfg.census], cats = Object.keys(census), years = repYears();
+    var census = window.CENSUS[cfg.census], cats = Object.keys(census);
+    years = years || repYears();
     var claimed = {};
     cats.forEach(function (c) { if (cfg.buckets[c] !== "__REST__")
       (cfg.buckets[c] || []).forEach(function (g) { claimed[g] = 1; }); });
@@ -1529,109 +1439,334 @@
       benchLabel: "population share (England and Wales, Census 2021)",
       annoLabel: "Population (Census 2021)", popWord: "population", colHdr: "Population %" };
   }
-  function setRepHead() {
-    var ch = state.characteristic, label = CHAR_LABELS[ch].replace(" (detailed)", "");
-    setChartHead("Share of applicants and of acceptances vs the " +
-      (ch === "SOCIO-ECONOMIC BACKGROUND" ? "equal-fifths benchmark" : ch === "DISABILITY" ? "age-adjusted population" : "population") +
-      ", " + label.toLowerCase() + ", " + rangeLabel(state.repYearFrom, state.repYearTo) + " (percentage points)",
-      "Blue: applicants. Red: accepted. Each bar is the group's share minus its " + repBench(ch).benchLabel + ".");
+  // ==========================================================================
+  // WHO APPLIES, WHO GETS IN (the "rep" tab): each group's share of applicants
+  // and of acceptances, either as plain shares that move year by year ("share",
+  // formerly Mix on Over time) or as the gap from a population benchmark ("gap",
+  // formerly Representation). The rows are the source groups; compared with the
+  // population they are the Census categories (groups pooled to match the Census,
+  // exactly as Representation always did). Shares, totals and suppression follow
+  // shareTotals and computeRep: a withheld acceptance count drops that group-year
+  // from both its share and the total, never counted as zero.
+  // ==========================================================================
+  var MIX_MS = (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) ? 0 : 450;
+  function repHasBench() { return !!REP[state.characteristic]; }
+  function repKind() { return repHasBench() && state.repKind === "gap" ? "gap" : "share"; }
+  function repCensus() { return repHasBench() && (repKind() === "gap" || state.repPop); }
+  // every row the current setting can show, in display order for the Census
+  function repUnits() {
+    var ch = state.characteristic;
+    if (repCensus()) return Object.keys(window.CENSUS[REP[ch].census]).map(function (c) { return { key: c, label: c }; });
+    var hidden = trendHidden(ch);
+    return (byChar[ch] || []).filter(function (g) { return hidden.indexOf(g.group) === -1; })
+      .map(function (g) { return { key: g.group, label: g.group, group: g }; });
   }
-  function repNoBench() {
-    setChartHead(CHAR_LABELS[state.characteristic] + ": no benchmark",
-      "Representativeness is available where there is a population benchmark: ethnicity " +
-      "(broad and detailed), religion, sexual orientation, sex, disability, and socio-economic " +
-      "background. Pick one of those.");
+  // Census categories are all shown until unticked; source groups share the
+  // Over time selection, so a group ticked there is ticked here too
+  function repIsSel(u) { return repCensus() ? state.repSel[u.key] !== false : !!state.selected[u.key]; }
+  // shares of every row over some years
+  function repCompute(years) {
+    var out = { byKey: {}, appTot: 0, accTot: 0 };
+    if (repCensus()) {
+      var res = computeRep(years); if (!res) return out;
+      out.appTot = res.appTot; out.accTot = res.accTot;
+      res.rows.forEach(function (r) {
+        out.byKey[r.cat] = { app_n: r.app_n, acc_n: r.acc_n, appPct: res.appTot ? r.appPct : null,
+          accPct: res.accTot ? r.accPct : null, popApp: r.popApp, popAcc: r.popAcc };
+      });
+      return out;
+    }
+    var tot = shareTotals(state.characteristic);
+    years.forEach(function (y) { if (tot[y]) { out.appTot += tot[y].app; out.accTot += tot[y].acc; } });
+    repUnits().forEach(function (u) {
+      var p = Stats.poolGroup(u.group, years);
+      out.byKey[u.key] = { app_n: p.app, acc_n: p.acc,
+        appPct: out.appTot ? 100 * p.app / out.appTot : null, accPct: out.accTot ? 100 * p.acc / out.accTot : null };
+    });
+    return out;
+  }
+  // The rows shown for some years: the ticked rows, or one combined row. A
+  // combined row adds up only the years in which every ticked row is reported,
+  // so a withheld count is never treated as zero inside the sum.
+  function repRows(years) {
+    var units = repUnits().filter(repIsSel), all = repCompute(years);
+    function row(u) {
+      var v = all.byKey[u.key] || {}, missing = !v.app_n;
+      return { key: u.key, label: u.label, app_n: v.app_n || 0, acc_n: v.acc_n || 0,
+        appPct: missing ? null : v.appPct, accPct: missing ? null : v.accPct,
+        popApp: v.popApp, popAcc: v.popAcc, missing: missing };
+    }
+    if (!(state.combine && units.length > 1))
+      return { rows: units.map(row), appTot: all.appTot, accTot: all.accTot, combined: false };
+    var na = 0, nc = 0, da = 0, dc = 0, used = 0;
+    years.forEach(function (y) {
+      var one = repCompute([y]), ok = one.appTot > 0;
+      units.forEach(function (u) { var v = one.byKey[u.key]; if (!v || !v.app_n) ok = false; });
+      if (!ok) return;
+      used++; da += one.appTot; dc += one.accTot;
+      units.forEach(function (u) { na += one.byKey[u.key].app_n; nc += one.byKey[u.key].acc_n; });
+    });
+    var pa = null, pc = null;
+    if (repCensus()) {
+      pa = 0; pc = 0;
+      units.forEach(function (u) { var v = all.byKey[u.key] || {}; pa += v.popApp || 0; pc += v.popAcc || 0; });
+    }
+    return { rows: [{ key: "__combined__", label: "Combined: " + units.map(function (u) { return u.label; }).join(" + "),
+      app_n: na, acc_n: nc, appPct: used && da ? 100 * na / da : null, accPct: used && dc ? 100 * nc / dc : null,
+      popApp: pa, popAcc: pc, missing: !used, partYears: used && used < years.length ? used : 0 }],
+      appTot: da, accTot: dc, combined: true, parts: units.length };
+  }
+  // source groups: largest applicant share in the last year with data at the top,
+  // fixed whatever year is shown, so the bars keep their places while playing
+  function repOrder(rows) {
+    if (repCensus() || rows.length < 2) return rows;
+    var ys = playYearsFor("rep"), by = repCompute(ys.length ? [ys[ys.length - 1]] : repYears()).byKey;
+    function v(r) { var x = by[r.key]; return x && x.app_n ? x.appPct : -1; }
+    return rows.slice().sort(function (a, b) { return v(b) - v(a); });
+  }
+  function repFirstYear() { var ys = playYearsFor("rep"); return ys.length ? ys[0] : FIRST_YEAR; }
+  // why a row has no bar: withheld (hidden) or not reported (no data)
+  function repMissingText(r) {
+    var single = state.repYearFrom === state.repYearTo, when = single ? " this year" : " in these years";
+    if (r.key === "__combined__") return "hidden or not reported" + when;
+    if (!repCensus() && single) {
+      var g = getGroup(state.characteristic, r.key), row = null;
+      if (g) g.by_year.forEach(function (x) { if (x.year === state.repYearFrom) row = x; });
+      return (row && row.accepted == null ? "hidden" : "no data") + when;
+    }
+    return "hidden or not reported" + when;
+  }
+  function repShowWords() {
+    var a = state.numShow !== "accepted", c = state.numShow !== "applicants";
+    return a && c ? "applicants and of acceptances" : a ? "applicants" : "acceptances";
+  }
+  function setRepHead(R) {
+    var ch = state.characteristic, label = CHAR_LABELS[ch].replace(" (detailed)", "").toLowerCase();
+    var yrs = rangeLabel(state.repYearFrom, state.repYearTo), b = repHasBench() ? repBench(ch) : null;
+    var comb = R && R.combined ? " Combined: the ticked " + (repCensus() ? "categories" : "groups") +
+      " added together; a year in which any of them is hidden or not reported is left out of the combined bar" +
+      (R.rows[0] && R.rows[0].partYears ? " (here " + R.rows[0].partYears + " of the years)" : "") + "." : "";
+    if (repKind() === "gap") {
+      var a = state.numShow !== "accepted", c = state.numShow !== "applicants";
+      setChartHead("Share of " + repShowWords() + " vs the " +
+        (ch === "SOCIO-ECONOMIC BACKGROUND" ? "equal-fifths benchmark" : ch === "DISABILITY" ? "age-adjusted population" : "population") +
+        ", " + label + ", " + yrs + " (percentage points)",
+        (a && c ? "Blue: applicants. Red: accepted. " : a ? "Blue: applicants. " : "Red: accepted. ") +
+        "Each bar is the group's share minus its " + b.benchLabel + "." + comb);
+      return;
+    }
+    var y0 = repFirstYear();
+    setChartHead("Share of " + repShowWords() + ", " + label + ", " + yrs + " (%)",
+      "Each group's share of everyone who answered this question in " + yrs + "; across all the groups of this " +
+      "characteristic each colour adds up to 100%. Prefer-not-to-say is not counted." +
+      (repCensus() ? " Groups are pooled to match the Census categories. Diamonds: the " + b.benchLabel + "." : "") +
+      (state.repStart ? " Black ticks: each bar's share in " + y0 + "." : "") + comb +
+      " Press Play or move the slider to change the year. A group whose acceptance count is withheld that year is left out " +
+      "of that year's total and never counted as zero; 'no data' means the source did not report it.");
+  }
+  function repNoRows() {
+    setChartHead("No groups ticked", "Tick at least one group in Groups shown.");
   }
   function renderRepTable() {
-    var res = computeRep(), tbl = document.getElementById("table");
-    if (!res) { repNoBench(); tbl.innerHTML = ""; return; }
-    setRepHead();
-    var b = repBench(state.characteristic), srt = state.repSort;
-    var rows = res.rows.map(function (r) {
-      return { cat: r.cat, bench: r.popApp, app: r.appPct, appdev: r.appPct - r.popApp,
-        acc: r.accPct, accdev: r.accPct - r.popAcc };
+    var tbl = document.getElementById("table"), R = repRows(repYears()), rows = repOrder(R.rows);
+    setRepHead(R);
+    if (!rows.length) { repNoRows(); tbl.innerHTML = ""; return; }
+    var census = repCensus(), gap = census, b = census ? repBench(state.characteristic) : null, srt = state.repSort;
+    var a = state.numShow !== "accepted", c = state.numShow !== "applicants";
+    var data = rows.map(function (r) {
+      return { cat: r.label, missing: r.missing, bench: r.popApp, app: r.appPct, acc: r.accPct,
+        appdev: r.appPct == null || r.popApp == null ? null : r.appPct - r.popApp,
+        accdev: r.accPct == null || r.popAcc == null ? null : r.accPct - r.popAcc };
     });
-    if (srt.col) rows.sort(function (a, c) {
-      var va = srt.col === "group" ? a.cat.toLowerCase() : a[srt.col];
-      var vb = srt.col === "group" ? c.cat.toLowerCase() : c[srt.col];
-      return va < vb ? -srt.dir : va > vb ? srt.dir : 0;
+    if (srt.col) data.sort(function (x, y) {
+      var vx = srt.col === "group" ? x.cat.toLowerCase() : x[srt.col], vy = srt.col === "group" ? y.cat.toLowerCase() : y[srt.col];
+      if (vx == null) vx = -Infinity; if (vy == null) vy = -Infinity;
+      return vx < vy ? -srt.dir : vx > vy ? srt.dir : 0;
     });
     function th(label, col, left) {
       var active = srt.col === col, glyph = active ? (srt.dir > 0 ? "▲" : "▼") : "↕";
       return '<th data-sort="' + col + '"' + (left ? ' style="text-align:left"' : "") +
-        ' title="Click to sort">' + label + '<span class="sarr' + (active ? " on" : "") +
-        '">' + glyph + "</span></th>";
+        ' title="Click to sort">' + label + '<span class="sarr' + (active ? " on" : "") + '">' + glyph + "</span></th>";
     }
-    function pp(x) { return (x >= 0 ? "+" : "") + x.toFixed(1) + " pp"; }
-    var h = '<table class="datatable"><thead><tr>' + th("Group", "group", true) +
-      th(b.colHdr, "bench") + th("Applicants %", "app") + th("Applicants vs benchmark", "appdev") +
-      th("Accepted %", "acc") + th("Accepted vs benchmark", "accdev") + "</tr></thead><tbody>";
-    rows.forEach(function (r) {
-      h += "<tr><td style='text-align:left'>" + r.cat + "</td><td>" + r.bench.toFixed(1) +
-        "</td><td>" + r.app.toFixed(1) + "</td><td>" + pp(r.appdev) +
-        "</td><td>" + r.acc.toFixed(1) + "</td><td>" + pp(r.accdev) + "</td></tr>";
+    function pct(x) { return x == null ? "&mdash;" : x.toFixed(1); }
+    function pp(x) { return x == null ? "&mdash;" : sgn1(x) + " pp"; }
+    var h = '<table class="datatable"><thead><tr>' + th("Group", "group", true) + (census ? th(b.colHdr, "bench") : "") +
+      (a ? th("Applicants %", "app") + (gap ? th("Applicants vs benchmark", "appdev") : "") : "") +
+      (c ? th("Accepted %", "acc") + (gap ? th("Accepted vs benchmark", "accdev") : "") : "") + "</tr></thead><tbody>";
+    data.forEach(function (r) {
+      h += "<tr><td style='text-align:left'>" + escAnn(r.cat) + (r.missing ? " (no data)" : "") + "</td>" +
+        (census ? "<td>" + pct(r.bench) + "</td>" : "") +
+        (a ? "<td>" + pct(r.app) + "</td>" + (gap ? "<td>" + pp(r.appdev) + "</td>" : "") : "") +
+        (c ? "<td>" + pct(r.acc) + "</td>" + (gap ? "<td>" + pp(r.accdev) + "</td>" : "") : "") + "</tr>";
     });
     h += "</tbody></table>";
     tbl.innerHTML = h;
   }
   function renderRep() {
-    var res = computeRep();
-    if (!res) { repNoBench(); Plotly.purge("chart"); return; }
-    var ys = res.cats, rows = res.rows, ch = state.characteristic;
+    if (repKind() === "gap") renderRepGap(); else renderRepShares();
+  }
+  function repEmpty() {
+    repNoRows(); var gd = document.getElementById("chart"); gd._mixKey = null; Plotly.purge(gd);
+  }
+  // Shares: bars for one year (or a pooled range) that move when the year changes.
+  // Rows sit on a numeric axis so each bar carries its own marks: the population
+  // share (diamond) and the share in the first year (tick), for applicants on the
+  // blue bar and for acceptances on the red one. Each value sits just past the
+  // furthest of its bar and marks, so nothing covers it.
+  function renderRepShares() {
+    var ch = state.characteristic, narrow = narrowView(), census = repCensus();
+    var showApp = state.numShow !== "accepted", showAcc = state.numShow !== "applicants", both = showApp && showAcc;
+    var R = repRows(repYears()), rows = repOrder(R.rows), yrs = rangeLabel(state.repYearFrom, state.repYearTo);
+    setRepHead(R);
+    if (!rows.length) { repEmpty(); return; }
+    var y0 = repFirstYear(), startBy = {};
+    if (state.repStart) repRows([y0]).rows.forEach(function (r) { startBy[r.key] = r; });
+    var names = rows.map(function (r) { return r.label; });
+    var series = [];
+    if (showApp) series.push({ app: true, color: BLUE, name: "Applicants", word: "applicants", off: both ? -0.18 : 0 });
+    if (showAcc) series.push({ app: false, color: RED, name: "Accepted", word: "acceptances", off: both ? 0.18 : 0 });
+    var bw = both ? 0.34 : 0.56;
+    var traces = [], xmax = 1, ann = [];
+    series.forEach(function (sr) {
+      var xs = rows.map(function (r) { return sr.app ? r.appPct : r.accPct; });
+      traces.push({ type: "bar", orientation: "h", name: sr.name, x: xs, width: bw,
+        y: rows.map(function (_, i) { return i + sr.off; }), marker: { color: sr.color }, customdata: names,
+        hovertemplate: "%{customdata}<br>" + yrs + ": %{x:.1f}% of " + sr.word + "<extra></extra>" });
+    });
+    var tickSize = Math.round((narrow ? (both ? 50 : 34) : (both ? 54 : 36)) * bw * 0.8) + 2;   // a little taller than its bar
+    if (state.repStart) {
+      var tx = [], ty = [], tc = [];
+      series.forEach(function (sr) { rows.forEach(function (r, i) {
+        var t = startBy[r.key], v = t ? (sr.app ? t.appPct : t.accPct) : null;
+        tx.push(v); ty.push(i + sr.off); tc.push(r.label + "<br>" + y0 + ": " + (v == null ? "no data" : v.toFixed(1) + "% of " + sr.word));
+      }); });
+      traces.push({ type: "scatter", mode: "markers", name: "Share in " + y0, x: tx, y: ty, text: tc,
+        marker: { symbol: "line-ns", size: tickSize, line: { color: INK, width: 2 } },
+        hovertemplate: "%{text}<extra></extra>" });
+    }
+    if (census) {
+      var px = [], py = [], pc = [], bw2 = repBench(ch);
+      series.forEach(function (sr) { rows.forEach(function (r, i) {
+        var v = sr.app ? r.popApp : r.popAcc;
+        px.push(v); py.push(i + sr.off); pc.push(r.label + "<br>" + bw2.popWord + ": " + (v == null ? "n/a" : v.toFixed(1) + "%"));
+      }); });
+      traces.push({ type: "scatter", mode: "markers", name: bw2.annoLabel, x: px, y: py, text: pc,
+        marker: { symbol: "diamond", size: narrow ? 9 : 10, color: BG, line: { color: "#6d6252", width: 2 } },
+        hovertemplate: "%{text}<extra></extra>" });
+    }
+    traces.forEach(function (t) { t.x.forEach(function (v) { if (v != null && isFinite(v)) xmax = Math.max(xmax, v); }); });
+    var lock = playLock("rep"), range = lock ? lock.range.slice() : [0, xmax * 1.16];
+    ann.push({ xref: "paper", yref: "paper", x: 1, y: 0.01, xanchor: "right", yanchor: "bottom", showarrow: false,
+      text: yrs, font: { size: narrow ? 30 : 52, color: "#d8c8ad" } });
+    // fixed label slots (one value per bar, one note per row), empty when not
+    // needed: the bar animation replaces annotations slot by slot
+    series.forEach(function (sr) { rows.forEach(function (r, i) {
+      var v = sr.app ? r.appPct : r.accPct, far = v;
+      if (v != null) {
+        var t = startBy[r.key], tv = state.repStart && t ? (sr.app ? t.appPct : t.accPct) : null;
+        var pv = census ? (sr.app ? r.popApp : r.popAcc) : null;
+        [tv, pv].forEach(function (m) { if (m != null && isFinite(m)) far = Math.max(far, m); });
+      }
+      ann.push({ xref: "x", yref: "y", x: v == null ? 0 : far, y: i + sr.off, xanchor: "left", xshift: v == null ? 0 : 7,
+        showarrow: false, text: v == null ? "" : v.toFixed(1) + "%", font: { size: narrow ? 11.5 : 12, color: INK } });
+    }); });
+    rows.forEach(function (r, i) {
+      ann.push({ xref: "x", yref: "y", x: 0, y: i, xanchor: "left", xshift: 8, showarrow: false,
+        text: r.missing ? repMissingText(r) : "", font: { size: 12, color: MUTED } });
+    });
+    var per = both ? (narrow ? 50 : 54) : (narrow ? 34 : 36);
+    // phones stack the legend one entry per line: give it its own height, so the rows keep theirs
+    var legendH = narrow ? traces.length * 20 : 0;
+    var layout = { paper_bgcolor: BG, plot_bgcolor: BG, height: Math.max(260, rows.length * per + 90 + legendH),
+      font: { family: "Inter, system-ui, sans-serif", color: "#1a1a1a", size: 13 },
+      margin: { t: 30 + legendH, r: narrow ? 22 : 24, b: 40, l: 10 }, barmode: "overlay",
+      hovermode: "closest", showlegend: true,
+      legend: { orientation: "h", x: 0, y: 1, yanchor: "bottom", bgcolor: "rgba(0,0,0,0)", font: { size: narrow ? 11.5 : 12 } },
+      xaxis: applyX("rep", { range: range, ticksuffix: "%", showgrid: true, gridcolor: GRID, zeroline: false,
+        linecolor: AXISLINE, tickcolor: AXISLINE, fixedrange: true }),
+      yaxis: { range: [rows.length - 0.5, -0.6], autorange: false, automargin: true, showgrid: false, zeroline: false,
+        fixedrange: true, tickmode: "array", tickvals: rows.map(function (_, i) { return i; }),
+        ticktext: rows.map(function (r) { return wrapLabel(escAnn(r.label), narrow ? 14 : 30); }),
+        tickfont: { size: narrow ? 12 : 13, color: INK }, ticklabelstandoff: 6 },
+      annotations: ann };
+    var gd = document.getElementById("chart");
+    gd._smallMult = false;
+    gd._fitMax = Math.round(layout.height * 1.5);
+    var key = [ch, census, names.join("|"), state.numShow, state.repStart, state.combine, narrow, deskPolish(),
+      Math.floor(gd.getBoundingClientRect().width)].join("~");
+    if (state._mixAnim && MIX_MS && !state.exporting && gd._fullLayout && gd._mixKey === key) {
+      state._mixAnim = false;
+      gd._animUntil = Date.now() + MIX_MS + 60;
+      Plotly.animate(gd, { data: traces, layout: { annotations: ann, xaxis: { range: layout.xaxis.range } } },
+        { transition: { duration: MIX_MS, easing: "cubic-in-out" }, frame: { duration: MIX_MS, redraw: false } });
+      return;
+    }
+    state._mixAnim = false;
+    Plotly.react("chart", traces, lockZoom(phoneAxes(layout)), PLOT_CFG);
+    if (!state.exporting) gd._mixKey = key;
+  }
+  // Vs population: each row's share minus its benchmark, in percentage points.
+  function renderRepGap() {
+    var ch = state.characteristic, narrow = narrowView();
+    var showApp = state.numShow !== "accepted", showAcc = state.numShow !== "applicants", both = showApp && showAcc;
+    var R = repRows(repYears()), rows = R.rows;
+    setRepHead(R);
+    if (!rows.length) { repEmpty(); return; }
+    document.getElementById("chart")._mixKey = null;
     var b = repBench(ch), annoLabel = b.annoLabel, popWord = b.popWord;
-    var appShare = rows.map(function (r) { return r.appPct; });
-    var accShare = rows.map(function (r) { return r.accPct; });
-    var appDev = rows.map(function (r) { return r.appPct - r.popApp; });
-    var accDev = rows.map(function (r) { return r.accPct - r.popAcc; });
-    function tx(stage, share, popKey) {
-      return rows.map(function (r, i) {
-        var pop = r[popKey], dev = share[i] - pop, ratio = pop > 0 ? share[i] / pop : null;
-        return r.cat + "<br>" + stage + " " + share[i].toFixed(1) + "% vs " + popWord + " " +
-          pop.toFixed(1) + "%<br>" + (dev >= 0 ? "+" : "") + dev.toFixed(1) + " pp" +
-          (ratio != null ? " (" + ratio.toFixed(2) + "x)" : "");
+    var ys = rows.map(function (r) { return r.label; });
+    function dev(r, app) { var s = app ? r.appPct : r.accPct, p = app ? r.popApp : r.popAcc; return s == null || p == null ? null : s - p; }
+    function tx(app) {
+      return rows.map(function (r) {
+        var s = app ? r.appPct : r.accPct, pop = app ? r.popApp : r.popAcc;
+        if (s == null) return r.label + "<br>" + repMissingText(r);
+        var d = s - pop, ratio = pop > 0 ? s / pop : null;
+        return r.label + "<br>" + (app ? "Applicants" : "Accepted") + " " + s.toFixed(1) + "% vs " + popWord + " " +
+          pop.toFixed(1) + "%<br>" + sgn1(d) + " pp" + (ratio != null ? " (" + ratio.toFixed(2) + "x)" : "");
       });
     }
-    var ylab = wrapLabels(ys);
-    var traces = [
-      { y: ylab, x: appDev, name: "Applicants", type: "bar", orientation: "h",
-        marker: { color: BLUE }, textposition: "none",
-        hovertemplate: "%{text}<extra></extra>", text: tx("Applicants", appShare, "popApp") },
-      { y: ylab, x: accDev, name: "Accepted", type: "bar", orientation: "h",
-        marker: { color: RED }, textposition: "none",
-        hovertemplate: "%{text}<extra></extra>", text: tx("Accepted", accShare, "popAcc") }
-    ];
-    setRepHead();
-    var narrow = narrowView();
+    var ylab = wrapLabels(ys), series = [];
+    if (showApp) series.push({ app: true, color: BLUE, name: "Applicants" });
+    if (showAcc) series.push({ app: false, color: RED, name: "Accepted" });
+    var traces = series.map(function (sr) {
+      return { y: ylab, x: rows.map(function (r) { return dev(r, sr.app); }), name: sr.name, type: "bar", orientation: "h",
+        marker: { color: sr.color }, textposition: "none", hovertemplate: "%{text}<extra></extra>", text: tx(sr.app) };
+    });
+    var idx = ys.map(function (_, i) { return i; });
     if (narrow) {
-      // phones: numeric rows so the name can sit above its two bars, full width
-      var idx = ys.map(function (_, i) { return i; });
-      traces[0].y = idx.map(function (i) { return i - 0.08; }); traces[0].width = 0.32;
-      traces[1].y = idx.map(function (i) { return i + 0.26; }); traces[1].width = 0.32;
+      // phones: numeric rows so the name can sit above its bars, full width
+      if (both) {
+        traces[0].y = idx.map(function (i) { return i - 0.08; }); traces[0].width = 0.32;
+        traces[1].y = idx.map(function (i) { return i + 0.26; }); traces[1].width = 0.32;
+      } else { traces[0].y = idx.map(function (i) { return i + 0.09; }); traces[0].width = 0.4; }
     }
-    // zero has no sign: a value that rounds to 0.0 prints as "0.0", never "+0.0" or "-0.0"
-    var fmt = sgn1;
     var annos = [{ x: 0, xref: "x", y: 1.0, yref: "paper", yanchor: "bottom", xanchor: "center", text: annoLabel,
       showarrow: false, font: { size: 10.5, color: "#7a6c55" } }];
-    // phones: the name above its pair of bars, each value at its own bar's end
-    // (outside right for a positive bar, outside left for a negative one)
-    var repX = null, rlock = playLock("rep");
+    var repX = null, rlock = playLock("rep"), vals = [0];
+    traces.forEach(function (t) { t.x.forEach(function (v) { if (v != null) vals.push(v); }); });
+    rows.forEach(function (r, i) {
+      if (r.missing) annos.push({ xref: "paper", x: narrow ? 0 : 0.02, xanchor: "left", yref: "y", y: narrow ? i + 0.09 : ylab[i],
+        showarrow: false, text: repMissingText(r), font: { size: 12, color: MUTED } });
+    });
     if (narrow) {
+      // phones: the name above its bars, each value at its own bar's end
+      // (outside right for a positive bar, outside left for a negative one)
       ys.forEach(function (c, i) {
         annos.push({ xref: "paper", x: 0, xanchor: "left", yref: "y", y: i - 0.3, yanchor: "bottom", showarrow: false,
           text: escAnn(c), font: { size: 12, color: INK }, bgcolor: BG });
-        [[appDev[i], traces[0].y[i], BLUE], [accDev[i], traces[1].y[i], RED]].forEach(function (b) {
-          annos.push({ xref: "x", x: b[0], yref: "y", y: b[1], xanchor: b[0] >= 0 ? "left" : "right",
-            xshift: b[0] >= 0 ? 4 : -4, showarrow: false, text: fmt(b[0]), font: { size: 12, color: b[2] } });
+        traces.forEach(function (t, k) {
+          var v = t.x[i]; if (v == null) return;
+          annos.push({ xref: "x", x: v, yref: "y", y: t.y[i], xanchor: v >= 0 ? "left" : "right",
+            xshift: v >= 0 ? 4 : -4, showarrow: false, text: sgn1(v), font: { size: 12, color: series[k].color } });
         });
       });
-      var all = appDev.concat(accDev, [0]);
-      var lo = Math.min.apply(null, all), hi = Math.max.apply(null, all);
+      var lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
       repX = padRange(lo, hi, lo < 0 ? LABEL_PAD : 0.03, hi > 0 ? LABEL_PAD : 0.03);
     }
     // play lock: one axis over every year, so the bars compare by eye
     if (rlock) repX = narrow ? padRange(rlock.range[0], rlock.range[1], LABEL_PAD, LABEL_PAD) : rlock.range.slice();
     var layout = {
-      paper_bgcolor: BG, plot_bgcolor: BG, height: Math.max(280, ys.length * (narrow ? 76 : 64) + 70),
+      paper_bgcolor: BG, plot_bgcolor: BG, height: Math.max(280, ys.length * (narrow ? (both ? 76 : 60) : (both ? 64 : 44)) + 70),
       font: { family: "Inter, system-ui, sans-serif", color: "#1a1a1a", size: 13 },
       margin: narrow ? { t: 30, r: 12, b: 40, l: 10 } : { t: 26, r: 26, b: 56, l: 168 },
       barmode: narrow ? "overlay" : "group", bargap: 0.4, bargroupgap: 0.12,
@@ -2132,12 +2267,9 @@
         items.push(qbSeg("num-show-seg", "Lines"));
         if (state.characteristic !== "OVERALL") items.push(qbSeg("num-unit-seg", "Unit"));
       }
-      if (state.trendMode === "mix") items.push(qbSeg("num-show-seg", "Bars"));
-      else {
-        if (state.trendMode !== "numbers") items.push(qbChip("toggle-ci"));
-        if (!isContext()) items.push(qbChip("toggle-dei"));
-        items.push(qbChip("toggle-combine"));
-      }
+      if (state.trendMode !== "numbers") items.push(qbChip("toggle-ci"));
+      if (!isContext()) items.push(qbChip("toggle-dei"));
+      items.push(qbChip("toggle-combine"));
     } else if (v === "forest") {
       items.push(qbYear());
       if (!isSESPairwise()) {
@@ -2148,7 +2280,14 @@
       items.push(qbSeg("eramode-seg", "Show"));
       items.push(qbSeg("eraview-seg", "View"));
     } else if (v === "rep") {
-      if (REP[state.characteristic]) items.push(qbSeg("repmode-seg", "View"));
+      if (repHasBench()) items.push(qbSeg("repkind-seg", "Show"));
+      items.push(qbSeg("rep-show-seg", "Bars"));
+      if (repKind() === "share") {
+        if (repHasBench()) items.push(qbChip("rep-pop"));
+        items.push(qbChip("rep-start"));
+      }
+      items.push(qbChip("rep-combine"));
+      items.push(qbSeg("repmode-seg", "View"));
     } else if (v === "table") {
       items.push(qbSeg("tablemode-seg", "Show"));
     }
@@ -2164,7 +2303,7 @@
     // A Mix bar animation still running would carry over into a different chart
     // (Plotly applies its pending frames to the new traces): start that chart clean.
     var cg = document.getElementById("chart");
-    if (cg._animUntil && Date.now() < cg._animUntil && !(state.view === "trend" && state.trendMode === "mix")) {
+    if (cg._animUntil && Date.now() < cg._animUntil && !(state.view === "rep" && repKind() === "share")) {
       cg._animUntil = 0; cg._mixKey = null; Plotly.purge(cg); cg.__zeroHook = false; cg._trendHoverBound = false;
     }
     if (state._lockView !== state.view) { state._lockOn = false; state._lockView = state.view; }
@@ -2196,6 +2335,7 @@
     var mctl = document.getElementById("measure-ctl");
     if (mctl) mctl.hidden = isOverview();
     if (state.view === "forest") buildLegendKey();
+    if (!state.exporting) { syncShared(); if (state.view === "rep") buildRepGroupList(); }
     document.getElementById("legendkey").hidden = state.view !== "forest" || isSESPairwise();
     var chart = document.getElementById("chart"), matrix = document.getElementById("matrix"),
         table = document.getElementById("table");
@@ -2243,7 +2383,7 @@
   // the years a view can step through: those with any data for this characteristic
   var playYearsCache = {};
   function playYearsFor(view) {
-    var key = view + "|" + state.characteristic + "|" + state.measure;
+    var key = view + "|" + state.characteristic + "|" + state.measure + "|" + (view === "rep" && repCensus() ? "c" : "g");
     if (playYearsCache[key]) return playYearsCache[key];
     var save = view === "forest" ? [state.yearFrom, state.yearTo] : [state.repYearFrom, state.repYearTo], ys = [];
     try {
@@ -2252,8 +2392,7 @@
           var res = forestFor([y]);
           if (res && res.rows.some(function (r) { return r.computable; })) ys.push(y);
         } else {
-          state.repYearFrom = state.repYearTo = y;
-          var rr = computeRep(); if (rr && rr.appTot > 0 && rr.accTot > 0) ys.push(y);
+          var rr = repCompute([y]); if (rr.appTot > 0 && rr.accTot > 0) ys.push(y);
         }
       });
     } finally {
@@ -2268,7 +2407,7 @@
       if (state.trendTo <= state.trendFrom) return null;
       var tys = []; for (var y = state.trendFrom; y <= state.trendTo; y++) tys.push(y);
       return { years: tys, cur: state.playYear == null ? state.trendTo : state.playYear,
-        label: null, go: function (y) { state.playYear = y >= state.trendTo ? null : y; state._mixAnim = state.trendMode === "mix"; } };
+        label: null, go: function (y) { state.playYear = y >= state.trendTo ? null : y; } };
     }
     if (v === "forest" && !isSESPairwise() && state.forestMode !== "table") {
       var fys = playYearsFor("forest"); if (fys.length < 2) return null;
@@ -2279,11 +2418,11 @@
           if (f) f.value = y; if (t) t.value = y;
         } };
     }
-    if (v === "rep" && REP[state.characteristic] && state.repMode === "chart") {
+    if (v === "rep" && state.repMode === "chart") {
       var rys = playYearsFor("rep"); if (rys.length < 2) return null;
       return { years: rys, cur: state.repYearTo, label: state.repYearFrom === state.repYearTo ? null : rangeLabel(state.repYearFrom, state.repYearTo),
         go: function (y) {
-          state.repYearFrom = state.repYearTo = y;
+          state.repYearFrom = state.repYearTo = y; state._mixAnim = repKind() === "share";
           var f = document.getElementById("rep-year-from"), t = document.getElementById("rep-year-to");
           if (f) f.value = y; if (t) t.value = y;
         } };
@@ -2343,7 +2482,8 @@
     if (!state._lockOn || (state.exporting && !state._gif) || state.view !== view) return null;
     if (view === "forest" && state.yearFrom !== state.yearTo) return null;
     if (view === "rep" && state.repYearFrom !== state.repYearTo) return null;
-    var key = view + "|" + state.characteristic + "|" + state.measure + "|" + narrowView();
+    var key = view + "|" + state.characteristic + "|" + state.measure + "|" + narrowView() +
+      (view === "rep" ? "|" + [repKind(), repCensus(), state.combine, state.numShow, repUnits().filter(repIsSel).map(function (u) { return u.key; }).join(",")].join("|") : "");
     if (lockCache[key]) return lockCache[key];
     var ys = playYearsFor(view), lo = Infinity, hi = -Infinity, lock = { order: [], labels: {} };
     if (view === "forest") {
@@ -2366,17 +2506,18 @@
       lock.order = latest.concat(Object.keys(lock.labels).filter(function (k) { return latest.indexOf(k) < 0; }));
       var nul = pp ? 0 : 1; lo = Math.min(lo, nul); hi = Math.max(hi, nul);
     } else {
-      var save = [state.repYearFrom, state.repYearTo];
-      try {
-        ys.forEach(function (y) {
-          state.repYearFrom = state.repYearTo = y;
-          var rr = computeRep(); if (!rr) return;
-          rr.rows.forEach(function (r) {
-            [r.appPct - r.popApp, r.accPct - r.popAcc].forEach(function (x) { if (isFinite(x)) { lo = Math.min(lo, x); hi = Math.max(hi, x); } });
-          });
+      var gap = repKind() === "gap", showApp = state.numShow !== "accepted", showAcc = state.numShow !== "applicants";
+      ys.forEach(function (y) {
+        repRows([y]).rows.forEach(function (r) {
+          var xs = [];
+          if (showApp && r.appPct != null) xs.push(gap ? r.appPct - r.popApp : r.appPct);
+          if (showAcc && r.accPct != null) xs.push(gap ? r.accPct - r.popAcc : r.accPct);
+          if (!gap && r.popApp != null) xs.push(r.popApp, r.popAcc);
+          xs.forEach(function (x) { if (isFinite(x)) { lo = Math.min(lo, x); hi = Math.max(hi, x); } });
         });
-      } finally { state.repYearFrom = save[0]; state.repYearTo = save[1]; }
+      });
       lo = Math.min(lo, 0); hi = Math.max(hi, 0);
+      if (!gap) { lock.range = [0, (hi || 1) * 1.16]; return (lockCache[key] = lock); }
     }
     var pad = (hi - lo || 1) * 0.05;
     lock.range = [lo - pad, hi + pad];
@@ -2528,7 +2669,7 @@
       return;
     }
     var lead = state.sub ? state.sub + " " : "";
-    if (state.view === "trend" && (state.trendMode === "numbers" || state.trendMode === "mix")) {
+    if (state.view === "trend" && state.trendMode === "numbers") {
       note.textContent = lead + "Source: Clearing House for Postgraduate Courses in Clinical Psychology."; return; }
     var deiTxt = (state.showDEI && !isContext()) ? " The shaded band marks the DEI era (" + DEI_FROM + " to " + DEI_TO + ")." : "";
     note.textContent = lead + (state.view === "trend"
@@ -2539,6 +2680,13 @@
         : "Each point is that group's acceptance rate for the year. Hover for n and the interval. A year with no dot is a suppressed or missing count, never a zero; the line bridges it." + deiTxt))
       : state.view === "rep"
         ? (function () {
+          if (repKind() === "share") {
+            var cq = state.characteristic, bn = !repCensus() ? ""
+              : cq === "DISABILITY" ? "The disability benchmark is age-adjusted: the Census 2021 age-specific rates re-weighted to each pool's age profile (about 12%, not the whole-population 18%). "
+              : cq === "SOCIO-ECONOMIC BACKGROUND" ? "POLAR quintiles are equal fifths of young people by construction, so 20% per quintile is the representative share. "
+              : cq === "ETHNICITY" ? "British English, Scottish and Welsh are combined as White British, which the Census does not split. " : "";
+            return bn + "Source: Clearing House for Postgraduate Courses in Clinical Psychology.";
+          }
           var isTbl = state.repMode === "table";
           var lead = isTbl ? "The table shows how far" : "Bars show how far";
           var dl = isTbl ? "" : " (dotted line)";
@@ -2578,7 +2726,7 @@
     (META.context_questions || []).forEach(function (c) { opt(ctxg, c, CHAR_LABELS[c]); });
     if (ctxg.children.length) sel.appendChild(ctxg);
     sel.addEventListener("change", function () {
-      state.characteristic = sel.value; state.selected = {}; resetY();
+      state.characteristic = sel.value; state.selected = {}; state.repSel = {}; resetY();
       defaultSelection(); buildGroupList();
       state.tableSelected = {}; buildTableCatList();
       render(); fadeIn();
@@ -2593,7 +2741,7 @@
     if (c === ALL_GROUPS || c === ALL_CONTEXT) return view === "forest";
     // the overall total has nothing to compare against: trend and table only
     if (c === "OVERALL") return view === "trend" || view === "table";
-    if (view === "rep") return !!REP[c];
+    if (view === "rep") return true;
     if (view === "era") return !isContext(c);
     return true;
   }
@@ -2782,20 +2930,82 @@
     document.getElementById("rep-legend").innerHTML =
       '<div><span class="swatch" style="background:' + BLUE + '"></span>Applicants</div>' +
       '<div><span class="swatch" style="background:' + RED + '"></span>Accepted</div>' +
-      '<div style="margin-top:.35rem">Dotted line = the representative benchmark for the chosen ' +
-      'characteristic. Bars right = over-represented, left = under-represented.</div>' +
+      '<div style="margin-top:.35rem"><strong>Shares:</strong> each group\'s share of everyone who answered, year by ' +
+      'year. Diamond = the population share; black tick = the share in the first year.</div>' +
+      '<div style="margin-top:.35rem"><strong>Vs population:</strong> the share minus the population share. ' +
+      'Bars right = over-represented, left = under-represented.</div>' +
       '<div style="margin-top:.4rem">Benchmarks: Census 2021 (England &amp; Wales, all ages) for ' +
       'ethnicity, religion, sexual orientation and sex; an age-adjusted rate for disability; and an ' +
       'equal 20% per quintile for socio-economic background (POLAR). All-ages benchmarks slightly ' +
       'understate representation for a young graduate pool. Shares exclude prefer-not-to-say.</div>';
-    var seg = document.getElementById("repmode-seg");
-    seg.addEventListener("click", function (e) {
-      var btn = e.target.closest(".seg-btn"); if (!btn) return;
-      state.repMode = btn.getAttribute("data-mode");
-      seg.querySelectorAll(".seg-btn").forEach(function (x) {
-        x.classList.toggle("active", x === btn); });
-      render();
+    function seg(id, attr, key) {
+      var sg = document.getElementById(id);
+      sg.addEventListener("click", function (e) {
+        var b = e.target.closest(".seg-btn"); if (!b || b.disabled) return;
+        state[key] = b.getAttribute(attr); resetX(); render();
+      });
+    }
+    seg("repmode-seg", "data-mode", "repMode");
+    seg("repkind-seg", "data-kind", "repKind");
+    seg("rep-show-seg", "data-show", "numShow");
+    [["rep-pop", "repPop"], ["rep-start", "repStart"], ["rep-combine", "combine"]].forEach(function (c) {
+      document.getElementById(c[0]).addEventListener("click", function () { state[c[1]] = !state[c[1]]; render(); });
     });
+    // All / None for the group lists (Over time and this tab)
+    document.querySelectorAll(".sel-all button").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var on = b.getAttribute("data-sel") === "all", inRep = !!b.closest("#rep-controls");
+        if (inRep && repCensus()) repUnits().forEach(function (u) { state.repSel[u.key] = on; });
+        else {
+          var hidden = trendHidden(state.characteristic);
+          (byChar[state.characteristic] || []).forEach(function (g) {
+            if (hidden.indexOf(g.group) === -1) state.selected[g.group] = on; });
+        }
+        buildGroupList(); render();
+      });
+    });
+  }
+  // The group list on this tab: the rows it can show, ticked as they are shown.
+  function buildRepGroupList() {
+    var box = document.getElementById("rep-group-list"); if (!box) return;
+    box.innerHTML = "";
+    var ref = refFor(state.characteristic), census = repCensus();
+    repUnits().forEach(function (u) {
+      var lbl = document.createElement("label"); lbl.className = "grp";
+      var cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = repIsSel(u);
+      cb.addEventListener("change", function () {
+        if (census) state.repSel[u.key] = cb.checked; else { state.selected[u.key] = cb.checked; buildGroupList(); }
+        render();
+      });
+      lbl.appendChild(cb);
+      var span = document.createElement("span");
+      span.textContent = u.label + (!census && u.key === ref ? " (reference)" : "") +
+        (!census && u.group && u.group.constructed ? " *" : "") + (!census && INCOMPLETE[u.key] ? " †" : "");
+      lbl.appendChild(span); box.appendChild(lbl);
+    });
+    document.getElementById("rep-groups-title").firstChild.textContent = census ? "Categories shown " : "Groups shown ";
+  }
+  // Controls that two tabs share (Applicants / Accepted / Both, Combine) show the same state.
+  function syncShared() {
+    document.querySelectorAll("#num-show-seg .seg-btn, #rep-show-seg .seg-btn").forEach(function (b) {
+      b.classList.toggle("active", b.getAttribute("data-show") === state.numShow); });
+    document.querySelectorAll("#repmode-seg .seg-btn").forEach(function (b) {
+      b.classList.toggle("active", b.getAttribute("data-mode") === state.repMode); });
+    var kind = repKind();
+    document.querySelectorAll("#repkind-seg .seg-btn").forEach(function (b) {
+      b.classList.toggle("active", b.getAttribute("data-kind") === kind);
+      if (b.getAttribute("data-kind") === "gap") {
+        b.disabled = !repHasBench();
+        b.title = repHasBench() ? "Each share minus its population benchmark" : "No population benchmark for this characteristic";
+      }
+    });
+    [["toggle-combine", "combine"], ["rep-combine", "combine"], ["rep-pop", "repPop"], ["rep-start", "repStart"]].forEach(function (c) {
+      var b = document.getElementById(c[0]); if (!b) return;
+      b.classList.toggle("on", !!state[c[1]]); b.setAttribute("aria-pressed", state[c[1]] ? "true" : "false");
+    });
+    document.getElementById("rep-pop").hidden = kind !== "share" || !repHasBench();
+    document.getElementById("rep-start").hidden = kind !== "share";
+    document.getElementById("repkind-ctl").hidden = !repHasBench();
   }
 
   function buildEraSeg() {
@@ -2844,7 +3054,7 @@
   function switchCharacteristic(ch) {
     state.characteristic = ch;
     document.getElementById("char-picker").value = ch;
-    state.selected = {}; defaultSelection(); buildGroupList();
+    state.selected = {}; state.repSel = {}; defaultSelection(); buildGroupList();
     state.tableSelected = {}; buildTableCatList();
   }
 

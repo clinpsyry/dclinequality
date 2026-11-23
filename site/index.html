@@ -59,6 +59,10 @@
   .brand-text { min-width: 0; }
   .logo { flex: 0 0 auto; width: 34px; height: 34px; border-radius: 9px; background: var(--accent); color: #fff;
     display: grid; place-items: center; font: 700 22px/1 Georgia, "Times New Roman", serif; margin-top: .15rem; }
+  .sel-all { float: right; display: inline-flex; gap: .15rem; }
+  .sel-all button { font: inherit; font-size: .76rem; font-weight: 600; color: var(--accent); background: none; border: none;
+    padding: .1rem .35rem; border-radius: 6px; cursor: pointer; }
+  .sel-all button:hover { background: var(--accent-soft); }
   .t-short, .tab-ico, .m-toolbar, .sheet-head, .sheet-backdrop, .options-drawer { display: none; }
   .brand .eyebrow { white-space: nowrap; font-size: .66rem; font-weight: 600; letter-spacing: .1em;
     text-transform: uppercase; color: var(--accent); margin-bottom: .45rem; }
@@ -369,8 +373,8 @@
     .ctl, .rail .ctl[style] { margin-top: 1.55rem !important; }
     .ctl > label.cap, .rail-sec { display: block; font-size: .84rem; font-weight: 600; letter-spacing: 0;
       text-transform: none; color: var(--c-ink); margin: 0 0 .55rem; }
-    #groups-title { order: -2; margin-top: .25rem; }
-    #group-list { order: -1; }
+    #groups-title, #rep-groups-title { order: -2; margin-top: .25rem; }
+    #group-list, #rep-group-list { order: -1; }
     #table-controls .btn { margin-top: 1.4rem; }
     .seg { border-radius: 999px; background: rgba(234,221,202,.42); border: 1px solid var(--c-hair); padding: 3px; }
     .seg-btn { border-radius: 999px; font-size: .82rem; padding: .42rem .4rem; color: var(--c-ink-2); }
@@ -506,7 +510,7 @@
   @media (min-width: 861px) {
     .rail .panel { height: 100%; min-height: 0; }
     #trend-controls, #forest-controls, #era-controls, #rep-controls, #table-controls { flex: 0 1 auto; min-height: 0; }
-    #group-list { flex: 0 1 auto; min-height: 96px; overflow-y: auto; }
+    #group-list, #rep-group-list { flex: 0 1 auto; min-height: 96px; overflow-y: auto; }
     #era-legend, #rep-legend { flex: 0 1 auto; min-height: 60px; overflow-y: auto; }
     #table-controls .ctl:has(#table-cat-list) { display: flex; flex-direction: column; flex: 0 1 auto; min-height: 0; }
     #table-cat-list { flex: 0 1 auto; min-height: 96px; overflow-y: auto; }
@@ -706,7 +710,6 @@
           <button class="seg-btn active" data-mode="rate">Rate</button>
           <button class="seg-btn" data-mode="vsref">Vs reference</button>
           <button class="seg-btn" data-mode="numbers">Numbers</button>
-          <button class="seg-btn" data-mode="mix" title="Each group's share of applicants and of acceptances, year by year">Mix</button>
         </div>
       </div>
       <div class="ctl qb-dup" id="trend-measure-ctl" hidden>
@@ -756,7 +759,7 @@
           <button class="chip" id="toggle-dei" type="button" title="Shade the DEI era (2021 to 2025)">DEI era</button>
         </div>
       </div>
-      <div class="rail-sec" id="groups-title">Groups shown</div>
+      <div class="rail-sec" id="groups-title">Groups shown <span class="sel-all"><button type="button" data-sel="all">All</button><button type="button" data-sel="none">None</button></span></div>
       <div class="group-list" id="group-list"></div>
       <p class="note">* aggregate group: broad ethnic groups and Mixed use the source's
       official published totals; Christian is a transparent sum of its denominations.
@@ -829,9 +832,32 @@
       <div class="legendkey" id="era-legend"></div>
     </div>
 
-    <!-- Representativeness controls -->
+    <!-- Who applies, who gets in (shares, and the gap from the population) -->
     <div id="rep-controls" hidden>
-      <div class="ctl qb-dup" style="margin-top:.2rem">
+      <div class="ctl qb-dup" id="repkind-ctl" style="margin-top:.2rem">
+        <label class="cap">Show</label>
+        <div class="seg" id="repkind-seg">
+          <button class="seg-btn active" data-kind="share" title="Each group's share of applicants and of acceptances">Shares</button>
+          <button class="seg-btn" data-kind="gap" title="Each share minus its population benchmark">Vs population</button>
+        </div>
+      </div>
+      <div class="ctl qb-dup">
+        <label class="cap">Bars</label>
+        <div class="seg" id="rep-show-seg">
+          <button class="seg-btn active" data-show="both">Both</button>
+          <button class="seg-btn" data-show="applicants">Applicants</button>
+          <button class="seg-btn" data-show="accepted">Accepted</button>
+        </div>
+      </div>
+      <div class="ctl qb-dup">
+        <label class="cap">Display</label>
+        <div class="chips">
+          <button class="chip on" id="rep-pop" type="button" title="Mark each group's share of the population (Census 2021), with groups pooled to match the Census">Population</button>
+          <button class="chip on" id="rep-start" type="button" title="Mark each group's share in the first year">Start year</button>
+          <button class="chip" id="rep-combine" type="button" title="Add the ticked groups together into one bar">Combine</button>
+        </div>
+      </div>
+      <div class="ctl qb-dup">
         <label class="cap">View</label>
         <div class="seg" id="repmode-seg">
           <button class="seg-btn active" data-mode="chart">Chart</button>
@@ -839,7 +865,7 @@
         </div>
       </div>
       <div class="ctl">
-        <label class="cap">Applicant years</label>
+        <label class="cap">Years</label>
         <div class="yearrange">
           <select id="rep-year-from"></select><span>to</span><select id="rep-year-to"></select>
         </div>
@@ -855,6 +881,8 @@
           <input type="number" id="rep-xmax" step="any" aria-label="X axis to">
         </div>
       </div>
+      <div class="rail-sec" id="rep-groups-title">Groups shown <span class="sel-all"><button type="button" data-sel="all">All</button><button type="button" data-sel="none">None</button></span></div>
+      <div class="group-list" id="rep-group-list"></div>
       <div class="legendkey" id="rep-legend"></div>
     </div>
 
@@ -888,7 +916,7 @@
       <button class="tab active" data-view="trend" aria-current="page"><span class="tab-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5.5-5.5 4 4L21 7"/><path d="M3 21h18"/></svg></span><span class="t-long">Over time</span><span class="t-short">Over time</span></button>
       <button class="tab" data-view="forest"><span class="tab-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16M8 20h8M5 7h14"/><path d="M5 7l-3 6.5a3 3 0 006 0L5 7zM19 7l-3 6.5a3 3 0 006 0L19 7z"/></svg></span><span class="t-long">Compare groups</span><span class="t-short">Compare</span></button>
       <button class="tab" data-view="era"><span class="tab-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="2.4" fill="currentColor"/><path d="M9 12h11M15 7l5 5-5 5"/></svg></span><span class="t-long">Before vs after DEI</span><span class="t-short">DEI era</span></button>
-      <button class="tab" data-view="rep"><span class="tab-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.3c2.9.4 5 2.8 5 5.7"/></svg></span><span class="t-long">Representation</span><span class="t-short">Population</span></button>
+      <button class="tab" data-view="rep"><span class="tab-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.3c2.9.4 5 2.8 5 5.7"/></svg></span><span class="t-long">Who applies, who gets in</span><span class="t-short">Shares</span></button>
       <button class="tab" data-view="table"><span class="tab-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M3 14.8h18M9.5 4v16"/></svg></span><span class="t-long">Data table</span><span class="t-short">Data</span></button>
       <button class="tab" data-view="about"><span class="tab-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.6" r=".9" fill="currentColor"/></svg></span><span class="t-long">About &amp; methods</span><span class="t-short">About</span></button>
     </nav>
@@ -986,13 +1014,15 @@
           <li><strong>2025 counts in the DEI era</strong>, which now runs from 2021 to 2025 (pre-DEI:
           2015 to 2019). Every DEI-era figure, including the All groups chart, pools 2021 to 2025, so
           it differs from the posts published before 2025's data, which used 2021 to 2024.</li>
-          <li><strong>Play, year by year:</strong> Over time, Compare groups and Representation have a
+          <li><strong>Play, year by year:</strong> Over time, Compare groups and Who applies, who gets in have a
           Play button and a year slider. While they play, the axis and the order of the rows stay
           fixed, so the years can be compared by eye. The <strong>GIF</strong> button saves the
           animation, one frame per year.</li>
-          <li><strong>Mix and Share:</strong> on Over time, Numbers can show applicants, acceptances or
-          both, as counts or as each group's share, and Mix shows the shares as bars that move year
-          by year (see "Shares" below).</li>
+          <li><strong>Who applies, who gets in</strong> (this replaces Representation and the Mix
+          chart): each group's share of applicants and of acceptances, as bars that move year by year,
+          with the population share as a marker; or, with "Vs population", the gap from the population.
+          Applicants, Accepted or both; any groups ticked; or the ticked groups combined into one. On
+          Over time, Numbers can still show counts or shares as lines (see "Shares" below).</li>
           <li><strong>All groups (full forest)</strong> uses the method of the published chart: every
           group with 300 or more applicants in the DEI era, across nine characteristics, each against
           the largest group of its characteristic (socio-economic: Quintiles 2 and 3 combined), with one
@@ -1007,12 +1037,14 @@
         </ul>
 
         <h2>Shares</h2>
-        <p>In Numbers (Share) and Mix, a group's share is its part of everyone who answered the
-        question that year: applicants who chose "prefer not to say" are not in the data, so they are
-        left out, as in Representation. The total adds up the reported groups only, never a built
+        <p>In Numbers (Share) and Who applies, who gets in, a group's share is its part of everyone
+        who answered the question that year: applicants who chose "prefer not to say" are not in the
+        data, so they are left out. The total adds up the reported groups only, never a built
         total such as Christian (all), so no one is counted twice, and the shares of all the groups of
         a characteristic add up to 100%. A group whose acceptance count is withheld that year adds to
-        neither the total nor its own share, and shows as a gap, never as zero.</p>
+        neither the total nor its own share, and shows as a gap, never as zero. Combined groups add up
+        only the years in which every one of them is reported, so a withheld count is never treated
+        as zero inside the sum.</p>
 
         <h2>Year by year</h2>
         <p>Playing a chart one year at a time shows single-year figures. One year has roughly a fifth
@@ -1067,8 +1099,9 @@
         fully-included year; on Over time the "DEI era" chip shades 2021 to 2025 (off by default).</p>
 
         <h2>Representativeness</h2>
-        <p>This view asks a different question: does the applicant and accepted pool look like the
-        population it is drawn from? Shares are compared to a population benchmark and shown as the
+        <p>Who applies, who gets in also asks: does the applicant and accepted pool look like the
+        population it is drawn from? With "Population" on, the groups are pooled to match the Census
+        categories and each share is marked against its population share; "Vs population" shows the
         difference from it (a bar to the right is over-represented, to the left under-represented).
         Benchmarks come from the 2021 Census (England and Wales) unless stated, and are rebased to the
         "answered" population so they sit on the same base as the applicant data, which excludes prefer
