@@ -63,6 +63,22 @@
   .sel-all button { font: inherit; font-size: .76rem; font-weight: 600; color: var(--accent); background: none; border: none;
     padding: .1rem .35rem; border-radius: 6px; cursor: pointer; }
   .sel-all button:hover { background: var(--accent-soft); }
+  .sel-all button[hidden] { display: none; }
+  /* Long help text in the rail folds away, so the group list gets the height */
+  .rail-help { margin-top: 1.1rem; border-top: 1px solid var(--line-soft); padding-top: .7rem; }
+  .rail-help > summary { cursor: pointer; list-style: none; font-size: .8rem; font-weight: 600; color: var(--accent);
+    display: inline-flex; align-items: center; gap: .3rem; }
+  .rail-help > summary::-webkit-details-marker { display: none; }
+  .rail-help > summary::after { content: "▾"; font-size: .7rem; transition: transform .15s ease; }
+  .rail-help[open] > summary::after { transform: rotate(180deg); }
+  .rail-help .legendkey, .rail-help .note { margin-top: .5rem; border-top: none; padding-top: 0; }
+  /* "+" switch on a ticked row while Combine is on: filled = in the combined group */
+  .cmb-tog { margin-left: auto; flex: 0 0 auto; width: 22px; height: 22px; border-radius: 6px; padding: 0;
+    font: 700 14px/1 Inter, system-ui, sans-serif; cursor: pointer; color: var(--accent);
+    background: transparent; border: 1.5px solid rgba(153,15,61,.45); }
+  .cmb-tog.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .cmb-tog:disabled { opacity: .35; cursor: default; }
+  label.grp .cmb-tog + .c-dot { margin-left: .45rem; }
   .t-short, .tab-ico, .m-toolbar, .sheet-head, .sheet-backdrop, .options-drawer { display: none; }
   .brand .eyebrow { white-space: nowrap; font-size: .66rem; font-weight: 600; letter-spacing: .1em;
     text-transform: uppercase; color: var(--accent); margin-bottom: .45rem; }
@@ -511,7 +527,7 @@
     .rail .panel { height: 100%; min-height: 0; }
     #trend-controls, #forest-controls, #era-controls, #rep-controls, #table-controls { flex: 0 1 auto; min-height: 0; }
     #group-list, #rep-group-list { flex: 0 1 auto; min-height: 96px; overflow-y: auto; }
-    #era-legend, #rep-legend { flex: 0 1 auto; min-height: 60px; overflow-y: auto; }
+    .rail-help[open] { flex: 0 1 auto; min-height: 60px; overflow-y: auto; }
     #table-controls .ctl:has(#table-cat-list) { display: flex; flex-direction: column; flex: 0 1 auto; min-height: 0; }
     #table-cat-list { flex: 0 1 auto; min-height: 96px; overflow-y: auto; }
     #trend-controls > .note { flex: none; }
@@ -759,11 +775,11 @@
           <button class="chip" id="toggle-dei" type="button" title="Shade the DEI era (2021 to 2025)">DEI era</button>
         </div>
       </div>
-      <div class="rail-sec" id="groups-title">Groups shown <span class="sel-all"><button type="button" data-sel="all">All</button><button type="button" data-sel="none">None</button></span></div>
+      <div class="rail-sec" id="groups-title">Groups shown <span class="sel-all"><button type="button" data-sel="all">All</button><button type="button" data-sel="none">None</button><button type="button" data-sel="allbutref" hidden title="Tick every group and combine all except the reference">+ all but ref</button></span></div>
       <div class="group-list" id="group-list"></div>
-      <p class="note">* aggregate group: broad ethnic groups and Mixed use the source's
+      <details class="rail-help" id="trend-help"><summary>Notes on the groups</summary><p class="note">* aggregate group: broad ethnic groups and Mixed use the source's
       official published totals; Christian is a transparent sum of its denominations.
-      † incomplete series: some years only in an excluded merged row.</p>
+      † incomplete series: some years only in an excluded merged row.</p></details>
     </div>
 
     <!-- Forest controls -->
@@ -799,7 +815,7 @@
           <input type="number" id="forest-xmax" step="any" aria-label="X axis to">
         </div>
       </div>
-      <div class="legendkey" id="legendkey"></div>
+      <details class="rail-help" id="legendkey-help"><summary>How to read</summary><div class="legendkey" id="legendkey"></div></details>
     </div>
 
     <!-- Era controls -->
@@ -829,7 +845,7 @@
           <input type="number" id="era-xmax" step="any" aria-label="X axis to">
         </div>
       </div>
-      <div class="legendkey" id="era-legend"></div>
+      <details class="rail-help" id="era-legend-help"><summary>How to read</summary><div class="legendkey" id="era-legend"></div></details>
     </div>
 
     <!-- Who applies, who gets in (shares, and the gap from the population) -->
@@ -881,9 +897,9 @@
           <input type="number" id="rep-xmax" step="any" aria-label="X axis to">
         </div>
       </div>
-      <div class="rail-sec" id="rep-groups-title">Groups shown <span class="sel-all"><button type="button" data-sel="all">All</button><button type="button" data-sel="none">None</button></span></div>
+      <div class="rail-sec" id="rep-groups-title">Groups shown <span class="sel-all"><button type="button" data-sel="all">All</button><button type="button" data-sel="none">None</button><button type="button" data-sel="allbutref" hidden title="Tick every group and combine all except the reference">+ all but ref</button></span></div>
       <div class="group-list" id="rep-group-list"></div>
-      <div class="legendkey" id="rep-legend"></div>
+      <details class="rail-help" id="rep-legend-help"><summary>How to read</summary><div class="legendkey" id="rep-legend"></div></details>
     </div>
 
     <!-- Table controls -->
@@ -1021,7 +1037,8 @@
           <li><strong>Who applies, who gets in</strong> (this replaces Representation and the Mix
           chart): each group's share of applicants and of acceptances, as bars that move year by year,
           with the population share as a marker; or, with "Vs population", the gap from the population.
-          Applicants, Accepted or both; any groups ticked; or the ticked groups combined into one. On
+          Applicants, Accepted or both; any groups ticked; and Combine, which pools the ticked groups
+          marked + into one (unmark a group to keep it separate, or use "+ all but ref"). On
           Over time, Numbers can still show counts or shares as lines (see "Shares" below).</li>
           <li><strong>All groups (full forest)</strong> uses the method of the published chart: every
           group with 300 or more applicants in the DEI era, across nine characteristics, each against

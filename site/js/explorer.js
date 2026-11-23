@@ -204,7 +204,7 @@
     tableYearFrom:FIRST_YEAR, tableYearTo:LATEST, tableSelected:{}, tableMode:"pooled",
     tableSort:{ col:null, dir:1 }, repYearFrom:DEI_FROM, repYearTo:LATEST, repMode:"chart",
     repSort:{ col:null, dir:1 }, forestMode:"chart", forestSort:{ col:null, dir:1 },
-    eraView:"chart", eraSort:{ col:null, dir:1 }, combine:false, sub:"",
+    eraView:"chart", eraSort:{ col:null, dir:1 }, combine:false, combOut:{}, sub:"",
     yCustom:false, yMin:"", yMax:"", showDEI:false, phoneMode:"auto", pngFormat:"phone", noteOpen:false, noteDeskOpen:false };
 
   // ---- pooled cells (RULES.md C8): flagged, not changed --------------------------
@@ -425,6 +425,9 @@
   // question (prefer-not-to-say is not in the data), summed over the raw groups
   // only, so built totals never count anyone twice. A group-year with a hidden
   // acceptance count adds nothing (rule 4: never zero).
+  // Combine: the ticked rows marked "+" (all of them, until some are unmarked)
+  // are pooled into one combined row; the other ticked rows stay separate.
+  function inCombine(key) { return !state.combOut[key]; }
   function shareTotals(ch) {
     var tot = {}, all = byChar[ch] || [], raw = all.filter(function (g) { return !g.constructed; });
     (raw.length ? raw : all).forEach(function (g) {
@@ -444,9 +447,10 @@
   function renderNumbers() {
     var ch = state.characteristic, label = CHAR_LABELS[ch], ai = 0, traces = [];
     var groups = (byChar[ch] || []).filter(function (g) { return state.selected[g.group]; });
-    var combined = state.combine && groups.length > 1;
+    var pooledG = groups.filter(function (g) { return inCombine(g.group); });
+    var combined = state.combine && pooledG.length > 1;
     if (combined) {
-      var maps = groups.map(function (g) { var m = {}; g.by_year.forEach(function (r) { m[r.year] = r; }); return m; });
+      var maps = pooledG.map(function (g) { var m = {}; g.by_year.forEach(function (r) { m[r.year] = r; }); return m; });
       var sumBy = {};
       ALL_YEARS.forEach(function (y) {
         var app = 0, acc = 0, accOk = true, any = false;
@@ -454,8 +458,10 @@
           app += r.applicants; if (r.accepted == null) accOk = false; else acc += r.accepted; });
         if (any) sumBy[y] = { year: y, applicants: app, accepted: accOk ? acc : null };
       });
-      groups = [{ group: "Combined (" + groups.map(function (g) { return g.group; }).join(" + ") + ")",
-        by_year: Object.keys(sumBy).map(function (k) { return sumBy[k]; }) }];
+      var rest = groups.filter(function (g) { return pooledG.indexOf(g) < 0; });
+      groups = [{ group: "Combined (" + pooledG.map(function (g) { return g.group; }).join(" + ") + ")",
+        by_year: Object.keys(sumBy).map(function (k) { return sumBy[k]; }) }].concat(rest);
+      ai = 1;   // the combined lines are red: separate groups start at the next colour
     }
     // Lines: applicants, accepted or both. Unit: count, or share of everyone in
     // the characteristic who answered the question that year (prefer-not-to-say
@@ -468,7 +474,7 @@
     var single = !(showApp && showAcc);
     var tot = share ? shareTotals(ch) : {};
     groups.forEach(function (g) {
-      var color = (ch === "OVERALL" || combined) ? RED : ACCENTS[ai++ % ACCENTS.length];
+      var color = (ch === "OVERALL" || (combined && g === groups[0])) ? RED : ACCENTS[ai++ % ACCENTS.length];
       var by = {}; g.by_year.forEach(function (r) { by[r.year] = r; });
       var xs = ALL_YEARS.filter(function (y) { return y >= state.trendFrom && y <= state.trendTo; });
       function series(key, dash, word) {
@@ -572,9 +578,16 @@
     // in Rate mode the reference is pooled too, so ticking every group gives the
     // combined rate for everyone in them.
     var poolable = selectedGroups.filter(function (g) { return !vs || g.group !== ref; });
-    var combining = state.combine && poolable.length > (vs ? 0 : 1);
+    var pooled = poolable.filter(function (g) { return inCombine(g.group); });
+    var combining = state.combine && pooled.length > (vs ? 0 : 1);
     if (combining) {
-      traces.push(combinedTrace(poolable, refGroup, vs, RED, rr));
+      traces.push(combinedTrace(pooled, refGroup, vs, RED, rr));
+      ai = 1;   // the combined line is red: separate groups start at the next colour
+      selectedGroups.forEach(function (g) {
+        if (pooled.indexOf(g) >= 0 || (vs && g.group === ref)) return;
+        var color = g.group === ref ? REF_COLOR : ACCENTS[ai++ % ACCENTS.length];
+        traces.push(vs ? traceVsRef(g, refGroup, color, rr) : traceFor(g, color));
+      });
     } else {
       selectedGroups.forEach(function (g) {
         if (vs && g.group === ref) return;   // reference is the flat baseline
@@ -597,7 +610,8 @@
           gridcolor:GRID, zeroline:false, linecolor:AXISLINE, tickcolor:AXISLINE }
       : { title:"Acceptance rate (%)", rangemode:"tozero", ticksuffix:"%", showgrid:true,
           gridcolor:GRID, zeroline:false, linecolor:AXISLINE, tickcolor:AXISLINE };
-    var combNote = combining ? " The selected groups are pooled into one group (summed counts)." : "";
+    var combNote = combining ? " " + (pooled.length < poolable.length ? "The groups marked + are" : "The selected groups are") +
+      " pooled into one group (summed counts)." : "";
     var yrs = state.trendFrom + "–" + state.trendTo;
     setChartHead(rr ? "Acceptance-rate ratio vs " + ref + " by year, " + label.toLowerCase() + ", " + yrs
         : vs ? "Acceptance-rate gap vs " + ref + " by year, " + label.toLowerCase() + ", " + yrs + " (percentage points)"
@@ -608,7 +622,7 @@
     playClip(traces, yaxis, vs ? (rr ? 1 : 0) : null);
     var gd = document.getElementById("chart");
     // Phones, 3 or more separate lines: one small panel per group instead of a tangle.
-    if (narrowView() && !combining && traces.length >= 3) {
+    if (narrowView() && traces.length >= 3) {
       var sm = smallMultiples(traces, { vs: vs, rr: rr, showDEI: showDEI });
       gd._smallMult = true;
       Plotly.react("chart", sm.data, lockZoom(sm.layout), PLOT_CFG);
@@ -1489,7 +1503,8 @@
   // combined row adds up only the years in which every ticked row is reported,
   // so a withheld count is never treated as zero inside the sum.
   function repRows(years) {
-    var units = repUnits().filter(repIsSel), all = repCompute(years);
+    var shown = repUnits().filter(repIsSel), all = repCompute(years);
+    var units = shown.filter(function (u) { return inCombine(u.key); }), rest = shown.filter(function (u) { return !inCombine(u.key); });
     function row(u) {
       var v = all.byKey[u.key] || {}, missing = !v.app_n;
       return { key: u.key, label: u.label, app_n: v.app_n || 0, acc_n: v.acc_n || 0,
@@ -1497,7 +1512,7 @@
         popApp: v.popApp, popAcc: v.popAcc, missing: missing };
     }
     if (!(state.combine && units.length > 1))
-      return { rows: units.map(row), appTot: all.appTot, accTot: all.accTot, combined: false };
+      return { rows: shown.map(row), appTot: all.appTot, accTot: all.accTot, combined: false };
     var na = 0, nc = 0, da = 0, dc = 0, used = 0;
     years.forEach(function (y) {
       var one = repCompute([y]), ok = one.appTot > 0;
@@ -1513,12 +1528,14 @@
     }
     return { rows: [{ key: "__combined__", label: "Combined: " + units.map(function (u) { return u.label; }).join(" + "),
       app_n: na, acc_n: nc, appPct: used && da ? 100 * na / da : null, accPct: used && dc ? 100 * nc / dc : null,
-      popApp: pa, popAcc: pc, missing: !used, partYears: used && used < years.length ? used : 0 }],
-      appTot: da, accTot: dc, combined: true, parts: units.length };
+      popApp: pa, popAcc: pc, missing: !used, partYears: used && used < years.length ? used : 0 }].concat(rest.map(row)),
+      appTot: all.appTot, accTot: all.accTot, combined: true, parts: units.length, partial: rest.length > 0 };
   }
   // source groups: largest applicant share in the last year with data at the top,
   // fixed whatever year is shown, so the bars keep their places while playing
   function repOrder(rows) {
+    // the combined row, if any, stays at the top
+    if (rows.length && rows[0].key === "__combined__") return rows.slice(0, 1).concat(repOrder(rows.slice(1)));
     if (repCensus() || rows.length < 2) return rows;
     var ys = playYearsFor("rep"), by = repCompute(ys.length ? [ys[ys.length - 1]] : repYears()).byKey;
     function v(r) { var x = by[r.key]; return x && x.app_n ? x.appPct : -1; }
@@ -1544,6 +1561,7 @@
     var ch = state.characteristic, label = CHAR_LABELS[ch].replace(" (detailed)", "").toLowerCase();
     var yrs = rangeLabel(state.repYearFrom, state.repYearTo), b = repHasBench() ? repBench(ch) : null;
     var comb = R && R.combined ? " Combined: the ticked " + (repCensus() ? "categories" : "groups") +
+      (R.partial ? " marked +" : "") +
       " added together; a year in which any of them is hidden or not reported is left out of the combined bar" +
       (R.rows[0] && R.rows[0].partYears ? " (here " + R.rows[0].partYears + " of the years)" : "") + "." : "";
     if (repKind() === "gap") {
@@ -1656,8 +1674,10 @@
     }
     traces.forEach(function (t) { t.x.forEach(function (v) { if (v != null && isFinite(v)) xmax = Math.max(xmax, v); }); });
     var lock = playLock("rep"), range = lock ? lock.range.slice() : [0, xmax * 1.16];
-    ann.push({ xref: "paper", yref: "paper", x: 1, y: 0.01, xanchor: "right", yanchor: "bottom", showarrow: false,
-      text: yrs, font: { size: narrow ? 30 : 52, color: "#d8c8ad" } });
+    // the year, large and faint, above the plot at the right (never over the bars);
+    // phones have no room beside the stacked legend, and the slider shows the year
+    ann.push({ xref: "paper", yref: "paper", x: 1, y: 1, xanchor: "right", yanchor: "bottom", yshift: 2, showarrow: false,
+      text: narrow ? "" : yrs, font: { size: 34, color: "#cdbb9c" } });
     // fixed label slots (one value per bar, one note per row), empty when not
     // needed: the bar animation replaces annotations slot by slot
     // The value belongs to its bar, so it sits at the bar's end: inside a long bar
@@ -2089,7 +2109,7 @@
       var base = span ? span.textContent.replace(/\s*\(reference\)|[*\u2020]/g, "").trim() : "";
       var t = traces.filter(function (d) { return d.name && d.line && (d.name === base || d.name.indexOf(base + ":") === 0); })[0];
       // Combine: every ticked group feeds the one pooled line
-      if (!t && traces.length === 1 && /^Combined/.test(traces[0].name || "")) t = traces[0];
+      if (!t && state.combine && inCombine(base)) t = traces.filter(function (d) { return /^Combined/.test(d.name || "") && d.line; })[0];
       var dot = l.querySelector(".c-dot");
       if (!dot) { dot = document.createElement("span"); dot.className = "c-dot"; dot.setAttribute("aria-hidden", "true"); l.appendChild(dot); }
       var on = !!t && l.querySelector("input").checked;
@@ -2352,8 +2372,10 @@
     var mctl = document.getElementById("measure-ctl");
     if (mctl) mctl.hidden = isOverview();
     if (state.view === "forest") buildLegendKey();
-    if (!state.exporting) { syncShared(); if (state.view === "rep") buildRepGroupList(); }
-    document.getElementById("legendkey").hidden = state.view !== "forest" || isSESPairwise();
+    if (!state.exporting) { syncShared(); if (state.view === "rep") buildRepGroupList(); if (state.view === "trend") buildGroupList(); }
+    var lkOff = state.view !== "forest" || isSESPairwise();
+    document.getElementById("legendkey-help").hidden = lkOff;
+    document.getElementById("legendkey").hidden = lkOff;   // on computers the key sits under the chart
     var chart = document.getElementById("chart"), matrix = document.getElementById("matrix"),
         table = document.getElementById("table");
     chart.style.display = "none"; matrix.style.display = "none"; table.style.display = "none";
@@ -2500,7 +2522,7 @@
     if (view === "forest" && state.yearFrom !== state.yearTo) return null;
     if (view === "rep" && state.repYearFrom !== state.repYearTo) return null;
     var key = view + "|" + state.characteristic + "|" + state.measure + "|" + narrowView() +
-      (view === "rep" ? "|" + [repKind(), repCensus(), state.combine, state.numShow, repUnits().filter(repIsSel).map(function (u) { return u.key; }).join(",")].join("|") : "");
+      (view === "rep" ? "|" + [repKind(), repCensus(), state.combine, state.numShow, repUnits().filter(repIsSel).map(function (u) { return u.key + (inCombine(u.key) ? "+" : ""); }).join(",")].join("|") : "");
     if (lockCache[key]) return lockCache[key];
     var ys = playYearsFor(view), lo = Infinity, hi = -Infinity, lock = { order: [], labels: {} };
     if (view === "forest") {
@@ -2743,7 +2765,7 @@
     (META.context_questions || []).forEach(function (c) { opt(ctxg, c, CHAR_LABELS[c]); });
     if (ctxg.children.length) sel.appendChild(ctxg);
     sel.addEventListener("change", function () {
-      state.characteristic = sel.value; state.selected = {}; state.repSel = {}; resetY();
+      state.characteristic = sel.value; state.selected = {}; state.repSel = {}; state.combOut = {}; resetY();
       defaultSelection(); buildGroupList();
       state.tableSelected = {}; buildTableCatList();
       render(); fadeIn();
@@ -2791,6 +2813,31 @@
     });
   }
 
+  // While Combine is on, each ticked row gets a "+" switch: marked rows are
+  // pooled into the combined row, unmarked ones stay separate.
+  function addCombineSwitch(lbl, key, ticked, disabled) {
+    if (!state.combine || !ticked) return;
+    var b = document.createElement("button"), on = inCombine(key) && !disabled;
+    b.type = "button"; b.className = "cmb-tog" + (on ? " on" : ""); b.textContent = "+";
+    b.disabled = !!disabled;
+    b.setAttribute("aria-pressed", on ? "true" : "false");
+    b.title = disabled ? "The reference is the baseline, so it is never combined"
+      : on ? "In the combined group: click to show it separately" : "Shown separately: click to add it to the combined group";
+    b.addEventListener("click", function (e) {
+      e.preventDefault(); e.stopPropagation();
+      if (inCombine(key)) state.combOut[key] = true; else delete state.combOut[key];
+      render();
+    });
+    lbl.appendChild(b);
+  }
+  // the reference's row key: its group, or the Census category that holds it
+  function refKeyFor(census) {
+    var ref = refFor(state.characteristic);
+    if (!census) return ref;
+    var b = REP[state.characteristic].buckets, k = null;
+    Object.keys(b).forEach(function (c) { if (Array.isArray(b[c]) && b[c].indexOf(ref) >= 0) k = c; });
+    return k;
+  }
   function buildGroupList() {
     var box = document.getElementById("group-list"); box.innerHTML = "";
     var ref = refFor(state.characteristic), hidden = trendHidden(state.characteristic);
@@ -2804,8 +2851,11 @@
       var span = document.createElement("span");
       span.textContent = g.group + (g.group === ref ? " (reference)" : "") +
         (g.constructed ? " *" : "") + (INCOMPLETE[g.group] ? " †" : "");
-      lbl.appendChild(span); box.appendChild(lbl);
+      lbl.appendChild(span);
+      addCombineSwitch(lbl, g.group, cb.checked, g.group === ref && state.trendMode === "vsref");
+      box.appendChild(lbl);
     });
+    document.querySelectorAll('.sel-all [data-sel="allbutref"]').forEach(function (b) { b.hidden = !state.combine; });
   }
 
   function buildYearControls() {
@@ -2971,13 +3021,16 @@
     // All / None for the group lists (Over time and this tab)
     document.querySelectorAll(".sel-all button").forEach(function (b) {
       b.addEventListener("click", function () {
-        var on = b.getAttribute("data-sel") === "all", inRep = !!b.closest("#rep-controls");
-        if (inRep && repCensus()) repUnits().forEach(function (u) { state.repSel[u.key] = on; });
+        var how = b.getAttribute("data-sel"), on = how !== "none", inRep = !!b.closest("#rep-controls");
+        var census = inRep && repCensus();
+        if (census) repUnits().forEach(function (u) { state.repSel[u.key] = on; });
         else {
           var hidden = trendHidden(state.characteristic);
           (byChar[state.characteristic] || []).forEach(function (g) {
             if (hidden.indexOf(g.group) === -1) state.selected[g.group] = on; });
         }
+        // "+ all but reference": everything ticked, everything combined except the reference
+        if (how === "allbutref") { state.combOut = {}; var rk = refKeyFor(census); if (rk) state.combOut[rk] = true; }
         buildGroupList(); render();
       });
     });
@@ -2998,9 +3051,12 @@
       var span = document.createElement("span");
       span.textContent = u.label + (!census && u.key === ref ? " (reference)" : "") +
         (!census && u.group && u.group.constructed ? " *" : "") + (!census && INCOMPLETE[u.key] ? " †" : "");
-      lbl.appendChild(span); box.appendChild(lbl);
+      lbl.appendChild(span);
+      addCombineSwitch(lbl, u.key, cb.checked, false);
+      box.appendChild(lbl);
     });
     document.getElementById("rep-groups-title").firstChild.textContent = census ? "Categories shown " : "Groups shown ";
+    document.querySelectorAll('.sel-all [data-sel="allbutref"]').forEach(function (b) { b.hidden = !state.combine; });
   }
   // Controls that two tabs share (Applicants / Accepted / Both, Combine) show the same state.
   function syncShared() {
@@ -3071,7 +3127,7 @@
   function switchCharacteristic(ch) {
     state.characteristic = ch;
     document.getElementById("char-picker").value = ch;
-    state.selected = {}; state.repSel = {}; defaultSelection(); buildGroupList();
+    state.selected = {}; state.repSel = {}; state.combOut = {}; defaultSelection(); buildGroupList();
     state.tableSelected = {}; buildTableCatList();
   }
 
